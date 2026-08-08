@@ -8,7 +8,11 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HeartPulse } from 'lucide-react-native';
+
+import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 interface WelcomeScreenProps {
   onStart?: () => void;
@@ -19,6 +23,25 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onStart,
   onLogin,
 }) => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+
+  const handleStart = () => {
+    if (onStart) {
+      onStart();
+      return;
+    }
+    navigation.navigate('Register');
+  };
+
+  const handleLoginPress = () => {
+    if (onLogin) {
+      onLogin();
+      return;
+    }
+    navigation.navigate('Login');
+  };
+
   return (
     <LinearGradient
       colors={['#300571', '#50399c']}
@@ -57,7 +80,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <TouchableOpacity
               style={styles.primaryButton}
               activeOpacity={0.8}
-              onPress={onStart}
+              onPress={handleStart}
             >
               <Text style={styles.primaryButtonText}>Comenzar</Text>
             </TouchableOpacity>
@@ -65,7 +88,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <TouchableOpacity
               style={styles.loginButton}
               activeOpacity={0.6}
-              onPress={onLogin}
+              onPress={handleLoginPress}
             >
               <Text style={styles.loginButtonText}>Iniciar sesión</Text>
             </TouchableOpacity>
