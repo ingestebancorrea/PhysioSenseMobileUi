@@ -8,17 +8,20 @@ import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 
-import { AuthStackNavigator } from '@/navigation/navigators/AuthStackNavigator';
+import { AuthProvider } from '@/context/AuthContext';
+import { RootNavigator } from '@/navigation/navigators/RootNavigator';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'light-content'} />
-      <NavigationContainer>
-        <AuthStackNavigator />
-      </NavigationContainer>
+      <AuthProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'light-content'} />
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
