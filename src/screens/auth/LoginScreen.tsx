@@ -1,6 +1,7 @@
 // src/screens/auth/LoginScreen.tsx
 import React, { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -14,17 +15,24 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useAuth } from '@/context/AuthContext';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [email, setEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
+  const { login } = useAuth();
+
   const handleLogin = () => {
-    // TODO: Conectar con la API de autenticación
+    const success = login(username, password);
+
+    if (!success) {
+      Alert.alert('Error', 'Usuario o contraseña incorrectos');
+    }
   };
 
   return (
@@ -56,17 +64,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Correo electrónico</Text>
+              <Text style={styles.label}>Usuario</Text>
               <TextInput
                 style={styles.input}
-                placeholder="correo@ejemplo.com"
+                placeholder="admin"
                 placeholderTextColor="#94A3B8"
-                keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
-                textContentType="emailAddress"
-                value={email}
-                onChangeText={(text: string) => setEmail(text)}
+                textContentType="username"
+                value={username}
+                onChangeText={(text: string) => setUsername(text)}
               />
             </View>
 
