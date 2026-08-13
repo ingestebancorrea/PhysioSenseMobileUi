@@ -26,7 +26,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({ metric }) => {
         <View style={[styles.iconContainer, { backgroundColor: tone.background }]}>
           <Icon size={22} color={tone.color} />
         </View>
-        <Text style={styles.title}>{metric.title}</Text>
+        <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>{metric.title}</Text>
       </View>
       <Text style={styles.value}>{metric.value}</Text>
       {metric.progress !== undefined && (
@@ -62,6 +62,8 @@ const styles = StyleSheet.create({
     fontSize: 19,
     color: COLORS.textSecondary,
     marginBottom: 4,
+    flex: 1,
+    flexShrink: 1,
   },
   value: {
     fontSize: 22,
