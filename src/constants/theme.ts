@@ -18,4 +18,15 @@ export const COLORS = {
   whiteOverlay: 'rgba(255, 255, 255, 0.25)',
 } as const;
 
+export const CARD = {
+  backgroundColor: COLORS.surface,
+  borderRadius: 16,
+  padding: 16,
+  shadowColor: COLORS.shadow,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 6,
+  elevation: 2,
+} as const;
+
 export type ColorToken = keyof typeof COLORS;

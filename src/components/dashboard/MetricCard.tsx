@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '@/constants/theme';
+import { CARD, COLORS } from '@/constants/theme';
 import { ICONS } from '@/constants/icons';
 import type { DashboardMetric, MetricTone } from '@/types/dashboard';
 
@@ -16,17 +16,19 @@ const TONES: Record<
   primary: { color: COLORS.primary, background: COLORS.primarySoft },
 };
 
-export const MetricCard: React.FC<MetricCardProps> = ({ metric }) => {
+export const MetricCard = memo(({ metric }: MetricCardProps) => {
   const Icon = ICONS[metric.icon];
   const tone = TONES[metric.tone];
 
   return (
     <View style={styles.card}>
-      <View style={styles.container }>
+      <View style={styles.container}>
         <View style={[styles.iconContainer, { backgroundColor: tone.background }]}>
           <Icon size={22} color={tone.color} />
         </View>
-        <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>{metric.title}</Text>
+        <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>
+          {metric.title}
+        </Text>
       </View>
       <Text style={styles.value}>{metric.value}</Text>
       {metric.progress !== undefined && (
@@ -36,19 +38,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({ metric }) => {
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {
-    width: '48%',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    ...CARD,
+    flexBasis: '48%',
+    flexGrow: 1,
   },
   iconContainer: {
     width: 40,
@@ -57,6 +53,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+  },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   title: {
     fontSize: 19,
@@ -84,10 +85,5 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 3,
     backgroundColor: COLORS.primary,
-  },
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
   },
 });

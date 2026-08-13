@@ -12,20 +12,25 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   link,
   onLinkPress,
-}) => (
-  <View style={styles.container}>
-    <Text style={styles.title}>{title}</Text>
-    {link !== undefined && (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onLinkPress}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Text style={styles.link}>{link}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-);
+}) => {
+  const isLinkEnabled = link !== undefined && onLinkPress !== undefined;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      {link !== undefined && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onLinkPress}
+          disabled={!isLinkEnabled}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={[styles.link, !isLinkEnabled && styles.linkDisabled]}>{link}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -44,5 +49,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  linkDisabled: {
+    opacity: 0.5,
   },
 });

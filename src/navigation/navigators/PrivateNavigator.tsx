@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
-import { ExercisesScreen } from '@/screens/private/ExercisesScreen';
+import { EjercicioListScreen } from '@/screens/private/EjercicioListScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { ProgressScreen } from '@/screens/private/ProgressScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
-  exercises: ExercisesScreen,
+  exercises: EjercicioListScreen,
   progress: ProgressScreen,
   profile: ProfileScreen,
 };

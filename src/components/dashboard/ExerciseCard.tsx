@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '@/constants/theme';
+import { CARD, COLORS } from '@/constants/theme';
 import { ICONS } from '@/constants/icons';
 import type { SessionExercise } from '@/types/dashboard';
 
@@ -9,15 +9,12 @@ interface ExerciseCardProps {
   onPress?: () => void;
 }
 
-export const ExerciseCard: React.FC<ExerciseCardProps> = ({
-  exercise,
-  onPress,
-}) => {
+export const ExerciseCard = memo(({ exercise, onPress }: ExerciseCardProps) => {
   const Icon = ICONS[exercise.icon];
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card]}
       activeOpacity={0.8}
       onPress={onPress}
     >
@@ -25,26 +22,22 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         <Icon size={26} color={COLORS.primary} />
       </View>
       <View style={styles.info}>
-        <Text style={styles.name}>{exercise.name}</Text>
-        <Text style={styles.detail}>{exercise.detail}</Text>
+        <Text style={styles.name} numberOfLines={1}>{exercise.name}</Text>
+        <Text style={styles.detail} numberOfLines={2}>{exercise.detail}</Text>
       </View>
       <Text style={styles.progress}>{`${exercise.progress}%`}</Text>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {
+    ...CARD,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+  },
+  cardDisabled: {
+    opacity: 0.6,
   },
   iconContainer: {
     width: 52,
@@ -59,7 +52,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   name: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
