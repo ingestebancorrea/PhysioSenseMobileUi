@@ -31,7 +31,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       onStart();
       return;
     }
-    navigation.navigate('Register');
+    navigation.navigate('RegisterFlow');
   };
 
   const handleLoginPress = () => {

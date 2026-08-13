@@ -155,7 +155,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <Text style={styles.footerText}>¿No tienes cuenta? </Text>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('Register')}
+              onPress={() => navigation.navigate('RegisterFlow')}
             >
               <Text style={styles.registerText}>Regístrate</Text>
             </TouchableOpacity>
