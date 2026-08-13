@@ -8,6 +8,7 @@ import React, {
 interface AuthContextValue {
   isAuthenticated: boolean;
   login: (user: string, password: string) => boolean;
+  registerAccount: () => void;
   logout: () => void;
 }
 
@@ -36,6 +37,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         return valid;
+      },
+      registerAccount: () => {
+        setIsAuthenticated(true);
       },
       logout: () => {
         setIsAuthenticated(false);
