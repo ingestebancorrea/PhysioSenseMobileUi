@@ -16,6 +16,7 @@
     "lucide-react-native": "^1.28.0",
     "react": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-gifted-charts": "^1.4.78",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.27.0",
