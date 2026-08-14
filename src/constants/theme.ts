@@ -7,7 +7,7 @@ export const COLORS = {
   warning: '#F5A623',
   background: '#FFFFFF',
   surface: '#FFFFFF',
-  white: '#ca3a3a',
+  white: '#FFFFFF',
   textPrimary: '#333333',
   textSecondary: '#666666',
   textMuted: '#8E8E93',
