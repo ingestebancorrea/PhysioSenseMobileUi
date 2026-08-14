@@ -4,4 +4,8 @@ export type ExerciseFlowParamList = {
   AbrirMano: undefined;
   Pinza: undefined;
   OposicionPulgar: undefined;
+  CerrarManoGuide: undefined;
+  AbrirManoGuide: undefined;
+  PinzaGuide: undefined;
+  OposicionPulgarGuide: undefined;
 };

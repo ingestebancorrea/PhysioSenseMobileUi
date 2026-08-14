@@ -4,9 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 import { EjercicioListScreen } from '@/screens/private/EjercicioListScreen';
 import { AbrirManoScreen } from '@/screens/exercise/AbrirManoScreen';
+import { AbrirManoGuideScreen } from '@/screens/exercise-guide/AbrirManoGuideScreen';
 import { CerrarManoScreen } from '@/screens/exercise/CerrarManoScreen';
+import { CerrarManoGuideScreen } from '@/screens/exercise-guide/CerrarManoGuideScreen';
 import { OposicionPulgarScreen } from '@/screens/exercise/OposicionPulgarScreen';
+import { OposicionPulgarGuideScreen } from '@/screens/exercise-guide/OposicionPulgarGuideScreen';
 import { PinzaScreen } from '@/screens/exercise/PinzaScreen';
+import { PinzaGuideScreen } from '@/screens/exercise-guide/PinzaGuideScreen';
 
 const Stack = createNativeStackNavigator<ExerciseFlowParamList>();
 
@@ -20,5 +24,9 @@ export const ExerciseFlowNavigator: React.FC = () => (
     <Stack.Screen name="AbrirMano" component={AbrirManoScreen} />
     <Stack.Screen name="Pinza" component={PinzaScreen} />
     <Stack.Screen name="OposicionPulgar" component={OposicionPulgarScreen} />
+    <Stack.Screen name="CerrarManoGuide" component={CerrarManoGuideScreen} />
+    <Stack.Screen name="AbrirManoGuide" component={AbrirManoGuideScreen} />
+    <Stack.Screen name="PinzaGuide" component={PinzaGuideScreen} />
+    <Stack.Screen name="OposicionPulgarGuide" component={OposicionPulgarGuideScreen} />
   </Stack.Navigator>
 );
