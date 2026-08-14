@@ -26,7 +26,7 @@ export const CARD = {
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.05,
   shadowRadius: 6,
-  elevation: 2,
+  elevation: 1,
 } as const;
 
 export type ColorToken = keyof typeof COLORS;
