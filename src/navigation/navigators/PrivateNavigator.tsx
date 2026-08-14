@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBarContext';
+import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
-import { EjercicioListScreen } from '@/screens/private/EjercicioListScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { ProgressScreen } from '@/screens/private/ProgressScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
-  exercises: EjercicioListScreen,
+  exercises: ExerciseFlowNavigator,
   progress: ProgressScreen,
   profile: ProfileScreen,
 };
 
-export const PrivateNavigator: React.FC = () => {
+const PrivateNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const { isHidden } = usePrivateTabBar();
 
   const ActiveScreen = SCREENS[activeTab];
 
@@ -24,10 +26,18 @@ export const PrivateNavigator: React.FC = () => {
       <View style={styles.content}>
         <ActiveScreen />
       </View>
-      <PrivateNavigation activeTab={activeTab} onTabPress={setActiveTab} />
+      {!isHidden && (
+        <PrivateNavigation activeTab={activeTab} onTabPress={setActiveTab} />
+      )}
     </View>
   );
 };
+
+export const PrivateNavigator: React.FC = () => (
+  <PrivateTabBarProvider>
+    <PrivateNavigatorContent />
+  </PrivateTabBarProvider>
+);
 
 const styles = StyleSheet.create({
   container: {

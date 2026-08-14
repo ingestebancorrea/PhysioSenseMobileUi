@@ -7,15 +7,18 @@ export const COLORS = {
   warning: '#F5A623',
   background: '#FFFFFF',
   surface: '#FFFFFF',
+  cardBackground: '#FFFFFF',
   white: '#FFFFFF',
   textPrimary: '#333333',
   textSecondary: '#666666',
   textMuted: '#8E8E93',
   border: '#E2E8F0',
+  divider: '#EFEFEF',
   progressTrack: '#EEEEF3',
   shadow: '#000000',
   whiteSoft: 'rgba(255, 255, 255, 0.8)',
   whiteOverlay: 'rgba(255, 255, 255, 0.25)',
+  blackOverlay: 'rgba(0, 0, 0, 0.6)',
 } as const;
 
 export const CARD = {

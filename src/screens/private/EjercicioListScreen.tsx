@@ -1,20 +1,32 @@
 import React, { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { COLORS } from '@/constants/theme';
 import { EXERCISES } from '@/mock/exerciseData';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { CategoryTabs } from '@/components/exercises/CategoryTabs';
 import { ExerciseCard } from '@/components/exercises/ExerciseCard';
+import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 import type { ExerciseCategory, ExerciseListItem } from '@/types/exercise';
 
-const renderExerciseItem = ({ item }: { item: ExerciseListItem }) => (
-  <ExerciseCard exercise={item} />
-);
+type EjercicioListScreenProps = NativeStackScreenProps<
+  ExerciseFlowParamList,
+  'ExerciseList'
+>;
+
+const EXERCISE_ROUTES: Record<string, keyof ExerciseFlowParamList> = {
+  exercise_01: 'CerrarMano',
+  exercise_02: 'AbrirMano',
+  exercise_03: 'Pinza',
+  exercise_04: 'OposicionPulgar',
+};
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
-export const EjercicioListScreen: React.FC = () => {
+export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
+  navigation,
+}) => {
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory>('Todos');
 
   const filteredExercises = useMemo(
@@ -23,6 +35,18 @@ export const EjercicioListScreen: React.FC = () => {
         ? EXERCISES
         : EXERCISES.filter(item => item.category === selectedCategory),
     [selectedCategory],
+  );
+
+  const renderExerciseItem = ({ item }: { item: ExerciseListItem }) => (
+    <ExerciseCard
+      exercise={item}
+      onPress={() => {
+        const route = EXERCISE_ROUTES[item.id];
+        if (route) {
+          navigation.navigate(route);
+        }
+      }}
+    />
   );
 
   return (
