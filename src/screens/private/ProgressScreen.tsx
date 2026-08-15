@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { SectionHeader } from '@/components/dashboard/SectionHeader';
 import { COLORS } from '@/constants/theme';
 import { CompletedSessionsChartCard } from '@/components/progress/CompletedSessionsChartCard';
 import { DateRangeHeader } from '@/components/progress/DateRangeHeader';
@@ -9,9 +11,17 @@ import { PeriodSelectorTabs } from '@/components/progress/PeriodSelectorTabs';
 import { ProgressMetricCard } from '@/components/progress/ProgressMetricCard';
 import { RangeMotionChartCard } from '@/components/progress/RangeMotionChartCard';
 import { MOCK_PROGRESS_DATA } from '@/mock/progressData';
+import type { ProgressFlowParamList } from '@/navigation/types/progressFlowParams';
 import type { ProgressPeriod } from '@/types/progress';
 
-export const ProgressScreen: React.FC = () => {
+type ProgressScreenProps = NativeStackScreenProps<
+  ProgressFlowParamList,
+  'ProgressMain'
+>;
+
+export const ProgressScreen: React.FC<ProgressScreenProps> = ({
+  navigation,
+}) => {
   const { dateRange, motionPoints, metrics, completedSessions } =
     MOCK_PROGRESS_DATA;
   const [selectedPeriod, setSelectedPeriod] = useState<ProgressPeriod>(
@@ -44,6 +54,11 @@ export const ProgressScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
+          <SectionHeader
+            title="Sesiones completadas"
+            link="Ver historial"
+            onLinkPress={() => navigation.navigate('SessionHistory')}
+          />
           <CompletedSessionsChartCard sessions={completedSessions} />
         </View>
       </ScrollView>

@@ -3,15 +3,15 @@ import { StyleSheet, View } from 'react-native';
 
 import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBarContext';
 import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
+import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
-import { ProgressScreen } from '@/screens/private/ProgressScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
   exercises: ExerciseFlowNavigator,
-  progress: ProgressScreen,
+  progress: ProgressFlowNavigator,
   profile: ProfileScreen,
 };
 
