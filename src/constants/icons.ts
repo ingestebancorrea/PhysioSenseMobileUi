@@ -1,26 +1,38 @@
 import {
   Activity,
+  Bluetooth,
   ChartColumnBig,
+  Check,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
   Clock,
   Hand,
   House,
+  Play,
+  Repeat,
   User,
+  Wifi,
+  X,
   type LucideIcon,
 } from 'lucide-react-native';
 
 export const ICONS = {
   activity: Activity,
+  bluetooth: Bluetooth,
   chart: ChartColumnBig,
+  check: Check,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   circleCheck: CircleCheck,
   clock: Clock,
   hand: Hand,
   house: House,
+  play: Play,
+  repeat: Repeat,
   user: User,
+  wifi: Wifi,
+  x: X,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
