@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { DrawerMenu } from '@/components/drawer/DrawerMenu';
+import { DrawerProvider } from '@/context/DrawerContext';
 import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBarContext';
 import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
 import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
@@ -11,31 +13,79 @@ import { ProfileScreen } from '@/screens/private/ProfileScreen';
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
   exercises: ExerciseFlowNavigator,
-  progress: ProgressFlowNavigator,
   profile: ProfileScreen,
 };
 
+type ProgressRoute = 'ProgressMain' | 'SessionHistory';
+
 const PrivateNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [progressRoute, setProgressRoute] = useState<ProgressRoute>(
+    'ProgressMain',
+  );
   const { isHidden } = usePrivateTabBar();
 
-  const ActiveScreen = SCREENS[activeTab];
+  const handleTabPress = (tab: string) => {
+    if (tab === 'progress') {
+      setProgressRoute('ProgressMain');
+    }
+    setActiveTab(tab);
+  };
+
+  const handleDrawerSelect = (key: string) => {
+    switch (key) {
+      case 'home':
+        setActiveTab('home');
+        break;
+      case 'exercises':
+        setActiveTab('exercises');
+        break;
+      case 'progress':
+        setProgressRoute('ProgressMain');
+        setActiveTab('progress');
+        break;
+      case 'history':
+        setProgressRoute('SessionHistory');
+        setActiveTab('progress');
+        break;
+      case 'profile':
+        setActiveTab('profile');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderActiveScreen = () => {
+    if (activeTab === 'progress') {
+      return (
+        <ProgressFlowNavigator
+          key={progressRoute}
+          initialRouteName={progressRoute}
+        />
+      );
+    }
+
+    const Screen = SCREENS[activeTab];
+    return <Screen />;
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <ActiveScreen />
-      </View>
+      <View style={styles.content}>{renderActiveScreen()}</View>
       {!isHidden && (
-        <PrivateNavigation activeTab={activeTab} onTabPress={setActiveTab} />
+        <PrivateNavigation activeTab={activeTab} onTabPress={handleTabPress} />
       )}
+      <DrawerMenu activeItem={activeTab} onSelect={handleDrawerSelect} />
     </View>
   );
 };
 
 export const PrivateNavigator: React.FC = () => (
   <PrivateTabBarProvider>
-    <PrivateNavigatorContent />
+    <DrawerProvider>
+      <PrivateNavigatorContent />
+    </DrawerProvider>
   </PrivateTabBarProvider>
 );
 
