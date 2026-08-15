@@ -1,19 +1,12 @@
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '@/constants/theme';
+import { getInitials } from '@/utils/helpers/nameInitials';
 import type { PatientProfile } from '@/types/patient';
 
 interface UserCardProps {
   profile: Pick<PatientProfile, 'name' | 'email' | 'avatarUrl'>;
 }
-
-const getInitials = (name: string): string =>
-  name
-    .split(' ')
-    .map(part => part.charAt(0))
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 
 export const UserCard: React.FC<UserCardProps> = ({ profile }) => {
   const { name, email, avatarUrl } = profile;

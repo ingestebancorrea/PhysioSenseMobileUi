@@ -1,10 +1,11 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings } from 'lucide-react-native';
+import { Settings, Menu } from 'lucide-react-native';
 
 import { COLORS } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useDrawer } from '@/context/DrawerContext';
 import { InfoRow } from '@/components/profile/InfoRow';
 import { ProfileSectionCard } from '@/components/profile/ProfileSectionCard';
 import { UserCard } from '@/components/profile/UserCard';
@@ -12,6 +13,7 @@ import { PATIENT_PROFILE } from '@/mock/patientProfileData';
 
 export const ProfileScreen: React.FC = () => {
   const { logout } = useAuth();
+  const { open } = useDrawer();
   const { birthDate, dominantHand, diagnosis, assignedTherapist } =
     PATIENT_PROFILE;
 
@@ -22,6 +24,15 @@ export const ProfileScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            activeOpacity={0.8}
+            onPress={open}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir menú"
+          >
+            <Menu size={24} color={COLORS.textPrimary} />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Perfil</Text>
           <TouchableOpacity style={styles.headerButton} activeOpacity={0.8}>
             <Settings size={24} color={COLORS.textPrimary} />
@@ -72,16 +83,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     paddingVertical: 12,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.textPrimary,
-    position: 'absolute',
-    left: 0,
-    right: 0,
     textAlign: 'center',
   },
   headerButton: {

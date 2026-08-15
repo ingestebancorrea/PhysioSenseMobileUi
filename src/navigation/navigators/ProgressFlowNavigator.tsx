@@ -8,9 +8,15 @@ import { SessionHistoryScreen } from '@/screens/private/SessionHistoryScreen';
 
 const Stack = createNativeStackNavigator<ProgressFlowParamList>();
 
-export const ProgressFlowNavigator: React.FC = () => (
+interface ProgressFlowNavigatorProps {
+  initialRouteName?: keyof ProgressFlowParamList;
+}
+
+export const ProgressFlowNavigator: React.FC<ProgressFlowNavigatorProps> = ({
+  initialRouteName = 'ProgressMain',
+}) => (
   <Stack.Navigator
-    initialRouteName="ProgressMain"
+    initialRouteName={initialRouteName}
     screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
   >
     <Stack.Screen name="ProgressMain" component={ProgressScreen} />

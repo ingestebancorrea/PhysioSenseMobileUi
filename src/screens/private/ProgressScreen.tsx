@@ -11,6 +11,7 @@ import { PeriodSelectorTabs } from '@/components/progress/PeriodSelectorTabs';
 import { ProgressMetricCard } from '@/components/progress/ProgressMetricCard';
 import { RangeMotionChartCard } from '@/components/progress/RangeMotionChartCard';
 import { MOCK_PROGRESS_DATA } from '@/mock/progressData';
+import { useDrawer } from '@/context/DrawerContext';
 import type { ProgressFlowParamList } from '@/navigation/types/progressFlowParams';
 import type { ProgressPeriod } from '@/types/progress';
 
@@ -27,6 +28,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState<ProgressPeriod>(
     MOCK_PROGRESS_DATA.activePeriod,
   );
+  const { open } = useDrawer();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -34,7 +36,7 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <DashboardHeader title="Progreso" />
+        <DashboardHeader title="Progreso" onMenuPress={open} />
 
         <PeriodSelectorTabs
           selected={selectedPeriod}
