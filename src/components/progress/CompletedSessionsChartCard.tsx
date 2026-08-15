@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { CARD, COLORS } from '@/constants/theme';
 import type { CompletedSessionPoint } from '@/types/progress';
@@ -37,7 +37,6 @@ export const CompletedSessionsChartCard: React.FC<
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Sesiones completadas</Text>
       <BarChart
         data={data}
         width={chartWidth}
@@ -65,12 +64,6 @@ export const CompletedSessionsChartCard: React.FC<
 const styles = StyleSheet.create({
   card: {
     ...CARD,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: 16,
   },
   axisText: {
     fontSize: 11,
