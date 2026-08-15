@@ -8,4 +8,9 @@ export type ExerciseFlowParamList = {
   AbrirManoGuide: undefined;
   PinzaGuide: undefined;
   OposicionPulgarGuide: undefined;
+  Preparation: { exerciseId: string };
+  CerrarManoCountdown: undefined;
+  AbrirManoCountdown: undefined;
+  PinzaCountdown: undefined;
+  OposicionPulgarCountdown: undefined;
 };

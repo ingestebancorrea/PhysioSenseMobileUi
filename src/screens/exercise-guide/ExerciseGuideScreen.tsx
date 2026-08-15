@@ -50,7 +50,14 @@ export const ExerciseGuideScreen: React.FC<ExerciseGuideScreenProps> = ({
         >
           <ChevronLeftIcon size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Cómo realizarlo</Text>
+        <Text
+          style={styles.headerTitle}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+        >
+          Cómo realizarlo
+        </Text>
       </View>
 
       <ScrollView
@@ -86,13 +93,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
   backButton: {
-    position: 'absolute',
-    left: 20,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -101,6 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.progressTrack,
   },
   headerTitle: {
+    flex: 1,
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.textPrimary,

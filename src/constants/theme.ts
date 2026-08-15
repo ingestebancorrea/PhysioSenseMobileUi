@@ -5,6 +5,8 @@ export const COLORS = {
   success: '#2ECC71',
   successSoft: '#E8F8F0',
   warning: '#F5A623',
+  danger: '#E5484D',
+  dangerSoft: '#FDEBEC',
   background: '#FFFFFF',
   surface: '#FFFFFF',
   cardBackground: '#FFFFFF',

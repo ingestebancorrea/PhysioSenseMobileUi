@@ -43,7 +43,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
       onPress={() => {
         const route = EXERCISE_ROUTES[item.id];
         if (route) {
-          navigation.navigate(route);
+          navigation.navigate(route as never);
         }
       }}
     />

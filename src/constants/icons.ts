@@ -1,5 +1,6 @@
 import {
   Activity,
+  Bluetooth,
   ChartColumnBig,
   Check,
   ChevronLeft,
@@ -11,11 +12,14 @@ import {
   Play,
   Repeat,
   User,
+  Wifi,
+  X,
   type LucideIcon,
 } from 'lucide-react-native';
 
 export const ICONS = {
   activity: Activity,
+  bluetooth: Bluetooth,
   chart: ChartColumnBig,
   check: Check,
   chevronLeft: ChevronLeft,
@@ -27,6 +31,8 @@ export const ICONS = {
   play: Play,
   repeat: Repeat,
   user: User,
+  wifi: Wifi,
+  x: X,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
