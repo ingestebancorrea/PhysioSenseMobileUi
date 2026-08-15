@@ -1,17 +1,4 @@
-import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 import type { GloveConnectionState } from '@/types/preparation';
-
-export type CountdownRoute = Extract<
-  keyof ExerciseFlowParamList,
-  `${string}Countdown`
->;
-
-export const COUNTDOWN_ROUTES: Record<string, CountdownRoute> = {
-  exercise_01: 'CerrarManoCountdown',
-  exercise_02: 'AbrirManoCountdown',
-  exercise_03: 'PinzaCountdown',
-  exercise_04: 'OposicionPulgarCountdown',
-};
 
 export const TITLES: Record<GloveConnectionState, string> = {
   connected: 'Guante conectado',

@@ -20,7 +20,6 @@ import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParam
 import type { GloveConnectionState } from '@/types/preparation';
 import {
   BUTTON_LABELS,
-  COUNTDOWN_ROUTES,
   DESCRIPTIONS,
   METRICS,
   TITLES,
@@ -66,9 +65,8 @@ export const PreparationScreen: React.FC<PreparationScreenProps> = ({
       return;
     }
 
-    const nextRoute = COUNTDOWN_ROUTES[currentExerciseId];
-    if (nextRoute) {
-      navigation.navigate(nextRoute as never);
+    if (currentExerciseId) {
+      navigation.navigate('Countdown', { exerciseId: currentExerciseId });
     } else {
       navigation.goBack();
     }
