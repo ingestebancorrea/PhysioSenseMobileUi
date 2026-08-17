@@ -8,6 +8,7 @@ import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBar
 import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
 import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
+import { DevicesScreen } from '@/screens/private/DevicesScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { NotificationsScreen } from '@/screens/private/NotificationsScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
@@ -15,6 +16,7 @@ import { ProfileScreen } from '@/screens/private/ProfileScreen';
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
   exercises: ExerciseFlowNavigator,
+  devices: DevicesScreen,
   profile: ProfileScreen,
 };
 
@@ -48,6 +50,9 @@ const PrivateNavigatorContent: React.FC = () => {
         break;
       case 'exercises':
         setActiveTab('exercises');
+        break;
+      case 'devices':
+        setActiveTab('devices');
         break;
       case 'progress':
         setProgressRoute('ProgressMain');
