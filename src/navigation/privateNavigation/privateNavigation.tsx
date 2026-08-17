@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  Activity,
   ChartColumnBig,
   Hand,
   House,
@@ -25,7 +24,6 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { key: 'home', label: 'Inicio', icon: House },
   { key: 'exercises', label: 'Ejercicios', icon: Hand },
-  { key: 'devices', label: 'Dispositivos', icon: Activity },
   { key: 'progress', label: 'Progreso', icon: ChartColumnBig },
   { key: 'profile', label: 'Perfil', icon: User },
 ];
