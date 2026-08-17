@@ -3,11 +3,13 @@ import { StyleSheet, View } from 'react-native';
 
 import { DrawerMenu } from '@/components/drawer/DrawerMenu';
 import { DrawerProvider } from '@/context/DrawerContext';
+import { PrivateNavigationProvider } from '@/context/PrivateNavigationContext';
 import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBarContext';
 import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
 import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
 import { HomeScreen } from '@/screens/private/HomeScreen';
+import { NotificationsScreen } from '@/screens/private/NotificationsScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
@@ -32,6 +34,13 @@ const PrivateNavigatorContent: React.FC = () => {
     setActiveTab(tab);
   };
 
+  const handleNavigate = (tab: string) => {
+    if (tab === 'progress') {
+      setProgressRoute('ProgressMain');
+    }
+    setActiveTab(tab);
+  };
+
   const handleDrawerSelect = (key: string) => {
     switch (key) {
       case 'home':
@@ -47,6 +56,9 @@ const PrivateNavigatorContent: React.FC = () => {
       case 'history':
         setProgressRoute('SessionHistory');
         setActiveTab('progress');
+        break;
+      case 'notifications':
+        setActiveTab('notifications');
         break;
       case 'profile':
         setActiveTab('profile');
@@ -66,13 +78,19 @@ const PrivateNavigatorContent: React.FC = () => {
       );
     }
 
+    if (activeTab === 'notifications') {
+      return <NotificationsScreen onBack={() => setActiveTab('home')} />;
+    }
+
     const Screen = SCREENS[activeTab];
     return <Screen />;
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>{renderActiveScreen()}</View>
+      <PrivateNavigationProvider onNavigate={handleNavigate}>
+        <View style={styles.content}>{renderActiveScreen()}</View>
+      </PrivateNavigationProvider>
       {!isHidden && (
         <PrivateNavigation activeTab={activeTab} onTabPress={handleTabPress} />
       )}

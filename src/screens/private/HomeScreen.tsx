@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { DASHBOARD_DATA } from '@/mock/dashboardData';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ExerciseCard } from '@/components/dashboard/ExerciseCard';
@@ -14,6 +15,7 @@ import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner';
 export const HomeScreen: React.FC = () => {
   const { user, summary, lastSession } = DASHBOARD_DATA;
   const { open } = useDrawer();
+  const navigate = useNavigate();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -21,7 +23,11 @@ export const HomeScreen: React.FC = () => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <DashboardHeader title="Dashboard" onMenuPress={open} />
+        <DashboardHeader
+          title="Dashboard"
+          onMenuPress={open}
+          onNotificationsPress={() => navigate('notifications')}
+        />
 
         <WelcomeBanner firstName={user.firstName} />
 
