@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { EXERCISES } from '@/mock/exerciseData';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { CategoryTabs } from '@/components/exercises/CategoryTabs';
@@ -30,6 +31,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory>('Todos');
   const { open } = useDrawer();
+  const navigate = useNavigate();
 
   const filteredExercises = useMemo(
     () =>
@@ -55,7 +57,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <DashboardHeader title="Ejercicios" onMenuPress={open} />
+          <DashboardHeader title="Ejercicios" onMenuPress={open} onNotificationsPress={() => navigate('notifications')} />
         </View>
         <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
         <FlatList
