@@ -158,10 +158,10 @@ export const AnimatedHandTimer: React.FC<AnimatedHandTimerProps> = ({
               />
             </View>
           </View>
-
           <Text style={[styles.bottomText, secondsLeft === 0 && styles.textYa]}>
             {secondsLeft === 0 ? '¡Ya!' : 'Prepárate'}
           </Text>
+
         </View>
       </View>
     </View>
@@ -210,13 +210,13 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   bottomText: {
-    fontSize: 14,
+    fontSize: 24,
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
   textYa: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
-    color: COLORS.success,
+    color: COLORS.primaryDark,
   },
 });
