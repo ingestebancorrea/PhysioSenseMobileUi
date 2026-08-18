@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.cardSoft,
     borderRadius: 16,
-    padding: 16,
+    padding: 26,
   },
   iconContainer: {
     width: 44,
