@@ -22,6 +22,17 @@ export const COLORS = {
   whiteSoft: 'rgba(255, 255, 255, 0.8)',
   whiteOverlay: 'rgba(255, 255, 255, 0.25)',
   blackOverlay: 'rgba(0, 0, 0, 0.6)',
+  violet: '#4F46E5',
+  violetSoft: '#F5F3FF',
+  backgroundMuted: '#FAFAFC',
+  borderSubtle: '#F1F5F9',
+  textSubtitle: '#64748B',
+  blue: '#2563EB',
+  blueSoft: '#DBEAFE',
+  skyBlue: '#0284C7',
+  skyBlueSoft: '#E0F2FE',
+  warningAmber: '#F59E0B',
+  warningAmberSoft: '#FEF9C3',
 } as const;
 
 export const CARD = {

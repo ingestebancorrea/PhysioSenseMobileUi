@@ -1,7 +1,9 @@
 // src/context/RegistrationContext.tsx
 import React, { createContext, useContext, useMemo, useState } from 'react';
 
-export type UserRole = 'fisioterapeuta' | 'paciente' | null;
+import type { UserAccountRole } from '@/types/auth';
+
+export type UserRole = UserAccountRole | null;
 
 export interface RegistrationData {
   role: UserRole;

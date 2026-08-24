@@ -5,17 +5,29 @@ import React, {
   useState,
 } from 'react';
 
+import type {
+  MockAccount,
+  UserAccountRole,
+} from '@/types/auth';
+
+const MOCK_ACCOUNTS: Record<UserAccountRole, MockAccount> = {
+  fisioterapeuta: {
+    user: 'fisioterapeuta',
+    password: 'fisio123',
+  },
+  paciente: {
+    user: 'paciente',
+    password: 'paciente123',
+  },
+};
+
 interface AuthContextValue {
   isAuthenticated: boolean;
+  role: UserAccountRole | null;
   login: (user: string, password: string) => boolean;
-  registerAccount: () => void;
+  registerAccount: (role?: UserAccountRole) => void;
   logout: () => void;
 }
-
-const MOCK_CREDENTIALS = {
-  user: 'admin',
-  password: '123',
-};
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -23,29 +35,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState<UserAccountRole | null>(null);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       isAuthenticated,
+      role,
       login: (user: string, password: string): boolean => {
-        const valid =
-          user === MOCK_CREDENTIALS.user &&
-          password === MOCK_CREDENTIALS.password;
+        const accounts = Object.entries(MOCK_ACCOUNTS) as [
+          UserAccountRole,
+          MockAccount,
+        ][];
+        const matched = accounts.find(
+          ([, account]) =>
+            account.user === user && account.password === password,
+        );
 
-        if (valid) {
-          setIsAuthenticated(true);
+        if (!matched) {
+          return false;
         }
 
-        return valid;
+        setRole(matched[0]);
+        setIsAuthenticated(true);
+
+        return true;
       },
-      registerAccount: () => {
+      registerAccount: (registeredRole: UserAccountRole = 'paciente') => {
+        setRole(registeredRole);
         setIsAuthenticated(true);
       },
       logout: () => {
         setIsAuthenticated(false);
+        setRole(null);
       },
     }),
-    [isAuthenticated],
+    [isAuthenticated, role],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

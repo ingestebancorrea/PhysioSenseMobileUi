@@ -77,7 +77,7 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = () => {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={registerAccount}
+            onPress={() => registerAccount(data.role ?? 'paciente')}
           >
             <Text style={styles.primaryButtonText}>
               {isTherapist ? 'Ir al dashboard' : 'Ir a mi recuperación'}
@@ -87,7 +87,7 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = () => {
           <TouchableOpacity
             style={styles.outlineButton}
             activeOpacity={0.8}
-            onPress={registerAccount}
+            onPress={() => registerAccount(data.role ?? 'paciente')}
           >
             <Text style={styles.outlineButtonText}>
               Completar perfil después

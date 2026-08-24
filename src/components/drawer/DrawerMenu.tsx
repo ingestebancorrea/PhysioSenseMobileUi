@@ -15,6 +15,7 @@ import { COLORS } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useDrawer } from '@/context/DrawerContext';
 import { PATIENT_PROFILE } from '@/mock/patientProfileData';
+import { THERAPIST_DASHBOARD_DATA } from '@/mock/therapistDashboardData';
 import { getInitials } from '@/utils/helpers/nameInitials';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -25,13 +26,21 @@ interface DrawerItem {
   icon: IconName;
 }
 
-const MAIN_ITEMS: DrawerItem[] = [
+const PATIENT_MAIN_ITEMS: DrawerItem[] = [
   { key: 'home', label: 'Inicio', icon: 'home-outline' },
   { key: 'exercises', label: 'Ejercicios', icon: 'hand-pointing-up' },
   { key: 'progress', label: 'Mi progreso', icon: 'chart-bar' },
   { key: 'history', label: 'Historial', icon: 'calendar' },
   { key: 'devices', label: 'Dispositivos', icon: 'watch' },
   { key: 'profile', label: 'Perfil', icon: 'account-outline' },
+];
+
+const THERAPIST_MAIN_ITEMS: DrawerItem[] = [
+  { key: 'inicio', label: 'Inicio', icon: 'view-dashboard-outline' },
+  { key: 'pacientes', label: 'Pacientes', icon: 'account-group-outline' },
+  { key: 'sesiones', label: 'Sesiones', icon: 'calendar-check' },
+  { key: 'ejercicios', label: 'Ejercicios', icon: 'dumbbell' },
+  { key: 'mas', label: 'Más', icon: 'dots-horizontal' },
 ];
 
 const SECONDARY_ITEMS: DrawerItem[] = [
@@ -53,10 +62,16 @@ export const DrawerMenu: React.FC<DrawerMenuProps> = ({
   onSelect,
 }) => {
   const { isOpen, close } = useDrawer();
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
 
-  const { name: userName, avatarUrl } = PATIENT_PROFILE;
+  const isTherapist = role === 'fisioterapeuta';
+  const mainItems = isTherapist ? THERAPIST_MAIN_ITEMS : PATIENT_MAIN_ITEMS;
+  const userName = isTherapist
+    ? THERAPIST_DASHBOARD_DATA.therapist.name
+    : PATIENT_PROFILE.name;
+  const avatarUrl = isTherapist ? null : PATIENT_PROFILE.avatarUrl;
+  const roleBadgeLabel = isTherapist ? 'Fisioterapeuta' : 'Paciente';
 
   const drawerWidth = Math.min(
     screenWidth * DRAWER_WIDTH_RATIO,
@@ -131,7 +146,7 @@ export const DrawerMenu: React.FC<DrawerMenuProps> = ({
           <View style={styles.headerInfo}>
             <Text style={styles.userName}>{userName}</Text>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>Paciente</Text>
+              <Text style={styles.badgeText}>{roleBadgeLabel}</Text>
             </View>
           </View>
           <TouchableOpacity
@@ -153,7 +168,7 @@ export const DrawerMenu: React.FC<DrawerMenuProps> = ({
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         >
-          {MAIN_ITEMS.map(item => {
+          {mainItems.map(item => {
             const isActive = item.key === activeItem;
 
             return (
