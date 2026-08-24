@@ -67,7 +67,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               <Text style={styles.label}>Usuario</Text>
               <TextInput
                 style={styles.input}
-                placeholder="admin"
+                placeholder="paciente / fisioterapeuta"
                 placeholderTextColor="#94A3B8"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -149,6 +149,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               />
               <Text style={styles.socialButtonText}>Facebook</Text>
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.demoBox}>
+            <Text style={styles.demoTitle}>Cuentas de prueba</Text>
+            <Text style={styles.demoItem}>Fisioterapeuta: fisioterapeuta / fisio123</Text>
+            <Text style={styles.demoItem}>Paciente: paciente / paciente123</Text>
           </View>
 
           <View style={styles.footer}>
@@ -332,6 +338,27 @@ const styles = StyleSheet.create({
   socialIcon: {
     fontSize: 20,
     lineHeight: 20,
+  },
+  demoBox: {
+    marginTop: 18,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F1EFFD',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  demoTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5B46E8',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  demoItem: {
+    fontSize: 13,
+    color: '#2D3142',
+    marginTop: 2,
   },
   footer: {
     flexDirection: 'row',

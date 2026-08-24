@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useAuth } from '@/context/AuthContext';
 import { DrawerMenu } from '@/components/drawer/DrawerMenu';
 import { DrawerProvider } from '@/context/DrawerContext';
 import { PrivateNavigationProvider } from '@/context/PrivateNavigationContext';
 import { PrivateTabBarProvider, usePrivateTabBar } from '@/context/PrivateTabBarContext';
+import { HomeTabBar } from '@/components/dashboard/HomeTabBar';
 import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavigator';
 import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
 import { DevicesScreen } from '@/screens/private/DevicesScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { NotificationsScreen } from '@/screens/private/NotificationsScreen';
+import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
+import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -22,7 +26,7 @@ const SCREENS: Record<string, React.ComponentType> = {
 
 type ProgressRoute = 'ProgressMain' | 'SessionHistory';
 
-const PrivateNavigatorContent: React.FC = () => {
+const PatientNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [progressRoute, setProgressRoute] = useState<ProgressRoute>(
     'ProgressMain',
@@ -104,13 +108,62 @@ const PrivateNavigatorContent: React.FC = () => {
   );
 };
 
-export const PrivateNavigator: React.FC = () => (
-  <PrivateTabBarProvider>
-    <DrawerProvider>
-      <PrivateNavigatorContent />
-    </DrawerProvider>
-  </PrivateTabBarProvider>
-);
+const THERAPIST_TAB_TITLES: Record<string, string> = {
+  pacientes: 'Pacientes',
+  sesiones: 'Sesiones',
+  ejercicios: 'Ejercicios',
+  mas: 'Más',
+};
+
+const TherapistNavigatorContent: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('inicio');
+
+  const handleDrawerSelect = (key: string) => {
+    if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios' || key === 'mas') {
+      setActiveTab(key);
+    }
+  };
+
+  const renderActiveScreen = () => {
+    if (activeTab === 'inicio') {
+      return <TherapistHomeScreen />;
+    }
+
+    return (
+      <PlaceholderScreen
+        title={THERAPIST_TAB_TITLES[activeTab] ?? 'FisioSense'}
+      />
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>{renderActiveScreen()}</View>
+      <HomeTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <DrawerMenu activeItem={activeTab} onSelect={handleDrawerSelect} />
+    </View>
+  );
+};
+
+export const PrivateNavigator: React.FC = () => {
+  const { role } = useAuth();
+
+  if (role === 'fisioterapeuta') {
+    return (
+      <DrawerProvider>
+        <TherapistNavigatorContent />
+      </DrawerProvider>
+    );
+  }
+
+  return (
+    <PrivateTabBarProvider>
+      <DrawerProvider>
+        <PatientNavigatorContent />
+      </DrawerProvider>
+    </PrivateTabBarProvider>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
