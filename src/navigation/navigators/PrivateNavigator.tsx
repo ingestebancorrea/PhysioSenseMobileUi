@@ -13,6 +13,8 @@ import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigat
 import { DevicesScreen } from '@/screens/private/DevicesScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { NotificationsScreen } from '@/screens/private/NotificationsScreen';
+import { PatientDetailScreen } from '@/screens/private/PatientDetailScreen';
+import { PatientsListScreen } from '@/screens/private/PatientsListScreen';
 import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
@@ -115,18 +117,54 @@ const THERAPIST_TAB_TITLES: Record<string, string> = {
   mas: 'Más',
 };
 
+type PatientRoute = 'list' | 'detail';
+
 const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
+  const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios' || key === 'mas') {
+      if (key === 'pacientes') {
+        setPatientRoute('list');
+      }
       setActiveTab(key);
     }
+  };
+
+  const handleTabPress = (tab: string) => {
+    if (tab === 'pacientes') {
+      setPatientRoute('list');
+    }
+    setActiveTab(tab);
+  };
+
+  const handleSelectPatient = (patientId: string) => {
+    setSelectedPatientId(patientId);
+    setPatientRoute('detail');
+  };
+
+  const handleBackToPatientList = () => {
+    setPatientRoute('list');
+    setSelectedPatientId('');
   };
 
   const renderActiveScreen = () => {
     if (activeTab === 'inicio') {
       return <TherapistHomeScreen />;
+    }
+
+    if (activeTab === 'pacientes') {
+      if (patientRoute === 'detail' && selectedPatientId) {
+        return (
+          <PatientDetailScreen
+            patientId={selectedPatientId}
+            onBack={handleBackToPatientList}
+          />
+        );
+      }
+      return <PatientsListScreen onSelectPatient={handleSelectPatient} />;
     }
 
     return (
@@ -139,7 +177,7 @@ const TherapistNavigatorContent: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>{renderActiveScreen()}</View>
-      <HomeTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <HomeTabBar activeTab={activeTab} onTabPress={handleTabPress} />
       <DrawerMenu activeItem={activeTab} onSelect={handleDrawerSelect} />
     </View>
   );
