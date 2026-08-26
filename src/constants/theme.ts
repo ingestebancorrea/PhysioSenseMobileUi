@@ -33,6 +33,11 @@ export const COLORS = {
   skyBlueSoft: '#E0F2FE',
   warningAmber: '#F59E0B',
   warningAmberSoft: '#FEF9C3',
+  inactive: '#5F6368',
+  inactiveSoft: '#F1F3F4',
+  active: '#1E8E3E',
+  activeSoft: '#E6F4EA',
+  orange: '#FF9800',
 } as const;
 
 export const CARD = {
