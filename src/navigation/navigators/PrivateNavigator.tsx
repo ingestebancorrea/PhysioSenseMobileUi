@@ -17,6 +17,7 @@ import { PatientDetailScreen } from '@/screens/private/PatientDetailScreen';
 import { PatientsListScreen } from '@/screens/private/PatientsListScreen';
 import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
+import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
@@ -165,6 +166,10 @@ const TherapistNavigatorContent: React.FC = () => {
         );
       }
       return <PatientsListScreen onSelectPatient={handleSelectPatient} />;
+    }
+
+    if (activeTab === 'sesiones') {
+      return <SessionsScreen />;
     }
 
     return (
