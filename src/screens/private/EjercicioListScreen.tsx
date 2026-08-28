@@ -55,7 +55,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <View style={styles.container}>
+      <View >
         <View style={styles.header}>
           <DashboardHeader title="Ejercicios" onMenuPress={open} onNotificationsPress={() => navigate('notifications')} />
         </View>
@@ -78,16 +78,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  container: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: 20,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   separator: {
     height: 12,

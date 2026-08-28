@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ImageSourcePropType,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,48 +20,9 @@ import { TargetRangeBar } from '@/components/execution/TargetRangeBar';
 import { ICONS } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
 import { usePrivateTabBar } from '@/context/PrivateTabBarContext';
+import { getExerciseConfig } from '@/screens/execution/exerciseConfig';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 import type { QualityLevel } from '@/types/execution';
-
-const EXERCISE_CONFIG: Record<
-  string,
-  {
-    name: string;
-    totalReps: number;
-    series: number;
-    targetRange: { min: number; max: number };
-    gloveImage: ImageSourcePropType;
-  }
-> = {
-  exercise_01: {
-    name: 'Cerrar la mano',
-    totalReps: 15,
-    series: 3,
-    targetRange: { min: 60, max: 90 },
-    gloveImage: require('../../../assets/countdownCero.png'),
-  },
-  exercise_02: {
-    name: 'Abrir la mano',
-    totalReps: 15,
-    series: 3,
-    targetRange: { min: 50, max: 80 },
-    gloveImage: require('../../../assets/countdownFive.png'),
-  },
-  exercise_03: {
-    name: 'Pinza',
-    totalReps: 12,
-    series: 4,
-    targetRange: { min: 30, max: 60 },
-    gloveImage: require('../../../assets/countdownTwo.png'),
-  },
-  exercise_04: {
-    name: 'Oposición del pulgar',
-    totalReps: 10,
-    series: 3,
-    targetRange: { min: 40, max: 70 },
-    gloveImage: require('../../../assets/countdownFive.png'),
-  },
-};
 
 const TICK_MS = 60;
 
@@ -73,15 +33,25 @@ export const ExecutionScreen: React.FC = () => {
   const { hide, show } = usePrivateTabBar();
 
   const exerciseId = route.params?.exerciseId;
-  const config = EXERCISE_CONFIG[exerciseId ?? ''] ?? EXERCISE_CONFIG.exercise_01;
+  const config = getExerciseConfig(exerciseId);
 
   const [currentAngle, setCurrentAngle] = useState(0);
   const [force, setForce] = useState(20);
   const [quality, setQuality] = useState<QualityLevel>('Buena');
-  const [repetition, setRepetition] = useState(1);
+  const [repetition, setRepetition] = useState(route.params?.currentRepetition ?? 1);
+  const currentSeries = route.params?.currentSeries ?? 1;
+
+  const forceSumRef = useRef(0);
+  const qualityCountRef = useRef<Record<QualityLevel, number>>({
+    Buena: 0,
+    Regular: 0,
+    Mala: 0,
+  });
 
   const phaseRef = useRef(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevCycleRef = useRef(0);
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
     hide();
@@ -101,13 +71,24 @@ export const ExecutionScreen: React.FC = () => {
       const angle = mid + cycle * halfRange * 1.2;
       setCurrentAngle(angle);
 
+      if (prevCycleRef.current > 0 && cycle <= 0) {
+        setRepetition((prev) => Math.min(prev + 1, config.totalReps));
+      }
+      prevCycleRef.current = cycle;
+
       const baseForce = 18 + Math.sin(t * 3.1) * 12;
-      setForce(Math.round(baseForce));
+      const currentForce = Math.round(baseForce);
+      setForce(currentForce);
 
       const inRange =
         angle >= config.targetRange.min && angle <= config.targetRange.max;
       const aboveThreshold = angle >= config.targetRange.max * 0.8;
-      setQuality(inRange || aboveThreshold ? 'Buena' : angle >= 20 ? 'Regular' : 'Mala');
+      const currentQuality: QualityLevel =
+        inRange || aboveThreshold ? 'Buena' : angle >= 20 ? 'Regular' : 'Mala';
+      setQuality(currentQuality);
+
+      forceSumRef.current += currentForce;
+      qualityCountRef.current[currentQuality] += 1;
     }, TICK_MS);
 
     return () => {
@@ -115,14 +96,39 @@ export const ExecutionScreen: React.FC = () => {
         clearInterval(tickRef.current);
       }
     };
-  }, [config.targetRange.min, config.targetRange.max]);
+  }, [config.targetRange.min, config.targetRange.max, config.totalReps]);
 
-  const handleFinish = useCallback(() => {
+  const handleFinishSeries = useCallback(() => {
     if (tickRef.current) {
       clearInterval(tickRef.current);
     }
-    navigation.navigate('ExerciseList');
-  }, [navigation]);
+
+    const totalSamples = Object.values(qualityCountRef.current).reduce(
+      (a, b) => a + b,
+      0,
+    );
+    const avgForce = totalSamples > 0
+      ? Math.round(forceSumRef.current / totalSamples)
+      : 0;
+    const dominantQuality = (Object.entries(qualityCountRef.current) as [QualityLevel, number][])
+      .reduce((best, entry) => (entry[1] > best[1] ? entry : best), ['Buena' as QualityLevel, 0])[0];
+
+    navigation.replace('SeriesSummary', {
+      exerciseId,
+      currentSeries,
+      totalSeries: config.series,
+      averageForce: avgForce,
+      averageQuality: dominantQuality,
+      currentRepetition: repetition,
+    });
+  }, [navigation, exerciseId, currentSeries, config.series, repetition]);
+
+  useEffect(() => {
+    if (repetition >= config.totalReps && !navigatedRef.current) {
+      navigatedRef.current = true;
+      handleFinishSeries();
+    }
+  }, [repetition, config.totalReps, handleFinishSeries]);
 
   const ChevronLeftIcon = ICONS.chevronLeft;
   const XIcon = ICONS.x;
@@ -149,7 +155,7 @@ export const ExecutionScreen: React.FC = () => {
           </Text>
           <View style={styles.headerBadge}>
             <Text style={styles.headerBadgeText}>
-              Serie 1 de {config.series}
+              Serie {currentSeries} de {config.series}
             </Text>
           </View>
         </View>
@@ -157,7 +163,7 @@ export const ExecutionScreen: React.FC = () => {
         <TouchableOpacity
           style={styles.headerButton}
           activeOpacity={0.8}
-          onPress={handleFinish}
+          onPress={handleFinishSeries}
         >
           <XIcon size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>

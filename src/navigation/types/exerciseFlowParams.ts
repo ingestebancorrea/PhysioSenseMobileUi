@@ -9,6 +9,24 @@ export type ExerciseFlowParamList = {
   PinzaGuide: undefined;
   OposicionPulgarGuide: undefined;
   Preparation: { exerciseId: string };
-  Countdown: { exerciseId: string };
-  Execution: { exerciseId: string };
+  Countdown: {
+    exerciseId: string;
+    currentRepetition?: number;
+    currentSeries?: number;
+    totalSeries?: number;
+  };
+  Execution: {
+    exerciseId: string;
+    currentRepetition?: number;
+    currentSeries?: number;
+    totalSeries?: number;
+  };
+  SeriesSummary: {
+    exerciseId: string;
+    currentSeries: number;
+    totalSeries: number;
+    averageForce: number;
+    averageQuality: string;
+    currentRepetition?: number;
+  };
 };

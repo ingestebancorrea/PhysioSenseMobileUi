@@ -16,6 +16,7 @@ import { DeviceMetricCard } from '@/components/preparation/DeviceMetricCard';
 import { GloveConnectionStatus } from '@/components/preparation/GloveConnectionStatus';
 import { ReconnectButton } from '@/components/preparation/ReconnectButton';
 import { StartSeriesButton } from '@/components/preparation/StartSeriesButton';
+import { getExerciseConfig } from '@/screens/execution/exerciseConfig';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 import type { GloveConnectionState } from '@/types/preparation';
 import {
@@ -66,7 +67,12 @@ export const PreparationScreen: React.FC<PreparationScreenProps> = ({
     }
 
     if (currentExerciseId) {
-      navigation.navigate('Countdown', { exerciseId: currentExerciseId });
+      const config = getExerciseConfig(currentExerciseId);
+      navigation.navigate('Countdown', {
+        exerciseId: currentExerciseId,
+        currentSeries: 1,
+        totalSeries: config.series,
+      });
     } else {
       navigation.goBack();
     }

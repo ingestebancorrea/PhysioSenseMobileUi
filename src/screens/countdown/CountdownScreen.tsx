@@ -14,17 +14,11 @@ import { TipCard } from '@/components/countdown/TipCard';
 import { ICONS } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
 import { usePrivateTabBar } from '@/context/PrivateTabBarContext';
+import { getExerciseConfig } from '@/screens/execution/exerciseConfig';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 
 const TOTAL_SECONDS = 5;
 const FINISH_DELAY_MS = 800;
-
-const EXERCISE_NAMES: Record<string, string> = {
-  exercise_01: 'Cerrar la mano',
-  exercise_02: 'Abrir la mano',
-  exercise_03: 'Pinza',
-  exercise_04: 'Oposición del pulgar',
-};
 
 export const CountdownScreen: React.FC = () => {
   const route = useRoute<RouteProp<ExerciseFlowParamList, 'Countdown'>>();
@@ -35,6 +29,10 @@ export const CountdownScreen: React.FC = () => {
   const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
 
   const exerciseId = route.params?.exerciseId;
+  const currentRepetition = route.params?.currentRepetition;
+  const currentSeries = route.params?.currentSeries ?? 1;
+  const config = getExerciseConfig(exerciseId);
+  const totalSeries = route.params?.totalSeries ?? config.series;
 
   useEffect(() => {
     hide();
@@ -62,16 +60,21 @@ export const CountdownScreen: React.FC = () => {
 
     const timer = setTimeout(() => {
       if (exerciseId) {
-        navigation.navigate('Execution', { exerciseId });
+        navigation.navigate('Execution', {
+          exerciseId,
+          currentRepetition,
+          currentSeries,
+          totalSeries,
+        });
       }
     }, FINISH_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [secondsLeft, exerciseId, navigation]);
+  }, [secondsLeft, exerciseId, navigation, currentSeries, totalSeries, currentRepetition]);
 
   const ChevronLeftIcon = ICONS.chevronLeft;
   const XIcon = ICONS.x;
-  const exerciseName = EXERCISE_NAMES[exerciseId ?? ''] ?? 'Ejercicio';
+  const exerciseName = config.name;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -94,7 +97,9 @@ export const CountdownScreen: React.FC = () => {
             {exerciseName}
           </Text>
           <View style={styles.headerBadge}>
-            <Text style={styles.headerBadgeText}>Serie 1 de 3</Text>
+            <Text style={styles.headerBadgeText}>
+              Serie {currentSeries} de {totalSeries}
+            </Text>
           </View>
         </View>
 
