@@ -15,6 +15,7 @@ import { PreparationScreen } from '@/screens/preparation/PreparationScreen';
 import { CountdownScreen } from '@/screens/countdown/CountdownScreen';
 import { ExecutionScreen } from '@/screens/execution/ExecutionScreen';
 import { SeriesSummaryScreen } from '@/screens/seriesSummary/SeriesSummaryScreen';
+import { ExerciseProgressScreen } from '@/screens/exerciseProgress/ExerciseProgressScreen';
 
 const Stack = createNativeStackNavigator<ExerciseFlowParamList>();
 
@@ -36,5 +37,6 @@ export const ExerciseFlowNavigator: React.FC = () => (
     <Stack.Screen name="Countdown" component={CountdownScreen} />
     <Stack.Screen name="Execution" component={ExecutionScreen} />
     <Stack.Screen name="SeriesSummary" component={SeriesSummaryScreen} />
+    <Stack.Screen name="ExerciseProgress" component={ExerciseProgressScreen} />
   </Stack.Navigator>
 );

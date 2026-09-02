@@ -1,5 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   useNavigation,
@@ -27,8 +27,6 @@ export const SeriesSummaryScreen: React.FC = () => {
   const { exerciseId, currentSeries, totalSeries, averageForce, averageQuality } =
     route.params;
 
-  const finishedRef = useRef(false);
-
   React.useEffect(() => {
     hide();
     return show;
@@ -37,15 +35,17 @@ export const SeriesSummaryScreen: React.FC = () => {
   const exerciseName = getExerciseConfig(exerciseId).name;
   const totalRepetitions = getExerciseConfig(exerciseId).totalReps;
 
-  const handleFinish = useCallback(() => {
-    finishedRef.current = true;
-    navigation.popToTop();
-  }, [navigation]);
+  const goToProgress = useCallback(() => {
+    navigation.replace('ExerciseProgress', {
+      exerciseId,
+      completedSeries: currentSeries,
+      completedReps: totalRepetitions,
+      averageForce,
+      averageQuality,
+    });
+  }, [navigation, exerciseId, currentSeries, totalRepetitions, averageForce, averageQuality]);
 
   const handleSkip = useCallback(() => {
-    if (finishedRef.current) {
-      return;
-    }
     const nextSeries = currentSeries + 1;
     if (nextSeries <= totalSeries) {
       navigation.replace('Countdown', {
@@ -54,9 +54,9 @@ export const SeriesSummaryScreen: React.FC = () => {
         totalSeries,
       });
     } else {
-      navigation.popToTop();
+      goToProgress();
     }
-  }, [navigation, exerciseId, currentSeries, totalSeries]);
+  }, [navigation, exerciseId, currentSeries, totalSeries, goToProgress]);
 
   const handleTimerEnd = useCallback(() => {
     handleSkip();
@@ -82,17 +82,10 @@ export const SeriesSummaryScreen: React.FC = () => {
 
         <RestTimerCard
           initialSeconds={REST_DURATION}
+          isLastSeries={currentSeries >= totalSeries}
           onNextSeries={handleSkip}
           onTimerComplete={handleTimerEnd}
         />
-
-        <TouchableOpacity
-          style={styles.finishButton}
-          activeOpacity={0.8}
-          onPress={handleFinish}
-        >
-          <Text style={styles.finishButtonText}>Finalizar serie</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -119,18 +112,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: COLORS.textSecondary,
-  },
-  finishButton: {
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.surface,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  finishButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
 });

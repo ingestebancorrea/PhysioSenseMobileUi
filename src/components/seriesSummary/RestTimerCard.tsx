@@ -2,15 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { COLORS } from '@/constants/theme';
+import { ICONS } from '@/constants/icons';
 
 interface RestTimerCardProps {
   initialSeconds?: number;
+  isLastSeries?: boolean;
   onNextSeries?: () => void;
   onTimerComplete?: () => void;
 }
 
 export const RestTimerCard: React.FC<RestTimerCardProps> = ({
   initialSeconds = 30,
+  isLastSeries = false,
   onNextSeries,
   onTimerComplete,
 }) => {
@@ -44,6 +47,8 @@ export const RestTimerCard: React.FC<RestTimerCardProps> = ({
   const circumference = 2 * Math.PI * radius;
   const progressRatio = secondsLeft / initialSeconds;
   const strokeDashoffset = circumference * (1 - progressRatio);
+
+  const ChevronRightIcon = ICONS.chevronRight;
 
   return (
     <View style={styles.outerContainer}>
@@ -85,7 +90,14 @@ export const RestTimerCard: React.FC<RestTimerCardProps> = ({
         onPress={onNextSeries}
         style={styles.nextButton}
       >
-        <Text style={styles.nextButtonText}>Siguiente serie</Text>
+        {isLastSeries ? (
+          <View style={styles.nextButtonRow}>
+            <Text style={styles.nextButtonText}>Siguiente</Text>
+            <ChevronRightIcon size={18} color={COLORS.white} />
+          </View>
+        ) : (
+          <Text style={styles.nextButtonText}>Siguiente serie</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -145,5 +157,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  nextButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 });
