@@ -29,4 +29,12 @@ export type ExerciseFlowParamList = {
     averageQuality: string;
     currentRepetition?: number;
   };
+  ExerciseProgress: {
+    exerciseId: string;
+    completedSeries?: number;
+    completedReps?: number;
+    averageForce?: number;
+    averageQuality?: string;
+    totalTime?: number;
+  };
 };

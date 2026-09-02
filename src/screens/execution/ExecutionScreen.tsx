@@ -131,7 +131,6 @@ export const ExecutionScreen: React.FC = () => {
   }, [repetition, config.totalReps, handleFinishSeries]);
 
   const ChevronLeftIcon = ICONS.chevronLeft;
-  const XIcon = ICONS.x;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -159,14 +158,6 @@ export const ExecutionScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-
-        <TouchableOpacity
-          style={styles.headerButton}
-          activeOpacity={0.8}
-          onPress={handleFinishSeries}
-        >
-          <XIcon size={22} color={COLORS.textPrimary} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
