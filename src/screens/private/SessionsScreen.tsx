@@ -18,7 +18,9 @@ import { SessionFilterChips } from '@/components/sessions/SessionFilterChips';
 
 type FilterTab = 'Todas' | 'Activas' | 'Completadas' | 'Borradores';
 
-export const SessionsScreen: React.FC = () => {
+interface SessionsScreenProps {}
+
+export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todas');
   const { open } = useDrawer();
@@ -127,7 +129,7 @@ export const SessionsScreen: React.FC = () => {
         }
       />
 
-      <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={() => {}}>
         <Plus size={24} color={COLORS.white} />
       </TouchableOpacity>
     </SafeAreaView>

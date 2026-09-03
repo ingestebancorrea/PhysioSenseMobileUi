@@ -24,6 +24,7 @@ type DetailTab = 'Resumen' | 'Progreso' | 'Sesiones' | 'Evaluaciones';
 interface PatientDetailScreenProps {
   patientId: string;
   onBack: () => void;
+  onCreateSession?: () => void;
 }
 
 const DETAIL_TABS: DetailTab[] = ['Resumen', 'Progreso', 'Sesiones', 'Evaluaciones'];
@@ -31,6 +32,7 @@ const DETAIL_TABS: DetailTab[] = ['Resumen', 'Progreso', 'Sesiones', 'Evaluacion
 export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
   patientId,
   onBack,
+  onCreateSession,
 }) => {
   const [activeTab, setActiveTab] = useState<DetailTab>('Resumen');
   const patient: Patient | undefined = getPatientById(patientId);
@@ -179,7 +181,7 @@ export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
       <View style={styles.bottomAction}>
         <Button
           title="Nueva sesión"
-          onPress={() => {}}
+          onPress={onCreateSession ?? (() => {})}
           variant="primary"
           size="large"
           style={styles.newSessionButton}

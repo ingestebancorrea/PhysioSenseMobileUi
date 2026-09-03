@@ -19,6 +19,7 @@ import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
+import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -124,6 +125,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [sessionRoute, setSessionRoute] = useState<'list' | 'create'>('list');
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios' || key === 'mas') {
@@ -151,6 +153,11 @@ const TherapistNavigatorContent: React.FC = () => {
     setSelectedPatientId('');
   };
 
+  const handleOpenCreateSession = () => {
+    setSessionRoute('create');
+    setActiveTab('sesiones');
+  };
+
   const renderActiveScreen = () => {
     if (activeTab === 'inicio') {
       return <TherapistHomeScreen />;
@@ -162,13 +169,24 @@ const TherapistNavigatorContent: React.FC = () => {
           <PatientDetailScreen
             patientId={selectedPatientId}
             onBack={handleBackToPatientList}
+            onCreateSession={handleOpenCreateSession}
           />
         );
       }
-      return <PatientsListScreen onSelectPatient={handleSelectPatient} />;
+      return (
+        <PatientsListScreen
+          onSelectPatient={handleSelectPatient}
+          onCreateSession={handleOpenCreateSession}
+        />
+      );
     }
 
     if (activeTab === 'sesiones') {
+      if (sessionRoute === 'create') {
+        return (
+          <CreateSessionScreen onBack={() => setSessionRoute('list')} />
+        );
+      }
       return <SessionsScreen />;
     }
 
