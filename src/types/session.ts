@@ -10,3 +10,21 @@ export interface Session {
   durationMinutes: number;
   status: SessionStatus;
 }
+
+export interface SessionExercise {
+  id: string;
+  title: string;
+  sessions: string;
+  repetitions: string;
+  imageUrl?: string;
+}
+
+export interface SessionFormData {
+  patientName: string;
+  sessionTitle: string;
+  sessionObjective: string;
+  selectedDate: string;
+  selectedTime: string;
+  estimatedDuration: string;
+  exercises: SessionExercise[];
+}

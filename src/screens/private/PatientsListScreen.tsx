@@ -20,10 +20,12 @@ type FilterTab = 'Todos' | 'Activos' | 'Inactivos';
 
 interface PatientsListScreenProps {
   onSelectPatient: (patientId: string) => void;
+  onCreateSession?: () => void;
 }
 
 export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   onSelectPatient,
+  onCreateSession,
 }) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todos');
@@ -122,7 +124,7 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
         }
       />
 
-      <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={onCreateSession}>
         <Plus size={24} color={COLORS.white} />
       </TouchableOpacity>
     </SafeAreaView>
