@@ -40,7 +40,6 @@ const THERAPIST_MAIN_ITEMS: DrawerItem[] = [
   { key: 'pacientes', label: 'Pacientes', icon: 'account-group-outline' },
   { key: 'sesiones', label: 'Sesiones', icon: 'calendar-check' },
   { key: 'ejercicios', label: 'Ejercicios', icon: 'dumbbell' },
-  { key: 'mas', label: 'Más', icon: 'dots-horizontal' },
 ];
 
 const SECONDARY_ITEMS: DrawerItem[] = [

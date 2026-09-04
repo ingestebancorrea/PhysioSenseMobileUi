@@ -10,7 +10,6 @@ const TABS: HomeTabItem[] = [
   { key: 'pacientes', label: 'Pacientes', icon: 'users' },
   { key: 'sesiones', label: 'Sesiones', icon: 'calendarDays' },
   { key: 'ejercicios', label: 'Ejercicios', icon: 'dumbbell' },
-  { key: 'mas', label: 'Más', icon: 'ellipsis' },
 ];
 
 interface HomeTabBarProps {

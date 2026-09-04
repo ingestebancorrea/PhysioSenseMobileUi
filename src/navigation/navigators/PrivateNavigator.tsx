@@ -116,7 +116,6 @@ const THERAPIST_TAB_TITLES: Record<string, string> = {
   pacientes: 'Pacientes',
   sesiones: 'Sesiones',
   ejercicios: 'Ejercicios',
-  mas: 'Más',
 };
 
 type PatientRoute = 'list' | 'detail';
@@ -128,7 +127,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [sessionRoute, setSessionRoute] = useState<'list' | 'create'>('list');
 
   const handleDrawerSelect = (key: string) => {
-    if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios' || key === 'mas') {
+    if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios') {
       if (key === 'pacientes') {
         setPatientRoute('list');
       }
