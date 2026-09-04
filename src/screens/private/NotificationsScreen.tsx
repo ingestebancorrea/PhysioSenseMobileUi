@@ -161,28 +161,30 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Filter pills config
-// ---------------------------------------------------------------------------
-
-const FILTERS: FilterPill[] = [
-  { key: 'all', label: 'Todas', count: 8 },
-  { key: 'unread', label: 'No leídas', count: 5 },
-  { key: 'important', label: 'Importantes', count: 3 },
-];
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 interface NotificationsScreenProps {
   onBack?: () => void;
+  notifications?: NotificationItem[];
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   onBack,
+  notifications: notificationsProp = MOCK_NOTIFICATIONS,
 }) => {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState(notificationsProp);
+
+  const filters = useMemo<FilterPill[]>(() => {
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+    const importantCount = notifications.filter(n => n.isImportant).length;
+    return [
+      { key: 'all', label: 'Todas', count: notifications.length },
+      { key: 'unread', label: 'No leídas', count: unreadCount },
+      { key: 'important', label: 'Importantes', count: importantCount },
+    ];
+  }, [notifications]);
 
   const filteredNotifications = useMemo(() => {
     switch (activeFilter) {
@@ -337,7 +339,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
       {/* Filter pills */}
       <View style={styles.pillsRow}>
-        {FILTERS.map(renderFilterPill)}
+        {filters.map(renderFilterPill)}
       </View>
 
       {/* Notification list */}

@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Menu, Plus, Search, SlidersHorizontal } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { SESSIONS } from '@/mock/sessionData';
 import type { Session } from '@/types/session';
 import { SessionCard } from '@/components/sessions/SessionCard';
@@ -24,6 +25,7 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todas');
   const { open } = useDrawer();
+  const navigate = useNavigate();
 
   const counts = useMemo(
     () => ({
@@ -82,6 +84,7 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
         <TouchableOpacity
           style={styles.headerRight}
           activeOpacity={0.7}
+          onPress={() => navigate('notifications')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Bell size={22} color={COLORS.textPrimary} />
