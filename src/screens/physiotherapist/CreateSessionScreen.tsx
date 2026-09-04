@@ -10,11 +10,18 @@ import { SessionExercisesStep } from '@/components/sessionForm/SessionExercisesS
 import { SessionReviewStep } from '@/components/sessionForm/SessionReviewStep';
 import { SessionFormFooter } from '@/components/sessionForm/SessionFormFooter';
 
+const pad = (num: number) => String(num).padStart(2, '0');
+
+const todayDisplay = () => {
+  const now = new Date();
+  return `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+};
+
 const INITIAL_FORM: SessionFormData = {
   patientName: 'María López',
   sessionTitle: 'Sesión de seguimiento - Semana 4',
   sessionObjective: 'Mejorar fuerza y rango de movimiento de la muñeca.',
-  selectedDate: '14/05/2024',
+  selectedDate: todayDisplay(),
   selectedTime: '10:00 a. m.',
   estimatedDuration: '40',
   exercises: [
