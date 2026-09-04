@@ -73,6 +73,8 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   const selectedISO = useMemo(() => (value ? toISO(value) : ''), [value]);
   const [open, setOpen] = useState(false);
 
+  const effectiveMinDate = minDate || todayISO();
+
   const markedDates = useMemo(() => {
     const result: Record<string, object> = {
       [todayISO()]: { textColor: COLORS.primary },
@@ -125,7 +127,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
 
             <Calendar
               current={selectedISO || undefined}
-              minDate={minDate}
+              minDate={effectiveMinDate}
               maxDate={maxDate}
               onDayPress={(day) => {
                 onSelect(toDisplay(day.dateString));
@@ -142,7 +144,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
                 selectedDayTextColor: '#FFFFFF',
                 todayTextColor: COLORS.primary,
                 dayTextColor: COLORS.textPrimary,
-                textDisabledColor: COLORS.divider,
+                textDisabledColor: '#B0B4BC',
                 dotColor: COLORS.primary,
                 selectedDotColor: '#FFFFFF',
                 arrowColor: COLORS.primary,

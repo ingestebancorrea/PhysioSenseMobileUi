@@ -21,6 +21,8 @@ import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
+import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
+import { getPatientById } from '@/mock/patientData';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -119,7 +121,7 @@ const THERAPIST_TAB_TITLES: Record<string, string> = {
   ejercicios: 'Ejercicios',
 };
 
-type PatientRoute = 'list' | 'detail';
+type PatientRoute = 'list' | 'detail' | 'assign' | 'create';
 
 const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
@@ -165,9 +167,21 @@ const TherapistNavigatorContent: React.FC = () => {
     setSelectedPatientId('');
   };
 
+  const handleOpenAssignSession = () => {
+    setPatientRoute('assign');
+  };
+
+  const handleBackFromAssignSession = () => {
+    setPatientRoute('list');
+    setSelectedPatientId('');
+  };
+
   const handleOpenCreateSession = () => {
-    setSessionRoute('create');
-    setActiveTab('sesiones');
+    setPatientRoute('create');
+  };
+
+  const handleBackFromCreateSession = () => {
+    setPatientRoute('assign');
   };
 
   const renderActiveScreen = () => {
@@ -190,24 +204,33 @@ const TherapistNavigatorContent: React.FC = () => {
           <PatientDetailScreen
             patientId={selectedPatientId}
             onBack={handleBackToPatientList}
-            onCreateSession={handleOpenCreateSession}
+            onCreateSession={handleOpenAssignSession}
           />
+        );
+      }
+      if (patientRoute === 'assign') {
+        return (
+          <AssignSessionScreen
+            onBack={handleBackFromAssignSession}
+            onCreateSession={handleOpenCreateSession}
+            initialPatient={selectedPatientId ? getPatientById(selectedPatientId)?.name : undefined}
+          />
+        );
+      }
+      if (patientRoute === 'create') {
+        return (
+          <CreateSessionScreen onBack={handleBackFromCreateSession} />
         );
       }
       return (
         <PatientsListScreen
           onSelectPatient={handleSelectPatient}
-          onCreateSession={handleOpenCreateSession}
+          onCreateSession={handleOpenAssignSession}
         />
       );
     }
 
     if (activeTab === 'sesiones') {
-      if (sessionRoute === 'create') {
-        return (
-          <CreateSessionScreen onBack={() => setSessionRoute('list')} />
-        );
-      }
       return <SessionsScreen />;
     }
 
