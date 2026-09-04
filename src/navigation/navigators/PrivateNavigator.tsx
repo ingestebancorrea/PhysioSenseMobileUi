@@ -20,6 +20,7 @@ import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
+import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -125,12 +126,14 @@ const TherapistNavigatorContent: React.FC = () => {
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [sessionRoute, setSessionRoute] = useState<'list' | 'create'>('list');
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios') {
       if (key === 'pacientes') {
         setPatientRoute('list');
       }
+      setShowNotifications(false);
       setActiveTab(key);
     }
   };
@@ -139,6 +142,16 @@ const TherapistNavigatorContent: React.FC = () => {
     if (tab === 'pacientes') {
       setPatientRoute('list');
     }
+    setShowNotifications(false);
+    setActiveTab(tab);
+  };
+
+  const handleNavigate = (tab: string) => {
+    if (tab === 'notifications') {
+      setShowNotifications(true);
+      return;
+    }
+    setShowNotifications(false);
     setActiveTab(tab);
   };
 
@@ -158,6 +171,15 @@ const TherapistNavigatorContent: React.FC = () => {
   };
 
   const renderActiveScreen = () => {
+    if (showNotifications) {
+      return (
+        <NotificationsScreen
+          notifications={THERAPIST_NOTIFICATIONS}
+          onBack={() => setShowNotifications(false)}
+        />
+      );
+    }
+
     if (activeTab === 'inicio') {
       return <TherapistHomeScreen />;
     }
@@ -198,7 +220,9 @@ const TherapistNavigatorContent: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>{renderActiveScreen()}</View>
+      <PrivateNavigationProvider onNavigate={handleNavigate}>
+        <View style={styles.content}>{renderActiveScreen()}</View>
+      </PrivateNavigationProvider>
       <HomeTabBar activeTab={activeTab} onTabPress={handleTabPress} />
       <DrawerMenu activeItem={activeTab} onSelect={handleDrawerSelect} />
     </View>

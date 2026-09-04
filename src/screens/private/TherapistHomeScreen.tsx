@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { THERAPIST_DASHBOARD_DATA } from '@/mock/therapistDashboardData';
 import { ActivityItem } from '@/components/dashboard/ActivityItem';
 import { SectionHeader } from '@/components/dashboard/SectionHeader';
@@ -12,6 +13,7 @@ import { TherapistDashboardHeader } from '@/components/dashboard/TherapistDashbo
 export const TherapistHomeScreen: React.FC = () => {
   const { therapist, stats, activities } = THERAPIST_DASHBOARD_DATA;
   const { open } = useDrawer();
+  const navigate = useNavigate();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -23,6 +25,7 @@ export const TherapistHomeScreen: React.FC = () => {
           name={therapist.name}
           notificationCount={therapist.unreadNotifications}
           onMenuPress={open}
+          onNotificationsPress={() => navigate('notifications')}
         />
 
         <ScrollView

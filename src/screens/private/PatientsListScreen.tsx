@@ -8,9 +8,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Menu, Plus, Search, SlidersHorizontal } from 'lucide-react-native';
+import { Bell, Menu, Plus, Search, SlidersHorizontal } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { PATIENTS } from '@/mock/patientData';
 import type { Patient } from '@/types/patient';
 import { PatientCard } from '@/components/patients/PatientCard';
@@ -30,6 +31,7 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todos');
   const { open } = useDrawer();
+  const navigate = useNavigate();
 
   const counts = useMemo(
     () => ({
@@ -82,6 +84,15 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
           <Menu size={24} color={COLORS.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Pacientes</Text>
+        <TouchableOpacity
+          style={styles.headerRight}
+          activeOpacity={0.7}
+          onPress={() => navigate('notifications')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Bell size={22} color={COLORS.textPrimary} />
+          <View style={styles.notificationDot} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.searchRow}>
@@ -155,9 +166,30 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderSubtle,
   },
   title: {
+    flex: 1,
     fontSize: 26,
     fontWeight: '700',
     color: COLORS.textPrimary,
+  },
+  headerRight: {
+    position: 'relative',
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.borderSubtle,
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.danger,
   },
   searchRow: {
     flexDirection: 'row',
