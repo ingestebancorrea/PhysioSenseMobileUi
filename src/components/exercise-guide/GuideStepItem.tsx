@@ -19,15 +19,15 @@ export const GuideStepItem: React.FC<GuideStepItemProps> = ({
     <View style={styles.container}>
       <Text style={styles.stepNumber}>{stepNumber}</Text>
 
-      <View style={styles.imageContainer}>
-        {imageUri && (
+      {imageUri && (
+        <View style={styles.imageContainer}>
           <Image
             resizeMode="contain"
             source={imageUri}
             style={styles.image}
           />
-        )}
-      </View>
+        </View>
+      )}
 
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>

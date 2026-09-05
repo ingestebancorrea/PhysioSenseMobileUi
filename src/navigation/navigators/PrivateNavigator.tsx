@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
@@ -21,9 +21,12 @@ import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
+import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
 import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
+import { THERAPIST_EXERCISES } from '@/mock/therapistExercisesData';
 import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
 import { getPatientById } from '@/mock/patientData';
+import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -123,18 +126,23 @@ const THERAPIST_TAB_TITLES: Record<string, string> = {
 };
 
 type PatientRoute = 'list' | 'detail' | 'assign' | 'create';
+type ExerciseRoute = 'list' | 'form';
 
 const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
+  const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
+  const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios') {
       if (key === 'pacientes') {
         setPatientRoute('list');
       }
+      setExerciseRoute('list');
       setShowNotifications(false);
       setActiveTab(key);
     }
@@ -144,6 +152,7 @@ const TherapistNavigatorContent: React.FC = () => {
     if (tab === 'pacientes') {
       setPatientRoute('list');
     }
+    setExerciseRoute('list');
     setShowNotifications(false);
     setActiveTab(tab);
   };
@@ -153,6 +162,7 @@ const TherapistNavigatorContent: React.FC = () => {
       setShowNotifications(true);
       return;
     }
+    setExerciseRoute('list');
     setShowNotifications(false);
     setActiveTab(tab);
   };
@@ -183,6 +193,30 @@ const TherapistNavigatorContent: React.FC = () => {
   const handleBackFromCreateSession = () => {
     setPatientRoute('assign');
   };
+
+  const handleOpenCreateExercise = () => {
+    setEditingExercise(null);
+    setExerciseRoute('form');
+  };
+
+  const handleOpenEditExercise = (exercise: ExerciseItem) => {
+    setEditingExercise(exercise);
+    setExerciseRoute('form');
+  };
+
+  const handleBackFromExerciseForm = () => {
+    setExerciseRoute('list');
+    setEditingExercise(null);
+  };
+
+  const handleExerciseSaved = useCallback((exercise: ExerciseItem) => {
+    setExercises((prev) => {
+      const exists = prev.some((item) => item.id === exercise.id);
+      return exists
+        ? prev.map((item) => (item.id === exercise.id ? exercise : item))
+        : [exercise, ...prev];
+    });
+  }, []);
 
   const renderActiveScreen = () => {
     if (showNotifications) {
@@ -234,7 +268,23 @@ const TherapistNavigatorContent: React.FC = () => {
     }
 
     if (activeTab === 'ejercicios') {
-      return <ExercisesScreen />;
+      if (exerciseRoute === 'form') {
+        return (
+          <CreateExerciseScreen
+            onBack={handleBackFromExerciseForm}
+            initialExercise={editingExercise}
+            onSaved={handleExerciseSaved}
+          />
+        );
+      }
+      return (
+        <ExercisesScreen
+          exercises={exercises}
+          onExercisesChange={setExercises}
+          onCreate={handleOpenCreateExercise}
+          onEditExercise={handleOpenEditExercise}
+        />
+      );
     }
 
     return (

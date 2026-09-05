@@ -1,13 +1,18 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import { ICONS } from '@/constants/icons';
 import { COLORS, CARD } from '@/constants/theme';
 
 interface TargetMusclesCardProps {
   muscles: string[];
+  muscleIcons?: Record<string, LucideIcon>;
 }
 
-export const TargetMusclesCard: React.FC<TargetMusclesCardProps> = ({ muscles }) => {
+export const TargetMusclesCard: React.FC<TargetMusclesCardProps> = ({
+  muscles,
+  muscleIcons,
+}) => {
   const ActivityIcon = ICONS.activity;
 
   return (
@@ -15,14 +20,17 @@ export const TargetMusclesCard: React.FC<TargetMusclesCardProps> = ({ muscles })
       <Text style={styles.title}>Músculos objetivo</Text>
 
       <View style={styles.list}>
-        {muscles.map(muscle => (
-          <View key={muscle} style={styles.row}>
-            <View style={styles.iconCircle}>
-              <ActivityIcon size={18} color={COLORS.primary} />
+        {muscles.map(muscle => {
+          const MuscleIcon = muscleIcons?.[muscle] ?? ActivityIcon;
+          return (
+            <View key={muscle} style={styles.row}>
+              <View style={styles.iconCircle}>
+                <MuscleIcon size={18} color={COLORS.primary} />
+              </View>
+              <Text style={styles.muscleName}>{muscle}</Text>
             </View>
-            <Text style={styles.muscleName}>{muscle}</Text>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );

@@ -12,6 +12,7 @@ export interface ExerciseItem {
   reps: string;
   duration: string;
   imageUrl?: string;
+  coverImageUrl?: string;
 }
 
 interface ExerciseCardProps {

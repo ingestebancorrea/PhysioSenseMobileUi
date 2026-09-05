@@ -6,13 +6,23 @@ import { ICONS } from '@/constants/icons';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
 import { ExerciseCard, type ExerciseItem } from '@/components/exercises/ExerciseCard';
-import { THERAPIST_EXERCISES } from '@/mock/therapistExercisesData';
 import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
 import { FabButton } from '@/components/common/fabButton/FabButton';
 
-export const ExercisesScreen: React.FC = () => {
-  const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
+export interface ExercisesScreenProps {
+  exercises: ExerciseItem[];
+  onExercisesChange: (updater: (prev: ExerciseItem[]) => ExerciseItem[]) => void;
+  onCreate?: () => void;
+  onEditExercise?: (exercise: ExerciseItem) => void;
+}
+
+export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
+  exercises,
+  onExercisesChange,
+  onCreate,
+  onEditExercise,
+}) => {
   const [search, setSearch] = useState('');
   const { open } = useDrawer();
   const navigate = useNavigate();
@@ -30,19 +40,25 @@ export const ExercisesScreen: React.FC = () => {
   }, [exercises, search]);
 
   const handleCreate = useCallback(() => {
-    Alert.alert('Crear ejercicio', 'La creación de ejercicios estará disponible próximamente.');
-  }, []);
+    onCreate?.();
+  }, [onCreate]);
 
   const handleEdit = useCallback(
     (id: string) => {
-      Alert.alert('Editar ejercicio', `Próximamente: editar el ejercicio ${id}.`);
+      const exercise = exercises.find(item => item.id === id);
+      if (exercise) {
+        onEditExercise?.(exercise);
+      }
     },
-    [],
+    [exercises, onEditExercise],
   );
 
-  const handleDelete = useCallback((id: string) => {
-    setExercises(prev => prev.filter(item => item.id !== id));
-  }, []);
+  const handleDelete = useCallback(
+    (id: string) => {
+      onExercisesChange(prev => prev.filter(item => item.id !== id));
+    },
+    [onExercisesChange],
+  );
 
   const handlePlay = useCallback(
     (id: string) => {
