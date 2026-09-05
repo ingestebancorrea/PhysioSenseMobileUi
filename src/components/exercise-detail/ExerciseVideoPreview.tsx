@@ -1,19 +1,39 @@
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import Video from 'react-native-video';
 import { ICONS } from '@/constants/icons';
 import { COLORS, CARD } from '@/constants/theme';
 
 interface ExerciseVideoPreviewProps {
   thumbnail: ImageSourcePropType;
   duration: string;
+  sourceUri?: string | null;
+  posterUri?: string | null;
 }
 
 export const ExerciseVideoPreview: React.FC<ExerciseVideoPreviewProps> = ({
   thumbnail,
   duration,
+  sourceUri,
+  posterUri,
 }) => {
   const PlayIcon = ICONS.play;
+
+  if (sourceUri) {
+    return (
+      <View style={[CARD, styles.card]}>
+        <Video
+          source={{ uri: sourceUri }}
+          style={styles.thumbnail}
+          resizeMode="cover"
+          controls
+          poster={posterUri ?? undefined}
+          posterResizeMode="cover"
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={[CARD, styles.card]}>

@@ -46,17 +46,19 @@ export const ExerciseSpecsCard: React.FC<ExerciseSpecsCardProps> = ({ specs }) =
 
       <View style={styles.divider} />
 
-      <View style={styles.requirementsSection}>
-        <Text style={styles.requirementsTitle}>Requisitos</Text>
-        <View style={styles.requirements}>
-          {specs.requirements.map(requirement => (
-            <View key={requirement} style={styles.requirementRow}>
-              <CircleCheckIcon size={20} color={COLORS.success} />
-              <Text style={styles.requirementText}>{requirement}</Text>
-            </View>
-          ))}
+      {specs.requirements.length > 0 && (
+        <View style={styles.requirementsSection}>
+          <Text style={styles.requirementsTitle}>Requisitos</Text>
+          <View style={styles.requirements}>
+            {specs.requirements.map(requirement => (
+              <View key={requirement} style={styles.requirementRow}>
+                <CircleCheckIcon size={20} color={COLORS.success} />
+                <Text style={styles.requirementText}>{requirement}</Text>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
