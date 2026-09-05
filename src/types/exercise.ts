@@ -8,6 +8,7 @@ export interface ExerciseListItem {
   description: string;
   series: number;
   reps: number;
+  duration: string;
   category: ExerciseCategory;
   imageUri: ImageSourcePropType;
 }

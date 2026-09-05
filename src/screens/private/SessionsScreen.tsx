@@ -3,12 +3,9 @@ import {
   FlatList,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, Menu, Search, SlidersHorizontal } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
@@ -16,6 +13,9 @@ import { SESSIONS } from '@/mock/sessionData';
 import type { Session } from '@/types/session';
 import { SessionCard } from '@/components/sessions/SessionCard';
 import { SessionFilterChips } from '@/components/sessions/SessionFilterChips';
+import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
+import { SearchBar } from '@/components/common/searchBar/SearchBar';
+import { FabButton } from '@/components/common/fabButton/FabButton';
 
 type FilterTab = 'Todas' | 'Activas' | 'Completadas' | 'Borradores';
 
@@ -71,42 +71,17 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
 
   const listHeader = (
     <View>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          activeOpacity={0.8}
-          onPress={open}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Menu size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Sesiones</Text>
-        <TouchableOpacity
-          style={styles.headerRight}
-          activeOpacity={0.7}
-          onPress={() => navigate('notifications')}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Bell size={22} color={COLORS.textPrimary} />
-          <View style={styles.notificationDot} />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Sesiones"
+        onMenuPress={open}
+        onNotificationsPress={() => navigate('notifications')}
+      />
 
-      <View style={styles.searchRow}>
-        <View style={styles.searchInput}>
-          <Search size={18} color={COLORS.textMuted} />
-          <TextInput
-            style={styles.searchText}
-            placeholder="Buscar sesiones..."
-            placeholderTextColor={COLORS.textMuted}
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
-        <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
-          <SlidersHorizontal size={20} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-      </View>
+      <SearchBar
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Buscar sesiones..."
+      />
 
       <SessionFilterChips
         activeFilter={activeFilter}
@@ -131,6 +106,8 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
           </View>
         }
       />
+
+      <FabButton onPress={() => {}} />
     </SafeAreaView>
   );
 };
@@ -139,84 +116,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.backgroundMuted,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-    gap: 12,
-  },
-  menuButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-  },
-  title: {
-    flex: 1,
-    fontSize: 26,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  headerRight: {
-    position: 'relative',
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 10,
-    right: 12,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.danger,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-    gap: 8,
-  },
-  searchText: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.textPrimary,
-    padding: 0,
-  },
-  filterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
   },
   listContent: {
     paddingBottom: 100,

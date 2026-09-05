@@ -11,6 +11,7 @@ import { ExerciseFlowNavigator } from '@/navigation/navigators/ExerciseFlowNavig
 import { ProgressFlowNavigator } from '@/navigation/navigators/ProgressFlowNavigator';
 import { PrivateNavigation } from '@/navigation/privateNavigation/privateNavigation.tsx';
 import { DevicesScreen } from '@/screens/private/DevicesScreen';
+import { ExercisesScreen } from '@/screens/private/ExercisesScreen';
 import { HomeScreen } from '@/screens/private/HomeScreen';
 import { NotificationsScreen } from '@/screens/private/NotificationsScreen';
 import { PatientDetailScreen } from '@/screens/private/PatientDetailScreen';
@@ -230,6 +231,10 @@ const TherapistNavigatorContent: React.FC = () => {
 
     if (activeTab === 'sesiones') {
       return <SessionsScreen />;
+    }
+
+    if (activeTab === 'ejercicios') {
+      return <ExercisesScreen />;
     }
 
     return (
