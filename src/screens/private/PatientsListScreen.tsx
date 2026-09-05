@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bell, Menu, Plus, Search, SlidersHorizontal } from 'lucide-react-native';
+import { Bell, Menu, Search, SlidersHorizontal } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
@@ -21,12 +21,10 @@ type FilterTab = 'Todos' | 'Activos' | 'Inactivos';
 
 interface PatientsListScreenProps {
   onSelectPatient: (patientId: string) => void;
-  onCreateSession?: () => void;
 }
 
 export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   onSelectPatient,
-  onCreateSession,
 }) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todos');
@@ -134,10 +132,6 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
           </View>
         }
       />
-
-      <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={onCreateSession}>
-        <Plus size={24} color={COLORS.white} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -235,21 +229,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: COLORS.textMuted,
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.violet,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
   },
 });

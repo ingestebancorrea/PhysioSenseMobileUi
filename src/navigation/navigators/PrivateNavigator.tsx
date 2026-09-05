@@ -127,7 +127,6 @@ const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
-  const [sessionRoute, setSessionRoute] = useState<'list' | 'create'>('list');
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleDrawerSelect = (key: string) => {
@@ -225,7 +224,6 @@ const TherapistNavigatorContent: React.FC = () => {
       return (
         <PatientsListScreen
           onSelectPatient={handleSelectPatient}
-          onCreateSession={handleOpenAssignSession}
         />
       );
     }
