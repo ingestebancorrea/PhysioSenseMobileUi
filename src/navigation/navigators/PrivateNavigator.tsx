@@ -19,6 +19,7 @@ import { PatientsListScreen } from '@/screens/private/PatientsListScreen';
 import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
+import { SettingsScreen } from '@/screens/private/SettingsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -145,6 +146,11 @@ const TherapistNavigatorContent: React.FC = () => {
       setExerciseRoute('list');
       setShowNotifications(false);
       setActiveTab(key);
+    }
+
+    if (key === 'settings') {
+      setShowNotifications(false);
+      setActiveTab('configuracion');
     }
   };
 
@@ -285,6 +291,10 @@ const TherapistNavigatorContent: React.FC = () => {
           onEditExercise={handleOpenEditExercise}
         />
       );
+    }
+
+    if (activeTab === 'configuracion') {
+      return <SettingsScreen />;
     }
 
     return (
