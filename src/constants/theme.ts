@@ -47,6 +47,7 @@ export const COLORS = {
   dangerRed: '#E74C3C',
   dangerRedSoft: '#FFF0F0',
   dividerLight: '#F0F0F0',
+  switchOff: '#E0E0E0',
 } as const;
 
 export const CARD = {
