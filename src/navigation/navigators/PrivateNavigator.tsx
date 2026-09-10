@@ -22,6 +22,7 @@ import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { SettingsScreen } from '@/screens/private/SettingsScreen';
 import { PersonalProfileScreen } from '@/screens/private/PersonalProfileScreen';
 import { NotificationsSettingsScreen } from '@/screens/private/NotificationsSettingsScreen';
+import { HelpSupportScreen } from '@/screens/private/HelpSupportScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -136,6 +137,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
   const [settingsRoute, setSettingsRoute] = useState<
     'main' | 'profile' | 'notifications'
@@ -150,12 +152,19 @@ const TherapistNavigatorContent: React.FC = () => {
       }
       setExerciseRoute('list');
       setShowNotifications(false);
+      setShowHelp(false);
       setActiveTab(key);
     }
 
     if (key === 'settings') {
       setShowNotifications(false);
+      setShowHelp(false);
       setActiveTab('mas');
+    }
+
+    if (key === 'help') {
+      setShowNotifications(false);
+      setShowHelp(true);
     }
   };
 
@@ -165,16 +174,19 @@ const TherapistNavigatorContent: React.FC = () => {
     }
     setExerciseRoute('list');
     setShowNotifications(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
   const handleNavigate = (tab: string) => {
     if (tab === 'notifications') {
+      setShowHelp(false);
       setShowNotifications(true);
       return;
     }
     setExerciseRoute('list');
     setShowNotifications(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
@@ -230,6 +242,10 @@ const TherapistNavigatorContent: React.FC = () => {
   }, []);
 
   const renderActiveScreen = () => {
+    if (showHelp) {
+      return <HelpSupportScreen onBack={() => setShowHelp(false)} />;
+    }
+
     if (showNotifications) {
       return (
         <NotificationsScreen
