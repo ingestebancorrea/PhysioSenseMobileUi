@@ -38,6 +38,16 @@ export const COLORS = {
   active: '#1E8E3E',
   activeSoft: '#E6F4EA',
   orange: '#FF9800',
+  primaryViolet: '#6C5CE7',
+  primaryVioletSoft: '#EFEDFF',
+  surfaceSoft: '#F4F5FB',
+  backgroundLight: '#F8F9FA',
+  textStrong: '#1E1E2C',
+  textNeutral: '#5A5A63',
+  dangerRed: '#E74C3C',
+  dangerRedSoft: '#FFF0F0',
+  dividerLight: '#F0F0F0',
+  switchOff: '#E0E0E0',
 } as const;
 
 export const CARD = {

@@ -20,6 +20,9 @@ import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { SettingsScreen } from '@/screens/private/SettingsScreen';
+import { PersonalProfileScreen } from '@/screens/private/PersonalProfileScreen';
+import { NotificationsSettingsScreen } from '@/screens/private/NotificationsSettingsScreen';
+import { HelpSupportScreen } from '@/screens/private/HelpSupportScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -134,7 +137,11 @@ const TherapistNavigatorContent: React.FC = () => {
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
+  const [settingsRoute, setSettingsRoute] = useState<
+    'main' | 'profile' | 'notifications'
+  >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
   const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
 
@@ -145,12 +152,19 @@ const TherapistNavigatorContent: React.FC = () => {
       }
       setExerciseRoute('list');
       setShowNotifications(false);
+      setShowHelp(false);
       setActiveTab(key);
     }
 
     if (key === 'settings') {
       setShowNotifications(false);
-      setActiveTab('configuracion');
+      setShowHelp(false);
+      setActiveTab('mas');
+    }
+
+    if (key === 'help') {
+      setShowNotifications(false);
+      setShowHelp(true);
     }
   };
 
@@ -160,16 +174,19 @@ const TherapistNavigatorContent: React.FC = () => {
     }
     setExerciseRoute('list');
     setShowNotifications(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
   const handleNavigate = (tab: string) => {
     if (tab === 'notifications') {
+      setShowHelp(false);
       setShowNotifications(true);
       return;
     }
     setExerciseRoute('list');
     setShowNotifications(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
@@ -225,6 +242,10 @@ const TherapistNavigatorContent: React.FC = () => {
   }, []);
 
   const renderActiveScreen = () => {
+    if (showHelp) {
+      return <HelpSupportScreen onBack={() => setShowHelp(false)} />;
+    }
+
     if (showNotifications) {
       return (
         <NotificationsScreen
@@ -293,8 +314,32 @@ const TherapistNavigatorContent: React.FC = () => {
       );
     }
 
-    if (activeTab === 'configuracion') {
-      return <SettingsScreen />;
+    if (activeTab === 'mas') {
+      if (settingsRoute === 'profile') {
+        return (
+          <PersonalProfileScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
+      if (settingsRoute === 'notifications') {
+        return (
+          <NotificationsSettingsScreen
+            onBack={() => setSettingsRoute('main')}
+          />
+        );
+      }
+      return (
+        <SettingsScreen
+          onBack={() => setActiveTab('inicio')}
+          onOptionPress={route => {
+            if (route === 'PersonalProfile') {
+              setSettingsRoute('profile');
+            }
+            if (route === 'Notifications') {
+              setSettingsRoute('notifications');
+            }
+          }}
+        />
+      );
     }
 
     return (
