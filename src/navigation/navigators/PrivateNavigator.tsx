@@ -150,7 +150,7 @@ const TherapistNavigatorContent: React.FC = () => {
 
     if (key === 'settings') {
       setShowNotifications(false);
-      setActiveTab('configuracion');
+      setActiveTab('mas');
     }
   };
 
@@ -293,8 +293,8 @@ const TherapistNavigatorContent: React.FC = () => {
       );
     }
 
-    if (activeTab === 'configuracion') {
-      return <SettingsScreen />;
+    if (activeTab === 'mas') {
+      return <SettingsScreen onBack={() => setActiveTab('inicio')} />;
     }
 
     return (
