@@ -41,6 +41,7 @@ export const COLORS = {
   primaryViolet: '#6C5CE7',
   primaryVioletSoft: '#EFEDFF',
   surfaceSoft: '#F4F5FB',
+  backgroundLight: '#F8F9FA',
   textStrong: '#1E1E2C',
   textNeutral: '#5A5A63',
   dangerRed: '#E74C3C',

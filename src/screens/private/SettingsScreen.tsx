@@ -25,9 +25,13 @@ const DESIGN_WIDTH = 390;
 
 interface SettingsScreenProps {
   onBack?: () => void;
+  onOptionPress?: (route: string) => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
+  onBack,
+  onOptionPress,
+}) => {
   const { logout } = useAuth();
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
@@ -89,6 +93,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack }) => {
                 key={option.id}
                 style={styles.optionItem}
                 activeOpacity={0.7}
+                onPress={() => onOptionPress?.(option.route)}
                 accessibilityRole="button"
                 accessibilityLabel={option.title}
               >

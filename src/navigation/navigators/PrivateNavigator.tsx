@@ -20,6 +20,7 @@ import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
 import { SettingsScreen } from '@/screens/private/SettingsScreen';
+import { PersonalProfileScreen } from '@/screens/private/PersonalProfileScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -135,6 +136,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
+  const [settingsRoute, setSettingsRoute] = useState<'main' | 'profile'>('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
   const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
 
@@ -294,7 +296,21 @@ const TherapistNavigatorContent: React.FC = () => {
     }
 
     if (activeTab === 'mas') {
-      return <SettingsScreen onBack={() => setActiveTab('inicio')} />;
+      if (settingsRoute === 'profile') {
+        return (
+          <PersonalProfileScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
+      return (
+        <SettingsScreen
+          onBack={() => setActiveTab('inicio')}
+          onOptionPress={route => {
+            if (route === 'PersonalProfile') {
+              setSettingsRoute('profile');
+            }
+          }}
+        />
+      );
     }
 
     return (
