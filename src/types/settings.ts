@@ -7,6 +7,13 @@ export interface SettingOption {
   isDestructive?: boolean;
 }
 
+export interface PreferenceOption {
+  id: string;
+  title: string;
+  value: string;
+  iconName: string;
+}
+
 export interface TherapistProfile {
   name: string;
   role: string;

@@ -1,4 +1,4 @@
-import type { SettingOption, TherapistProfile } from '@/types/settings';
+import type { PreferenceOption, SettingOption, TherapistProfile } from '@/types/settings';
 
 export const THERAPIST_SETTINGS_PROFILE: TherapistProfile = {
   name: 'María López',
@@ -48,5 +48,44 @@ export const THERAPIST_SETTING_OPTIONS: SettingOption[] = [
     subtitle: 'Manejo de datos y permisos',
     iconName: 'lock',
     route: 'Privacy',
+  },
+];
+
+export const PREFERENCE_OPTIONS: PreferenceOption[] = [
+  {
+    id: 'pref_idioma',
+    title: 'Idioma',
+    value: 'Español (Colombia)',
+    iconName: 'globe',
+  },
+  {
+    id: 'pref_region',
+    title: 'Región',
+    value: 'Colombia',
+    iconName: 'mapPin',
+  },
+  {
+    id: 'pref_tema',
+    title: 'Tema de la aplicación',
+    value: 'Claro',
+    iconName: 'sun',
+  },
+  {
+    id: 'pref_tamano_texto',
+    title: 'Tamaño de texto',
+    value: 'Normal',
+    iconName: 'type',
+  },
+  {
+    id: 'pref_notificaciones',
+    title: 'Notificaciones',
+    value: 'Gestiona tus preferencias de notificaciones.',
+    iconName: 'bell',
+  },
+  {
+    id: 'pref_accesibilidad',
+    title: 'Accesibilidad',
+    value: 'Mejora tu experiencia de uso.',
+    iconName: 'personStanding',
   },
 ];

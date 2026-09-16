@@ -23,6 +23,7 @@ import { SettingsScreen } from '@/screens/private/SettingsScreen';
 import { PersonalProfileScreen } from '@/screens/private/PersonalProfileScreen';
 import { NotificationsSettingsScreen } from '@/screens/private/NotificationsSettingsScreen';
 import { HelpSupportScreen } from '@/screens/private/HelpSupportScreen';
+import { PreferencesScreen } from '@/screens/private/PreferencesScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -140,7 +141,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
   const [settingsRoute, setSettingsRoute] = useState<
-    'main' | 'profile' | 'notifications'
+    'main' | 'profile' | 'notifications' | 'preferences'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
   const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
@@ -327,6 +328,11 @@ const TherapistNavigatorContent: React.FC = () => {
           />
         );
       }
+      if (settingsRoute === 'preferences') {
+        return (
+          <PreferencesScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
       return (
         <SettingsScreen
           onBack={() => setActiveTab('inicio')}
@@ -336,6 +342,9 @@ const TherapistNavigatorContent: React.FC = () => {
             }
             if (route === 'Notifications') {
               setSettingsRoute('notifications');
+            }
+            if (route === 'Preferences') {
+              setSettingsRoute('preferences');
             }
           }}
         />
