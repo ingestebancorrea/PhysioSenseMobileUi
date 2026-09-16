@@ -1,4 +1,9 @@
-import type { PreferenceOption, SettingOption, TherapistProfile } from '@/types/settings';
+import type {
+  PreferenceOption,
+  SecurityOption,
+  SettingOption,
+  TherapistProfile,
+} from '@/types/settings';
 
 export const THERAPIST_SETTINGS_PROFILE: TherapistProfile = {
   name: 'María López',
@@ -87,5 +92,39 @@ export const PREFERENCE_OPTIONS: PreferenceOption[] = [
     title: 'Accesibilidad',
     value: 'Mejora tu experiencia de uso.',
     iconName: 'personStanding',
+  },
+];
+
+export const SECURITY_OPTIONS: SecurityOption[] = [
+  {
+    id: 'sec_biometria',
+    title: 'Biometría',
+    subtitle:
+      'Inicia sesión con tu huella dactilar o reconocimiento facial.',
+    iconName: 'fingerprint',
+    accessory: 'switch',
+    switchValue: true,
+  },
+  {
+    id: 'sec_contrasena',
+    title: 'Cambiar contraseña',
+    subtitle:
+      'Actualiza tu contraseña regularmente para mayor seguridad.',
+    iconName: 'lock',
+    accessory: 'chevron',
+  },
+  {
+    id: 'sec_verificacion',
+    title: 'Verificación en dos pasos',
+    subtitle: 'Añade una capa extra de seguridad a tu cuenta.',
+    iconName: 'shieldCheck',
+    accessory: 'chevron',
+  },
+  {
+    id: 'sec_actividad',
+    title: 'Actividad de seguridad',
+    subtitle: 'Revisa los últimos accesos a tu cuenta.',
+    iconName: 'history',
+    accessory: 'chevron',
   },
 ];

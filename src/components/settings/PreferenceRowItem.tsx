@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 
@@ -8,6 +8,9 @@ interface PreferenceRowItemProps {
   title: string;
   value: string;
   onPress?: () => void;
+  accessory?: 'chevron' | 'switch';
+  switchValue?: boolean;
+  onSwitchChange?: (value: boolean) => void;
 }
 
 export const PreferenceRowItem: React.FC<PreferenceRowItemProps> = ({
@@ -15,6 +18,9 @@ export const PreferenceRowItem: React.FC<PreferenceRowItemProps> = ({
   title,
   value,
   onPress,
+  accessory = 'chevron',
+  switchValue = false,
+  onSwitchChange,
 }) => (
   <TouchableOpacity
     style={styles.card}
@@ -38,7 +44,17 @@ export const PreferenceRowItem: React.FC<PreferenceRowItemProps> = ({
         </Text>
       </View>
 
-      <ChevronRight size={22} color={COLORS.textMuted} />
+      {accessory === 'switch' ? (
+        <Switch
+          value={switchValue}
+          onValueChange={onSwitchChange}
+          disabled={!onSwitchChange}
+          trackColor={{ false: COLORS.switchOff, true: COLORS.primaryViolet }}
+          thumbColor={COLORS.background}
+        />
+      ) : (
+        <ChevronRight size={22} color={COLORS.textMuted} />
+      )}
     </View>
   </TouchableOpacity>
 );
