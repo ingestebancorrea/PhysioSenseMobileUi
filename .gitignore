@@ -66,6 +66,13 @@ yarn-error.log
 # testing
 /coverage
 
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
+# Documentation
+docs/
+
 # Yarn
 .yarn/*
 !.yarn/patches

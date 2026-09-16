@@ -1,110 +1,380 @@
 // src/screens/auth/LoginScreen.tsx
-import React from 'react';
-import { View, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useDispatch } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
-import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { useAuth } from '@/hooks/auth/useAuth';
-import { login } from '@/store/slices/authSlice';
-import { routeNames } from '@/config/routes/routeNames';
+import { useAuth } from '@/context/AuthContext';
+import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
-const loginSchema = z.object({
-  email: z.string().email('Email inválido').min(1, 'Requerido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres').min(1, 'Requerido'),
-});
+type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-type LoginFormData = z.infer<typeof loginSchema>;
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-export const LoginScreen: React.FC = () => {
-  const dispatch = useDispatch();
-  const navigation = useNavigation<any>();
-  const { isLoading } = useAuth();
+  const { login } = useAuth();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    mode: 'onBlur',
-  });
+  const handleLogin = () => {
+    const success = login(username, password);
 
-  const onSubmit = (data: LoginFormData) => {
-    dispatch(login(data)).unwrap()
-      .then(() => navigation.navigate(routeNames.HOME))
-      .catch(() => {}); // Error manejado en slice/toast
+    if (!success) {
+      Alert.alert('Error', 'Usuario o contraseña incorrectos');
+    }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-    >
-      <ScreenContainer>
-        <View style={{ marginBottom: 32 }}>
-          <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 8 }}>
-            Bienvenido
-          </Text>
-          <Text style={{ fontSize: 16, color: '#666' }}>
-            Inicia sesión para continuar
-          </Text>
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.contentInner}>
+            <View style={styles.header}>
+              <Text style={styles.title}>¡Bienvenido!</Text>
+              <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+            </View>
 
-        <View style={{ gap: 16 }}>
-          <Input
-            label="Email"
-            placeholder="tu@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            control={control}
-            name="email"
-            error={errors.email?.message}
-            textContentType="emailAddress"
-          />
+            <View style={styles.logoContainer}>
+              <View style={styles.logoBox}>
+                <MaterialCommunityIcons
+                  name="hand-heart-outline"
+                  size={48}
+                  color="#FFFFFF"
+                  style={styles.logoIcon}
+                />
+              </View>
+            </View>
 
-          <Input
-            label="Contraseña"
-            placeholder="••••••••"
-            secureTextEntry
-            control={control}
-            name="password"
-            error={errors.password?.message}
-            textContentType="password"
-          />
-        </View>
+          <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Usuario</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="paciente / fisioterapeuta"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="username"
+                value={username}
+                onChangeText={(text: string) => setUsername(text)}
+              />
+            </View>
 
-        <View style={{ marginTop: 24, gap: 12 }}>
-          <Button
-            title="Iniciar sesión"
-            onPress={handleSubmit(onSubmit)}
-            loading={isLoading}
-            variant="primary"
-            size="large"
-          />
+            <View style={styles.field}>
+              <Text style={styles.label}>Contraseña</Text>
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="••••••••"
+                  placeholderTextColor="#94A3B8"
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="password"
+                  value={password}
+                  onChangeText={(text: string) => setPassword(text)}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  activeOpacity={0.7}
+                  onPress={() => setShowPassword(prev => !prev)}
+                >
+                  <MaterialCommunityIcons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={22}
+                    color="#6C757D"
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-          <Button
-            title="¿Olvidaste tu contraseña?"
-            onPress={() => navigation.navigate(routeNames.FORGOT_PASSWORD)}
-            variant="ghost"
-          />
-        </View>
+            <TouchableOpacity
+              style={styles.forgotContainer}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={{ marginTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <Text style={{ color: '#666' }}>¿No tienes cuenta?</Text>
-          <Button
-            title="Regístrate"
-            onPress={() => navigation.navigate(routeNames.REGISTER)}
-            variant="link"
-          />
-        </View>
-      </ScreenContainer>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            activeOpacity={0.8}
+            onPress={handleLogin}
+          >
+            <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+          </TouchableOpacity>
+
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>o continúa con</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <View style={styles.socialRow}>
+            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+              <MaterialCommunityIcons
+                name="google"
+                size={20}
+                color="#4285F4"
+                style={styles.socialIcon}
+              />
+              <Text style={styles.socialButtonText}>Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+              <MaterialCommunityIcons
+                name="facebook"
+                size={20}
+                color="#1877F2"
+                style={styles.socialIcon}
+              />
+              <Text style={styles.socialButtonText}>Facebook</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.demoBox}>
+            <Text style={styles.demoTitle}>Cuentas de prueba</Text>
+            <Text style={styles.demoItem}>Fisioterapeuta: fisioterapeuta / fisio123</Text>
+            <Text style={styles.demoItem}>Paciente: paciente / paciente123</Text>
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>¿No tienes cuenta? </Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('RegisterFlow')}
+            >
+              <Text style={styles.registerText}>Regístrate</Text>
+            </TouchableOpacity>
+          </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FAF9FE',
+  },
+  flex: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 28,
+    paddingVertical: 20,
+  },
+  contentInner: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
+  logoBox: {
+    width: 90,
+    height: 90,
+    borderRadius: 24,
+    backgroundColor: '#5B46E8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#5B46E8',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  logoIcon: {
+    fontSize: 48,
+    lineHeight: 48,
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 0,
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#1A1C20',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6C757D',
+    marginTop: 6,
+  },
+  form: {
+    marginBottom: 20,
+  },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D3142',
+    marginBottom: 8,
+  },
+  input: {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#1A1C20',
+  },
+  passwordWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+  },
+  passwordInput: {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#1A1C20',
+  },
+  eyeButton: {
+    paddingHorizontal: 14,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eyeIcon: {
+    fontSize: 22,
+    lineHeight: 22,
+  },
+  forgotContainer: {
+    alignSelf: 'flex-end',
+    marginTop: 10,
+  },
+  forgotText: {
+    fontSize: 13,
+    color: '#5B46E8',
+  },
+  primaryButton: {
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#5B46E8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#5B46E8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    fontSize: 13,
+    color: '#94A3B8',
+    marginHorizontal: 12,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+  },
+  socialButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1C20',
+  },
+  socialIcon: {
+    fontSize: 20,
+    lineHeight: 20,
+  },
+  demoBox: {
+    marginTop: 18,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F1EFFD',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  demoTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#5B46E8',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  demoItem: {
+    fontSize: 13,
+    color: '#2D3142',
+    marginTop: 2,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#6C757D',
+  },
+  registerText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#5B46E8',
+  },
+});
+
+export default LoginScreen;
