@@ -25,6 +25,18 @@ export interface SecurityOption {
   switchValue?: boolean;
 }
 
+export type DeviceKind = 'smartphone' | 'laptop' | 'tablet';
+
+export interface ActiveDevice {
+  id: string;
+  deviceType: DeviceKind;
+  deviceName: string;
+  os: string;
+  browser?: string;
+  location: string;
+  lastActive: string;
+}
+
 export interface TherapistProfile {
   name: string;
   role: string;

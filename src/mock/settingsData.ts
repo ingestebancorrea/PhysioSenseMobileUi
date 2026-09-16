@@ -1,4 +1,5 @@
 import type {
+  ActiveDevice,
   PreferenceOption,
   SecurityOption,
   SettingOption,
@@ -126,5 +127,33 @@ export const SECURITY_OPTIONS: SecurityOption[] = [
     subtitle: 'Revisa los últimos accesos a tu cuenta.',
     iconName: 'history',
     accessory: 'chevron',
+  },
+];
+
+export const CURRENT_SESSION = {
+  deviceName: 'iPhone 16',
+  os: 'iOS 26.5',
+  location: 'Bogotá, Colombia',
+  lastActive: '10 jul 2025, 9:41 a. m.',
+};
+
+export const ACTIVE_DEVICES: ActiveDevice[] = [
+  {
+    id: 'device_macbook',
+    deviceType: 'laptop',
+    deviceName: 'MacBook Pro',
+    os: 'macOS 14.6',
+    browser: 'Chrome',
+    location: 'Bogotá, Colombia',
+    lastActive: '8 jul 2025, 4:12 p. m.',
+  },
+  {
+    id: 'device_ipad',
+    deviceType: 'tablet',
+    deviceName: 'iPad Air',
+    os: 'iPadOS 17.5',
+    browser: 'Safari',
+    location: 'Bogotá, Colombia',
+    lastActive: '5 jul 2025, 11:03 a. m.',
   },
 ];

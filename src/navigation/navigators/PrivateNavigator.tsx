@@ -25,6 +25,7 @@ import { NotificationsSettingsScreen } from '@/screens/private/NotificationsSett
 import { HelpSupportScreen } from '@/screens/private/HelpSupportScreen';
 import { PreferencesScreen } from '@/screens/private/PreferencesScreen';
 import { SecurityScreen } from '@/screens/private/SecurityScreen';
+import { SessionsAndDevicesScreen } from '@/screens/private/SessionsAndDevicesScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -142,7 +143,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
   const [settingsRoute, setSettingsRoute] = useState<
-    'main' | 'profile' | 'notifications' | 'preferences' | 'security'
+    'main' | 'profile' | 'notifications' | 'preferences' | 'security' | 'devices'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
   const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
@@ -337,6 +338,11 @@ const TherapistNavigatorContent: React.FC = () => {
       if (settingsRoute === 'security') {
         return <SecurityScreen onBack={() => setSettingsRoute('main')} />;
       }
+      if (settingsRoute === 'devices') {
+        return (
+          <SessionsAndDevicesScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
       return (
         <SettingsScreen
           onBack={() => setActiveTab('inicio')}
@@ -352,6 +358,9 @@ const TherapistNavigatorContent: React.FC = () => {
             }
             if (route === 'Security') {
               setSettingsRoute('security');
+            }
+            if (route === 'Devices') {
+              setSettingsRoute('devices');
             }
           }}
         />
