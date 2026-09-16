@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,26 +8,24 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ShieldCheck } from 'lucide-react-native';
+import { ChevronLeft, Lock } from 'lucide-react-native';
 
 import { InfoBanner } from '@/components/settings/InfoBanner';
 import { PreferenceRowItem } from '@/components/settings/PreferenceRowItem';
-import { SECURITY_OPTIONS } from '@/mock/settingsData';
+import { PRIVACY_OPTIONS } from '@/mock/settingsData';
 import { ICONS, type IconName } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
-import type { SecurityOption } from '@/types/settings';
+import type { PrivacyOption } from '@/types/settings';
 
 const DESIGN_WIDTH = 390;
 const PAGE_BACKGROUND = '#f1f4f8';
 const SUBTITLE_COLOR = '#6B7280';
 
-interface SecurityScreenProps {
+interface PrivacyScreenProps {
   onBack?: () => void;
 }
 
-export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
-  const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(true);
-
+export const PrivacyScreen: React.FC<PrivacyScreenProps> = ({ onBack }) => {
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
@@ -46,13 +44,13 @@ export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
         </TouchableOpacity>
 
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Seguridad</Text>
+          <Text style={styles.headerTitle}>Privacidad</Text>
         </View>
       </View>
 
       <View style={styles.headerSubtitleWrapper}>
         <Text style={styles.headerSubtitle}>
-          Protege tu cuenta y mantén tu información segura.
+          Controla cómo se usa y se protege tu información personal.
         </Text>
       </View>
 
@@ -60,9 +58,8 @@ export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {SECURITY_OPTIONS.map((option: SecurityOption) => {
+        {PRIVACY_OPTIONS.map((option: PrivacyOption) => {
           const Icon = ICONS[option.iconName as IconName];
-          const isBiometrics = option.id === 'sec_biometria';
 
           return (
             <View key={option.id} style={styles.itemWrapper}>
@@ -70,20 +67,15 @@ export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
                 icon={Icon}
                 title={option.title}
                 value={option.subtitle}
-                accessory={option.accessory}
-                switchValue={isBiometrics ? isBiometricsEnabled : option.switchValue}
-                onSwitchChange={
-                  isBiometrics ? setIsBiometricsEnabled : undefined
-                }
               />
             </View>
           );
         })}
 
         <InfoBanner
-          icon={ShieldCheck}
-          title="Tu cuenta está protegida"
-          description="Usamos los más altos estándares de seguridad para cuidar tu información."
+          icon={Lock}
+          title="Tu privacidad es importante"
+          description="Nos comprometemos a proteger tus datos personales y darte el control sobre ellos."
         />
       </ScrollView>
     </SafeAreaView>
@@ -147,16 +139,6 @@ const createStyles = (scale: number) =>
       flex: 1,
       borderRadius: 14 * scale,
     },
-    banner: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: COLORS.primaryVioletSoft,
-      borderRadius: 16,
-      paddingVertical: 20 * scale,
-      paddingHorizontal: 18 * scale,
-      gap: 14 * scale,
-    },
   });
 
-export default SecurityScreen;
+export default PrivacyScreen;

@@ -37,6 +37,14 @@ export interface ActiveDevice {
   lastActive: string;
 }
 
+export interface PrivacyOption {
+  id: string;
+  title: string;
+  subtitle: string;
+  iconName: string;
+  route: string;
+}
+
 export interface TherapistProfile {
   name: string;
   role: string;

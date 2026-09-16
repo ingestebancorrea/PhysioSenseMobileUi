@@ -1,6 +1,7 @@
 import type {
   ActiveDevice,
   PreferenceOption,
+  PrivacyOption,
   SecurityOption,
   SettingOption,
   TherapistProfile,
@@ -155,5 +156,43 @@ export const ACTIVE_DEVICES: ActiveDevice[] = [
     browser: 'Safari',
     location: 'Bogotá, Colombia',
     lastActive: '5 jul 2025, 11:03 a. m.',
+  },
+];
+
+export const PRIVACY_OPTIONS: PrivacyOption[] = [
+  {
+    id: 'privacy_datos',
+    title: 'Uso de datos',
+    subtitle: 'Administra el uso de tus datos para mejorar la aplicación.',
+    iconName: 'database',
+    route: 'DataUsage',
+  },
+  {
+    id: 'privacy_personales',
+    title: 'Datos personales',
+    subtitle: 'Consulta y edita la información que compartes.',
+    iconName: 'user',
+    route: 'PersonalData',
+  },
+  {
+    id: 'privacy_compartir',
+    title: 'Compartir información',
+    subtitle: 'Configura qué información puedes compartir con otros.',
+    iconName: 'share2',
+    route: 'ShareInfo',
+  },
+  {
+    id: 'privacy_cookies',
+    title: 'Cookies y tecnologías',
+    subtitle: 'Gestiona las cookies y tecnologías de seguimiento.',
+    iconName: 'cookie',
+    route: 'Cookies',
+  },
+  {
+    id: 'privacy_consentimientos',
+    title: 'Consentimientos',
+    subtitle: 'Revisa y administra tus consentimientos de uso de datos.',
+    iconName: 'fileCheck',
+    route: 'Consents',
   },
 ];
