@@ -1,4 +1,69 @@
-import type { Session, SessionStatus } from '@/types/session';
+import { Image } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
+import type { Session, SessionExercise, SessionStatus } from '@/types/session';
+
+const CLOSED_HAND_SOURCE = require('../../assets/closed-hand.png') as ImageSourcePropType;
+const OPEN_HAND_SOURCE = require('../../assets/open-hand.png') as ImageSourcePropType;
+const CLAMP_SOURCE = require('../../assets/clamp.png') as ImageSourcePropType;
+const MOVE_THUMB_SOURCE = require('../../assets/move-thumb.png') as ImageSourcePropType;
+
+const assetUri = (source: ImageSourcePropType): string | undefined =>
+  Image.resolveAssetSource(source)?.uri;
+
+const EXERCISE_POOL: SessionExercise[] = [
+  {
+    id: 'exercise_01',
+    title: 'Cerrar la mano',
+    sessions: '3 series',
+    repetitions: '15 rep',
+    imageUrl: assetUri(CLOSED_HAND_SOURCE),
+  },
+  {
+    id: 'exercise_02',
+    title: 'Abrir la mano',
+    sessions: '3 series',
+    repetitions: '15 rep',
+    imageUrl: assetUri(OPEN_HAND_SOURCE),
+  },
+  {
+    id: 'exercise_03',
+    title: 'Pinza índice-pulgar',
+    sessions: '2 series',
+    repetitions: '12 rep',
+    imageUrl: assetUri(CLAMP_SOURCE),
+  },
+  {
+    id: 'exercise_04',
+    title: 'Oposición del pulgar',
+    sessions: '3 series',
+    repetitions: '10 rep',
+    imageUrl: assetUri(MOVE_THUMB_SOURCE),
+  },
+  {
+    id: 'exercise_05',
+    title: 'Flexión de muñeca',
+    sessions: '3 series',
+    repetitions: '12 rep',
+  },
+  {
+    id: 'exercise_06',
+    title: 'Extensión de muñeca',
+    sessions: '3 series',
+    repetitions: '12 rep',
+  },
+  {
+    id: 'exercise_07',
+    title: 'Desviación radial y cubital',
+    sessions: '2 series',
+    repetitions: '10 rep',
+  },
+  {
+    id: 'exercise_08',
+    title: 'Estiramiento de dedos',
+    sessions: '2 series',
+    repetitions: '20 seg',
+  },
+];
 
 export const SESSIONS: Session[] = [
   {
@@ -10,6 +75,10 @@ export const SESSIONS: Session[] = [
     exerciseCount: 8,
     durationMinutes: 40,
     status: 'Activa',
+    objective:
+      'Evaluar el avance de la movilidad articular y reforzar la rutina de fortalecimiento.',
+    progress: 62,
+    exercises: [EXERCISE_POOL[0], EXERCISE_POOL[1], EXERCISE_POOL[3], EXERCISE_POOL[4], EXERCISE_POOL[5], EXERCISE_POOL[6], EXERCISE_POOL[7]],
   },
   {
     id: 's002',
@@ -20,6 +89,10 @@ export const SESSIONS: Session[] = [
     exerciseCount: 10,
     durationMinutes: 50,
     status: 'Activa',
+    objective:
+      'Recuperar la fuerza de la mano derecha tras la intervención quirúrgica.',
+    progress: 45,
+    exercises: [EXERCISE_POOL[0], EXERCISE_POOL[1], EXERCISE_POOL[2], EXERCISE_POOL[3], EXERCISE_POOL[5], EXERCISE_POOL[7]],
   },
   {
     id: 's003',
@@ -30,6 +103,10 @@ export const SESSIONS: Session[] = [
     exerciseCount: 6,
     durationMinutes: 35,
     status: 'Programada',
+    objective:
+      'Realizar valoración funcional inicial del túnel carpiano y definir plan de tratamiento.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[2], EXERCISE_POOL[3], EXERCISE_POOL[7]],
   },
   {
     id: 's004',
@@ -40,6 +117,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 7,
     durationMinutes: 30,
     status: 'Programada',
+    objective: 'Aumentar la fuerza muscular del complejo articular de la muñeca.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[4], EXERCISE_POOL[5], EXERCISE_POOL[6], EXERCISE_POOL[0]],
   },
   {
     id: 's005',
@@ -50,6 +130,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 5,
     durationMinutes: 25,
     status: 'Borrador',
+    objective: 'Control del dolor de epicóndilo y refuerzo de la musculatura extensora.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[4], EXERCISE_POOL[6], EXERCISE_POOL[7]],
   },
   {
     id: 's006',
@@ -60,6 +143,10 @@ export const SESSIONS: Session[] = [
     exerciseCount: 9,
     durationMinutes: 45,
     status: 'Completada',
+    objective:
+      'Restablecer el rango articular del hombro y fortalecer la musculatura estabilizadora.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[0], EXERCISE_POOL[1], EXERCISE_POOL[2], EXERCISE_POOL[4], EXERCISE_POOL[5], EXERCISE_POOL[7]],
   },
   {
     id: 's007',
@@ -70,6 +157,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 8,
     durationMinutes: 40,
     status: 'Completada',
+    objective: 'Mejorar la movilidad y elasticidad de la articulación del hombro.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[1], EXERCISE_POOL[3], EXERCISE_POOL[5], EXERCISE_POOL[6]],
   },
   {
     id: 's008',
@@ -80,6 +170,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 4,
     durationMinutes: 30,
     status: 'Borrador',
+    objective: 'Reducir el edema de mano mediante drenaje y movilizaciones suaves.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[1], EXERCISE_POOL[7]],
   },
   {
     id: 's009',
@@ -90,6 +183,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 6,
     durationMinutes: 35,
     status: 'Completada',
+    objective: 'Manejo del dolor crónico mediante terapia manual y ejercicios de bajo impacto.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[2], EXERCISE_POOL[3], EXERCISE_POOL[6]],
   },
   {
     id: 's010',
@@ -100,6 +196,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 10,
     durationMinutes: 50,
     status: 'Completada',
+    objective: 'Fortalecimiento y propiocepción del tobillo en fase funcional.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[4], EXERCISE_POOL[5], EXERCISE_POOL[0], EXERCISE_POOL[1]],
   },
   {
     id: 's011',
@@ -110,6 +209,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 7,
     durationMinutes: 30,
     status: 'Completada',
+    objective: 'Aliviar la tensión cervical y mejorar la postura de la paciente.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[1], EXERCISE_POOL[3], EXERCISE_POOL[7]],
   },
   {
     id: 's012',
@@ -120,6 +222,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 5,
     durationMinutes: 25,
     status: 'Programada',
+    objective: 'Medición de rangos articulares completos de miembro superior.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[1], EXERCISE_POOL[4], EXERCISE_POOL[6]],
   },
   {
     id: 's013',
@@ -130,6 +235,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 8,
     durationMinutes: 40,
     status: 'Programada',
+    objective: 'Movilización articular asistida de la mano izquierda.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[0], EXERCISE_POOL[2], EXERCISE_POOL[3], EXERCISE_POOL[5]],
   },
   {
     id: 's014',
@@ -140,6 +248,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 6,
     durationMinutes: 30,
     status: 'Programada',
+    objective: 'Fortalecer la musculatura del pulgar y la pinza fina.',
+    progress: 0,
+    exercises: [EXERCISE_POOL[3], EXERCISE_POOL[2], EXERCISE_POOL[7]],
   },
   {
     id: 's015',
@@ -150,6 +261,9 @@ export const SESSIONS: Session[] = [
     exerciseCount: 4,
     durationMinutes: 20,
     status: 'Completada',
+    objective: 'Revisión mensual de evolución y ajuste de metas terapéuticas.',
+    progress: 100,
+    exercises: [EXERCISE_POOL[0], EXERCISE_POOL[2], EXERCISE_POOL[5]],
   },
 ];
 

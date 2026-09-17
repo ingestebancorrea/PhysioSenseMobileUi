@@ -19,13 +19,29 @@ import { FabButton } from '@/components/common/fabButton/FabButton';
 
 type FilterTab = 'Todas' | 'Activas' | 'Completadas' | 'Borradores';
 
-interface SessionsScreenProps {}
+interface SessionsScreenProps {
+  onSelectSession?: (session: Session) => void;
+  onCreateSession?: () => void;
+}
 
-export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
+export const SessionsScreen: React.FC<SessionsScreenProps> = ({
+  onSelectSession,
+  onCreateSession,
+}) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todas');
   const { open } = useDrawer();
   const navigate = useNavigate();
+
+  const handleOpenSessionDetail = useCallback(
+    (sessionId: string) => {
+      const session = SESSIONS.find(item => item.id === sessionId);
+      if (session) {
+        onSelectSession?.(session);
+      }
+    },
+    [onSelectSession],
+  );
 
   const counts = useMemo(
     () => ({
@@ -62,9 +78,9 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Session }) => (
-      <SessionCard session={item} onPress={() => {}} />
+      <SessionCard session={item} onPress={handleOpenSessionDetail} />
     ),
-    [],
+    [handleOpenSessionDetail],
   );
 
   const keyExtractor = useCallback((item: Session) => item.id, []);
@@ -107,7 +123,7 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
         }
       />
 
-      <FabButton onPress={() => {}} />
+      <FabButton onPress={onCreateSession} />
     </SafeAreaView>
   );
 };

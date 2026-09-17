@@ -19,6 +19,7 @@ import { PatientsListScreen } from '@/screens/private/PatientsListScreen';
 import { PlaceholderScreen } from '@/screens/private/PlaceholderScreen';
 import { ProfileScreen } from '@/screens/private/ProfileScreen';
 import { SessionsScreen } from '@/screens/private/SessionsScreen';
+import { SessionDetailScreen } from '@/screens/physiotherapist/SessionDetailScreen';
 import { SettingsScreen } from '@/screens/private/SettingsScreen';
 import { PersonalProfileScreen } from '@/screens/private/PersonalProfileScreen';
 import { NotificationsSettingsScreen } from '@/screens/private/NotificationsSettingsScreen';
@@ -34,6 +35,7 @@ import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
 import { THERAPIST_EXERCISES } from '@/mock/therapistExercisesData';
 import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
 import { getPatientById } from '@/mock/patientData';
+import type { Session } from '@/types/session';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 
 const SCREENS: Record<string, React.ComponentType> = {
@@ -135,6 +137,7 @@ const THERAPIST_TAB_TITLES: Record<string, string> = {
 
 type PatientRoute = 'list' | 'detail' | 'assign' | 'create';
 type ExerciseRoute = 'list' | 'form';
+type SessionRoute = 'list' | 'detail' | 'assign' | 'create';
 
 const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
@@ -143,6 +146,8 @@ const TherapistNavigatorContent: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
+  const [sessionRoute, setSessionRoute] = useState<SessionRoute>('list');
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [settingsRoute, setSettingsRoute] = useState<
     | 'main'
     | 'profile'
@@ -161,6 +166,7 @@ const TherapistNavigatorContent: React.FC = () => {
         setPatientRoute('list');
       }
       setExerciseRoute('list');
+      setSessionRoute('list');
       setShowNotifications(false);
       setShowHelp(false);
       setActiveTab(key);
@@ -183,6 +189,7 @@ const TherapistNavigatorContent: React.FC = () => {
       setPatientRoute('list');
     }
     setExerciseRoute('list');
+    setSessionRoute('list');
     setShowNotifications(false);
     setShowHelp(false);
     setActiveTab(tab);
@@ -195,9 +202,31 @@ const TherapistNavigatorContent: React.FC = () => {
       return;
     }
     setExerciseRoute('list');
+    setSessionRoute('list');
     setShowNotifications(false);
     setShowHelp(false);
     setActiveTab(tab);
+  };
+
+  const handleSelectSession = (session: Session) => {
+    setSelectedSession(session);
+    setSessionRoute('detail');
+  };
+
+  const handleOpenCreateSessionFromSessions = () => {
+    setSessionRoute('assign');
+  };
+
+  const handleBackSessionsFromAssignSession = () => {
+    setSessionRoute('list');
+  };
+
+  const handleOpenCreateFromAssignSession = () => {
+    setSessionRoute('create');
+  };
+
+  const handleBackSessionsFromCreateSession = () => {
+    setSessionRoute('assign');
   };
 
   const handleSelectPatient = (patientId: string) => {
@@ -301,7 +330,33 @@ const TherapistNavigatorContent: React.FC = () => {
     }
 
     if (activeTab === 'sesiones') {
-      return <SessionsScreen />;
+      if (sessionRoute === 'detail' && selectedSession) {
+        return (
+          <SessionDetailScreen
+            session={selectedSession}
+            onBack={() => setSessionRoute('list')}
+          />
+        );
+      }
+      if (sessionRoute === 'assign') {
+        return (
+          <AssignSessionScreen
+            onBack={handleBackSessionsFromAssignSession}
+            onCreateSession={handleOpenCreateFromAssignSession}
+          />
+        );
+      }
+      if (sessionRoute === 'create') {
+        return (
+          <CreateSessionScreen onBack={handleBackSessionsFromCreateSession} />
+        );
+      }
+      return (
+        <SessionsScreen
+          onSelectSession={handleSelectSession}
+          onCreateSession={handleOpenCreateSessionFromSessions}
+        />
+      );
     }
 
     if (activeTab === 'ejercicios') {
