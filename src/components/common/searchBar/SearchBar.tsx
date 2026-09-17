@@ -9,6 +9,7 @@ interface SearchBarProps {
   placeholder?: string;
   onFilterPress?: () => void;
   showFilterButton?: boolean;
+  filterActive?: boolean;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -17,6 +18,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = 'Buscar...',
   onFilterPress,
   showFilterButton = true,
+  filterActive = false,
 }) => (
   <View style={styles.row}>
     <View style={styles.searchInput}>
@@ -32,11 +34,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
     {showFilterButton && (
       <TouchableOpacity
-        style={styles.filterButton}
+        style={[
+          styles.filterButton,
+          filterActive && styles.filterButtonActive,
+        ]}
         activeOpacity={0.7}
         onPress={onFilterPress}
       >
-        <SlidersHorizontal size={20} color={COLORS.textPrimary} />
+        <SlidersHorizontal
+          size={20}
+          color={filterActive ? COLORS.primary : COLORS.textPrimary}
+        />
+        {filterActive && <View style={styles.filterDot} />}
       </TouchableOpacity>
     )}
   </View>
@@ -77,5 +86,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.borderSubtle,
+    position: 'relative',
+  },
+  filterButtonActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primarySoft,
+  },
+  filterDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: COLORS.white,
+    backgroundColor: COLORS.primary,
   },
 });

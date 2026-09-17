@@ -12,6 +12,12 @@ import { useNavigate } from '@/context/PrivateNavigationContext';
 import { SESSIONS } from '@/mock/sessionData';
 import type { Session } from '@/types/session';
 import { SessionCard } from '@/components/sessions/SessionCard';
+import {
+  SessionFiltersModal,
+  EMPTY_FILTERS,
+  getActiveFilterCount,
+  type SessionFilters,
+} from '@/components/sessions/SessionFiltersModal';
 import { SessionFilterChips } from '@/components/sessions/SessionFilterChips';
 import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
@@ -19,13 +25,41 @@ import { FabButton } from '@/components/common/fabButton/FabButton';
 
 type FilterTab = 'Todas' | 'Activas' | 'Completadas' | 'Borradores';
 
-interface SessionsScreenProps {}
+interface SessionsScreenProps {
+  onSelectSession?: (session: Session) => void;
+  onCreateSession?: () => void;
+}
 
-export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
+export const SessionsScreen: React.FC<SessionsScreenProps> = ({
+  onSelectSession,
+  onCreateSession,
+}) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todas');
+  const [filters, setFilters] = useState<SessionFilters>(EMPTY_FILTERS);
+  const [filtersVisible, setFiltersVisible] = useState(false);
   const { open } = useDrawer();
   const navigate = useNavigate();
+
+  const patientOptions = useMemo(
+    () =>
+      Array.from(new Set(SESSIONS.map(session => session.patientName))).sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [],
+  );
+
+  const activeFilterCount = getActiveFilterCount(filters);
+
+  const handleOpenSessionDetail = useCallback(
+    (sessionId: string) => {
+      const session = SESSIONS.find(item => item.id === sessionId);
+      if (session) {
+        onSelectSession?.(session);
+      }
+    },
+    [onSelectSession],
+  );
 
   const counts = useMemo(
     () => ({
@@ -57,14 +91,31 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
       );
     }
 
+    if (filters.statuses.length > 0) {
+      result = result.filter(s => filters.statuses.includes(s.status));
+    }
+
+    if (filters.duration) {
+      result = result.filter(s => {
+        const minutes = s.durationMinutes;
+        if (filters.duration === 'short') return minutes < 30;
+        if (filters.duration === 'long') return minutes > 45;
+        return minutes >= 30 && minutes <= 45;
+      });
+    }
+
+    if (filters.patients.length > 0) {
+      result = result.filter(s => filters.patients.includes(s.patientName));
+    }
+
     return result;
-  }, [activeFilter, search]);
+  }, [activeFilter, search, filters]);
 
   const renderItem = useCallback(
     ({ item }: { item: Session }) => (
-      <SessionCard session={item} onPress={() => {}} />
+      <SessionCard session={item} onPress={handleOpenSessionDetail} />
     ),
-    [],
+    [handleOpenSessionDetail],
   );
 
   const keyExtractor = useCallback((item: Session) => item.id, []);
@@ -81,6 +132,8 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
         value={search}
         onChangeText={setSearch}
         placeholder="Buscar sesiones..."
+        onFilterPress={() => setFiltersVisible(true)}
+        filterActive={activeFilterCount > 0}
       />
 
       <SessionFilterChips
@@ -107,7 +160,16 @@ export const SessionsScreen: React.FC<SessionsScreenProps> = () => {
         }
       />
 
-      <FabButton onPress={() => {}} />
+      <FabButton onPress={onCreateSession} />
+
+      <SessionFiltersModal
+        visible={filtersVisible}
+        initialFilters={filters}
+        patientOptions={patientOptions}
+        onClose={() => setFiltersVisible(false)}
+        onApply={setFilters}
+        onReset={() => setFilters(EMPTY_FILTERS)}
+      />
     </SafeAreaView>
   );
 };

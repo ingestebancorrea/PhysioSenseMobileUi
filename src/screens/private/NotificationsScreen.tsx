@@ -10,7 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Bell,
   Bluetooth,
-  Check,
   CheckCheck,
   ChevronLeft,
   Flag,
@@ -166,11 +165,13 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 
 interface NotificationsScreenProps {
   onBack?: () => void;
+  onOpenSettings?: () => void;
   notifications?: NotificationItem[];
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   onBack,
+  onOpenSettings,
   notifications: notificationsProp = MOCK_NOTIFICATIONS,
 }) => {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
@@ -330,6 +331,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         <TouchableOpacity
           style={styles.headerButton}
           activeOpacity={0.8}
+          onPress={onOpenSettings}
           accessibilityRole="button"
           accessibilityLabel="Configuración de notificaciones"
         >

@@ -9,6 +9,9 @@ export interface Session {
   exerciseCount: number;
   durationMinutes: number;
   status: SessionStatus;
+  objective?: string;
+  progress?: number;
+  exercises?: SessionExercise[];
 }
 
 export interface SessionExercise {
