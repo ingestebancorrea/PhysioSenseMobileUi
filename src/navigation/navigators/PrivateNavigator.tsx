@@ -290,6 +290,10 @@ const TherapistNavigatorContent: React.FC = () => {
         <NotificationsScreen
           notifications={THERAPIST_NOTIFICATIONS}
           onBack={() => setShowNotifications(false)}
+          onOpenSettings={() => {
+            setShowNotifications(false);
+            setActiveTab('mas');
+          }}
         />
       );
     }
