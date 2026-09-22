@@ -398,7 +398,10 @@ const TherapistNavigatorContent: React.FC = () => {
       }
       if (settingsRoute === 'preferences') {
         return (
-          <PreferencesScreen onBack={() => setSettingsRoute('main')} />
+          <PreferencesScreen
+            onBack={() => setSettingsRoute('main')}
+            onOpenNotifications={() => setSettingsRoute('notifications')}
+          />
         );
       }
       if (settingsRoute === 'security') {
