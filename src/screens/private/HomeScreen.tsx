@@ -31,7 +31,7 @@ export const HomeScreen: React.FC = () => {
 
         <WelcomeBanner firstName={user.firstName} />
 
-        <SectionHeader title="Resumen de hoy" link="Ver más" />
+        <SectionHeader title="Resumen de hoy" />
         <View style={styles.grid}>
           {summary.map(metric => (
             <MetricCard key={metric.id} metric={metric} />
