@@ -6,6 +6,7 @@ export interface PatientProfile {
   id: string;
   name: string;
   email: string;
+  phone: string;
   avatarUrl: string;
   birthDate: string;
   dominantHand: DominantHand;
