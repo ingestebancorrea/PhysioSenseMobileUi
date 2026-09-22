@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { ICONS } from '@/constants/icons';
 import { DatePickerField } from '@/components/sessionForm/DatePickerField';
 import { NumberPickerField } from '@/components/sessionForm/NumberPickerField';
+import { useAppAlert } from '@/hooks/useAppAlert';
 
 const pad = (num: number) => String(num).padStart(2, '0');
 
@@ -39,15 +39,19 @@ export const AssignSessionScreen: React.FC<AssignSessionScreenProps> = ({
   const [planDuration, setPlanDuration] = useState('4');
   const [notes, setNotes] = useState('');
 
+  const { alertModal, showAlert } = useAppAlert();
+
   const BackIcon = ICONS.arrowLeft;
   const PlusIcon = ICONS.plus;
 
   const handleAssignSession = () => {
     if (!patient || !session || !startDate) {
-      Alert.alert(
-        'Campos requeridos',
-        'Por favor selecciona un paciente, una sesión y la fecha de inicio.',
-      );
+      showAlert({
+        title: 'Campos requeridos',
+        message:
+          'Por favor selecciona un paciente, una sesión y la fecha de inicio.',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -61,11 +65,13 @@ export const AssignSessionScreen: React.FC<AssignSessionScreenProps> = ({
     };
 
     console.log('Sesión Asignada Exitosamente:', payload);
-    Alert.alert(
-      '¡Éxito!',
-      'La sesión ha sido asignada al paciente correctamente.',
-      [{ text: 'OK', onPress: onBack }],
-    );
+    showAlert({
+      title: '¡Éxito!',
+      message: 'La sesión ha sido asignada al paciente correctamente.',
+      variant: 'success',
+      confirmText: 'OK',
+      onConfirm: onBack,
+    });
   };
 
   return (
@@ -177,6 +183,7 @@ export const AssignSessionScreen: React.FC<AssignSessionScreenProps> = ({
           <Text style={styles.assignButtonText}>Asignar sesión</Text>
         </TouchableOpacity>
       </View>
+      {alertModal}
     </SafeAreaView>
   );
 };

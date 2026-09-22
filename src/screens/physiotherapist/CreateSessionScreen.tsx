@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
@@ -9,6 +9,7 @@ import { SessionInfoStep, type SessionInfoField } from '@/components/sessionForm
 import { SessionExercisesStep } from '@/components/sessionForm/SessionExercisesStep';
 import { SessionReviewStep } from '@/components/sessionForm/SessionReviewStep';
 import { SessionFormFooter } from '@/components/sessionForm/SessionFormFooter';
+import { useAppAlert } from '@/hooks/useAppAlert';
 
 const pad = (num: number) => String(num).padStart(2, '0');
 
@@ -37,6 +38,7 @@ export interface CreateSessionScreenProps {
 }
 
 export const CreateSessionScreen: React.FC<CreateSessionScreenProps> = ({ onBack }) => {
+  const { alertModal, showAlert } = useAppAlert();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [form, setForm] = useState<SessionFormData>(INITIAL_FORM);
   const [showExercises, setShowExercises] = useState(false);
@@ -90,7 +92,11 @@ export const CreateSessionScreen: React.FC<CreateSessionScreenProps> = ({ onBack
   };
 
   const handleAddExercise = () => {
-    Alert.alert('Información', 'La selección de ejercicios estará disponible próximamente.');
+    showAlert({
+      title: 'Información',
+      message: 'La selección de ejercicios estará disponible próximamente.',
+      variant: 'info',
+    });
   };
 
   const handleSaveSession = () => {
@@ -105,9 +111,13 @@ export const CreateSessionScreen: React.FC<CreateSessionScreenProps> = ({ onBack
     };
 
     console.log('Sesión Guardada Exitosamente:', payload);
-    Alert.alert('¡Éxito!', 'La sesión ha sido creada correctamente.', [
-      { text: 'OK', onPress: () => onBack?.() },
-    ]);
+    showAlert({
+      title: '¡Éxito!',
+      message: 'La sesión ha sido creada correctamente.',
+      variant: 'success',
+      confirmText: 'OK',
+      onConfirm: () => onBack?.(),
+    });
   };
 
   return (
@@ -159,6 +169,7 @@ export const CreateSessionScreen: React.FC<CreateSessionScreenProps> = ({ onBack
         onNext={handleNext}
         onSave={handleSaveSession}
       />
+      {alertModal}
     </SafeAreaView>
   );
 };

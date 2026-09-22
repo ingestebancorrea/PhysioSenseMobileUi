@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, ChevronLeft, Pencil } from 'lucide-react-native';
 
 import { getInitials } from '@/utils/helpers/nameInitials';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import {
   THERAPIST_SETTINGS_PROFILE,
 } from '@/mock/settingsData';
@@ -59,15 +59,20 @@ export const PersonalProfileScreen: React.FC<PersonalProfileScreenProps> = ({
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
+  const { alertModal, showAlert } = useAppAlert();
 
   const handleChange = (key: FieldKey, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSave = () => {
-    Alert.alert('Éxito', 'Perfil actualizado correctamente', [
-      { text: 'OK', onPress: onBack },
-    ]);
+    showAlert({
+      title: 'Éxito',
+      message: 'Perfil actualizado correctamente',
+      variant: 'success',
+      confirmText: 'OK',
+      onConfirm: onBack,
+    });
   };
 
   return (
@@ -147,6 +152,7 @@ export const PersonalProfileScreen: React.FC<PersonalProfileScreenProps> = ({
           <Text style={styles.saveButtonText}>Guardar cambios</Text>
         </TouchableOpacity>
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };

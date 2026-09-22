@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   ScrollView,
@@ -23,6 +22,7 @@ import type { SaveExercisePayload } from '@/services/exerciseService';
 import { ExerciseVideoPreview } from '@/components/exercise-detail/ExerciseVideoPreview';
 import { ExerciseSpecsCard } from '@/components/exercise-detail/ExerciseSpecsCard';
 import { TargetMusclesCard } from '@/components/exercise-detail/TargetMusclesCard';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import {
   buildExercisePreview,
   buildPreviewThumbnail,
@@ -76,6 +76,8 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
   onSaved,
 }) => {
   const isEditing = Boolean(initialExercise);
+
+  const { alertModal, showAlert } = useAppAlert();
 
   // Control del Stepper (1: Información, 2: Configuración, 3: Revisión)
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -139,10 +141,12 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
         clearFieldError('video');
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : 'No se pudo seleccionar el video.',
-      );
+      showAlert({
+        title: 'Error',
+        message:
+          error instanceof Error ? error.message : 'No se pudo seleccionar el video.',
+        variant: 'error',
+      });
     }
   };
 
@@ -154,10 +158,12 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
         clearFieldError('cover');
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : 'No se pudo seleccionar la imagen.',
-      );
+      showAlert({
+        title: 'Error',
+        message:
+          error instanceof Error ? error.message : 'No se pudo seleccionar la imagen.',
+        variant: 'error',
+      });
     }
   };
 
@@ -810,6 +816,7 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
           </View>
         </View>
       </Modal>
+      {alertModal}
     </SafeAreaView>
   );
 };

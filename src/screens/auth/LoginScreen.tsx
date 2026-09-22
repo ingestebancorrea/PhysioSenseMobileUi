@@ -1,7 +1,6 @@
 // src/screens/auth/LoginScreen.tsx
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -16,6 +15,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '@/context/AuthContext';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
@@ -26,12 +26,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const { login } = useAuth();
+  const { alertModal, showAlert } = useAppAlert();
 
   const handleLogin = () => {
     const success = login(username, password);
 
     if (!success) {
-      Alert.alert('Error', 'Usuario o contraseña incorrectos');
+      showAlert({
+        title: 'Error',
+        message: 'Usuario o contraseña incorrectos',
+        variant: 'error',
+      });
     }
   };
 
@@ -169,6 +174,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {alertModal}
     </SafeAreaView>
   );
 };
