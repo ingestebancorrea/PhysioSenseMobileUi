@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +23,7 @@ import {
 import { PreferenceRowItem } from '@/components/settings/PreferenceRowItem';
 import { ACTIVE_DEVICES, CURRENT_SESSION } from '@/mock/settingsData';
 import { COLORS } from '@/constants/theme';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import type { ActiveDevice, DeviceKind } from '@/types/settings';
 
 const DESIGN_WIDTH = 390;
@@ -94,36 +94,30 @@ export const SessionsAndDevicesScreen: React.FC<
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
+  const { alertModal, showAlert } = useAppAlert();
 
   const handleMenuPress = (device: ActiveDevice) => {
-    Alert.alert(
-      device.deviceName,
-      '¿Qué quieres hacer con este dispositivo?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: () =>
-            setDevices(prev => prev.filter(item => item.id !== device.id)),
-        },
-      ],
-    );
+    showAlert({
+      title: device.deviceName,
+      message: '¿Qué quieres hacer con este dispositivo?',
+      variant: 'error',
+      confirmText: 'Cerrar sesión',
+      cancelText: 'Cancelar',
+      onConfirm: () =>
+        setDevices(prev => prev.filter(item => item.id !== device.id)),
+    });
   };
 
   const handleCloseAllSessions = () => {
-    Alert.alert(
-      'Cerrar todas las sesiones',
-      '¿Seguro que quieres finalizar tu sesión en todos los dispositivos?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar todas',
-          style: 'destructive',
-          onPress: () => setDevices([]),
-        },
-      ],
-    );
+    showAlert({
+      title: 'Cerrar todas las sesiones',
+      message:
+        '¿Seguro que quieres finalizar tu sesión en todos los dispositivos?',
+      variant: 'error',
+      confirmText: 'Cerrar todas',
+      cancelText: 'Cancelar',
+      onConfirm: () => setDevices([]),
+    });
   };
 
   return (
@@ -213,6 +207,7 @@ export const SessionsAndDevicesScreen: React.FC<
           value="Revisa y elimina dispositivos que han accedido a tu cuenta."
         />
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };

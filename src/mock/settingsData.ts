@@ -60,18 +60,6 @@ export const THERAPIST_SETTING_OPTIONS: SettingOption[] = [
 
 export const PREFERENCE_OPTIONS: PreferenceOption[] = [
   {
-    id: 'pref_idioma',
-    title: 'Idioma',
-    value: 'Español (Colombia)',
-    iconName: 'globe',
-  },
-  {
-    id: 'pref_region',
-    title: 'Región',
-    value: 'Colombia',
-    iconName: 'mapPin',
-  },
-  {
     id: 'pref_tema',
     title: 'Tema de la aplicación',
     value: 'Claro',
@@ -88,12 +76,6 @@ export const PREFERENCE_OPTIONS: PreferenceOption[] = [
     title: 'Notificaciones',
     value: 'Gestiona tus preferencias de notificaciones.',
     iconName: 'bell',
-  },
-  {
-    id: 'pref_accesibilidad',
-    title: 'Accesibilidad',
-    value: 'Mejora tu experiencia de uso.',
-    iconName: 'personStanding',
   },
 ];
 

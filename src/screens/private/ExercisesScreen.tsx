@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { ICONS } from '@/constants/icons';
@@ -9,6 +9,7 @@ import { ExerciseCard, type ExerciseItem } from '@/components/exercises/Exercise
 import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
 import { FabButton } from '@/components/common/fabButton/FabButton';
+import { useAppAlert } from '@/hooks/useAppAlert';
 
 export interface ExercisesScreenProps {
   exercises: ExerciseItem[];
@@ -26,6 +27,7 @@ export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
   const [search, setSearch] = useState('');
   const { open } = useDrawer();
   const navigate = useNavigate();
+  const { alertModal, showAlert } = useAppAlert();
 
   const filteredExercises = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -55,17 +57,32 @@ export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
 
   const handleDelete = useCallback(
     (id: string) => {
-      onExercisesChange(prev => prev.filter(item => item.id !== id));
+      const exercise = exercises.find(item => item.id === id);
+      showAlert({
+        title: 'Eliminar ejercicio',
+        message: exercise
+          ? `Se eliminará "${exercise.title}". ¿Deseas continuar?`
+          : 'Se eliminará este ejercicio. ¿Deseas continuar?',
+        variant: 'error',
+        cancelText: 'Cancelar',
+        confirmText: 'Eliminar',
+        onConfirm: () =>
+          onExercisesChange(prev => prev.filter(item => item.id !== id)),
+      });
     },
-    [onExercisesChange],
+    [exercises, onExercisesChange, showAlert],
   );
 
   const handlePlay = useCallback(
     (id: string) => {
       const exercise = exercises.find(item => item.id === id);
-      Alert.alert('Reproducir ejercicio', exercise?.title ?? id);
+      showAlert({
+        title: 'Reproducir ejercicio',
+        message: exercise?.title ?? id,
+        variant: 'info',
+      });
     },
-    [exercises],
+    [exercises, showAlert],
   );
 
   const renderItem = useCallback(
@@ -116,6 +133,7 @@ export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
       />
 
       <FabButton onPress={handleCreate} />
+      {alertModal}
     </SafeAreaView>
   );
 };

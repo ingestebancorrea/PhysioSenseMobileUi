@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -11,6 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 
 import { PreferenceRowItem } from '@/components/settings/PreferenceRowItem';
+import {
+  ThemePreferenceModal,
+  type ThemeOption,
+} from '@/components/settings/ThemePreferenceModal';
+import {
+  TextSizePreferenceModal,
+  type TextSizeOption,
+} from '@/components/settings/TextSizePreferenceModal';
 import { PREFERENCE_OPTIONS } from '@/mock/settingsData';
 import { ICONS, type IconName } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
@@ -22,14 +30,37 @@ const SUBTITLE_COLOR = '#6B7280';
 
 interface PreferencesScreenProps {
   onBack?: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({
   onBack,
+  onOpenNotifications,
 }) => {
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
+
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const [textSizeModalVisible, setTextSizeModalVisible] = useState(false);
+  const [themeValue, setThemeValue] = useState<ThemeOption>('light');
+  const [textSizeValue, setTextSizeValue] = useState<TextSizeOption>('normal');
+
+  const themeLabel = themeValue === 'light' ? 'Claro' : 'Oscuro';
+  const textSizeLabel =
+    textSizeValue === 'small' ? 'Pequeño' : textSizeValue === 'normal' ? 'Normal' : 'Grande';
+
+  const handlePress = (option: PreferenceOption) => {
+    if (option.id === 'pref_tema') setThemeModalVisible(true);
+    else if (option.id === 'pref_tamano_texto') setTextSizeModalVisible(true);
+    else if (option.id === 'pref_notificaciones') onOpenNotifications?.();
+  };
+
+  const displayValue = (option: PreferenceOption) => {
+    if (option.id === 'pref_tema') return themeLabel;
+    if (option.id === 'pref_tamano_texto') return textSizeLabel;
+    return option.value;
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -65,12 +96,31 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({
               <PreferenceRowItem
                 icon={Icon}
                 title={option.title}
-                value={option.value}
+                value={displayValue(option)}
+                onPress={() => handlePress(option)}
               />
             </View>
           );
         })}
       </ScrollView>
+      <ThemePreferenceModal
+        visible={themeModalVisible}
+        selected={themeValue}
+        onClose={() => setThemeModalVisible(false)}
+        onApply={(value) => {
+          setThemeValue(value);
+          setThemeModalVisible(false);
+        }}
+      />
+      <TextSizePreferenceModal
+        visible={textSizeModalVisible}
+        selected={textSizeValue}
+        onClose={() => setTextSizeModalVisible(false)}
+        onApply={(value) => {
+          setTextSizeValue(value);
+          setTextSizeModalVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -122,14 +172,12 @@ const createStyles = (scale: number) =>
       lineHeight: 18 * scale,
     },
     content: {
-      flexGrow: 1,
       paddingHorizontal: 20 * scale,
       paddingTop: 8 * scale,
       paddingBottom: 32 * scale,
       gap: 12 * scale,
     },
     itemWrapper: {
-      flex: 1,
       borderRadius: 14 * scale,
     },
   });
