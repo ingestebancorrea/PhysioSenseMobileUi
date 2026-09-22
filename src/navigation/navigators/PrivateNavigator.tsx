@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +28,12 @@ import { PreferencesScreen } from '@/screens/private/PreferencesScreen';
 import { PrivacyScreen } from '@/screens/private/PrivacyScreen';
 import { SecurityScreen } from '@/screens/private/SecurityScreen';
 import { SessionsAndDevicesScreen } from '@/screens/private/SessionsAndDevicesScreen';
+import { PatientHelpSupportScreen } from '@/screens/private/PatientHelpSupportScreen';
+import { PatientEditProfileScreen } from '@/screens/patient/PatientEditProfileScreen';
+import { PatientNotificationsSettingsScreen } from '@/screens/patient/PatientNotificationsSettingsScreen';
+import { PatientPreferencesScreen } from '@/screens/patient/PatientPreferencesScreen';
+import { PatientSecurityScreen } from '@/screens/patient/PatientSecurityScreen';
+import { PatientSettingsScreen } from '@/screens/patient/PatientSettingsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
@@ -47,28 +53,78 @@ const SCREENS: Record<string, React.ComponentType> = {
 
 type ProgressRoute = 'ProgressMain' | 'SessionHistory';
 
+type PatientSettingsRoute =
+  | 'main'
+  | 'profile'
+  | 'notifications'
+  | 'preferences'
+  | 'security';
+
 const PatientNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [progressRoute, setProgressRoute] = useState<ProgressRoute>(
     'ProgressMain',
   );
-  const { isHidden } = usePrivateTabBar();
+  const [showSettings, setShowSettings] = useState(false);
+  const [settingsRoute, setSettingsRoute] =
+    useState<PatientSettingsRoute>('main');
+  const [showHelp, setShowHelp] = useState(false);
+  const { isHidden, hide, show } = usePrivateTabBar();
+
+  const overlayActive = showSettings || showHelp;
+
+  useEffect(() => {
+    if (overlayActive) {
+      hide();
+    } else {
+      show();
+    }
+  }, [overlayActive, hide, show]);
 
   const handleTabPress = (tab: string) => {
     if (tab === 'progress') {
       setProgressRoute('ProgressMain');
     }
+    setShowSettings(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
   const handleNavigate = (tab: string) => {
+    if (tab === 'settings') {
+      setShowHelp(false);
+      setSettingsRoute('main');
+      setShowSettings(true);
+      return;
+    }
+    if (tab === 'help') {
+      setShowSettings(false);
+      setShowHelp(true);
+      return;
+    }
     if (tab === 'progress') {
       setProgressRoute('ProgressMain');
     }
+    setShowSettings(false);
+    setShowHelp(false);
     setActiveTab(tab);
   };
 
   const handleDrawerSelect = (key: string) => {
+    if (key === 'settings') {
+      setShowHelp(false);
+      setSettingsRoute('main');
+      setShowSettings(true);
+      return;
+    }
+    if (key === 'help') {
+      setShowSettings(false);
+      setShowHelp(true);
+      return;
+    }
+    setShowSettings(false);
+    setShowHelp(false);
+
     switch (key) {
       case 'home':
         setActiveTab('home');
@@ -98,7 +154,70 @@ const PatientNavigatorContent: React.FC = () => {
     }
   };
 
+  const handleCloseSettings = () => {
+    setSettingsRoute('main');
+    setShowSettings(false);
+  };
+
   const renderActiveScreen = () => {
+    if (showHelp) {
+      return (
+        <PatientHelpSupportScreen
+          onBack={() => {
+            setShowHelp(false);
+            setSettingsRoute('main');
+          }}
+        />
+      );
+    }
+
+    if (showSettings) {
+      if (settingsRoute === 'profile') {
+        return (
+          <PatientEditProfileScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
+      if (settingsRoute === 'notifications') {
+        return (
+          <PatientNotificationsSettingsScreen
+            onBack={() => setSettingsRoute('main')}
+          />
+        );
+      }
+      if (settingsRoute === 'preferences') {
+        return (
+          <PatientPreferencesScreen
+            onBack={() => setSettingsRoute('main')}
+            onOpenNotifications={() => setSettingsRoute('notifications')}
+          />
+        );
+      }
+      if (settingsRoute === 'security') {
+        return (
+          <PatientSecurityScreen onBack={() => setSettingsRoute('main')} />
+        );
+      }
+      return (
+        <PatientSettingsScreen
+          onBack={handleCloseSettings}
+          onOptionPress={route => {
+            if (route === 'PersonalProfile') {
+              setSettingsRoute('profile');
+            }
+            if (route === 'Notifications') {
+              setSettingsRoute('notifications');
+            }
+            if (route === 'Preferences') {
+              setSettingsRoute('preferences');
+            }
+            if (route === 'Security') {
+              setSettingsRoute('security');
+            }
+          }}
+        />
+      );
+    }
+
     if (activeTab === 'progress') {
       return (
         <ProgressFlowNavigator

@@ -6,6 +6,7 @@ import { Settings, Menu } from 'lucide-react-native';
 import { COLORS } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useDrawer } from '@/context/DrawerContext';
+import { useNavigate } from '@/context/PrivateNavigationContext';
 import { InfoRow } from '@/components/profile/InfoRow';
 import { ProfileSectionCard } from '@/components/profile/ProfileSectionCard';
 import { UserCard } from '@/components/profile/UserCard';
@@ -14,6 +15,7 @@ import { PATIENT_PROFILE } from '@/mock/patientProfileData';
 export const ProfileScreen: React.FC = () => {
   const { logout } = useAuth();
   const { open } = useDrawer();
+  const navigate = useNavigate();
   const { birthDate, dominantHand, diagnosis, assignedTherapist } =
     PATIENT_PROFILE;
 
@@ -34,7 +36,13 @@ export const ProfileScreen: React.FC = () => {
             <Menu size={24} color={COLORS.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Perfil</Text>
-          <TouchableOpacity style={styles.headerButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            activeOpacity={0.8}
+            onPress={() => navigate('settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Configuración"
+          >
             <Settings size={24} color={COLORS.textPrimary} />
           </TouchableOpacity>
         </View>
