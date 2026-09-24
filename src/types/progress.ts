@@ -26,6 +26,8 @@ export interface ProgressScreenData {
   completedSessions: CompletedSessionPoint[];
 }
 
+export type ProgressWindow = Omit<ProgressScreenData, 'activePeriod'>;
+
 export type SessionStatus = 'completed' | 'in_progress' | 'cancelled';
 
 export interface SessionRecord {
