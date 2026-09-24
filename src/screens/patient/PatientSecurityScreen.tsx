@@ -12,10 +12,17 @@ import { ChevronLeft, Fingerprint, History, Lock, ShieldCheck } from 'lucide-rea
 
 import { PreferenceRowItem } from '@/components/settings/PreferenceRowItem';
 import { COLORS } from '@/constants/theme';
+import { useAppAlert } from '@/hooks/useAppAlert';
+
+import { ChangePasswordScreen } from '@/screens/security/ChangePasswordScreen';
+import { TwoStepVerificationScreen } from '@/screens/security/TwoStepVerificationScreen';
+import { SecurityActivityScreen } from '@/screens/security/SecurityActivityScreen';
 
 const DESIGN_WIDTH = 390;
 const PAGE_BACKGROUND = '#f1f4f8';
 const SUBTITLE_COLOR = '#6B7280';
+
+type SecurityRoute = 'list' | 'changePassword' | 'twoStep' | 'activity';
 
 interface PatientSecurityScreenProps {
   onBack?: () => void;
@@ -24,12 +31,40 @@ interface PatientSecurityScreenProps {
 export const PatientSecurityScreen: React.FC<PatientSecurityScreenProps> = ({
   onBack,
 }) => {
+  const [route, setRoute] = useState<SecurityRoute>('list');
   const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(true);
+  const { alertModal, showAlert } = useAppAlert();
 
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
   const insets = useSafeAreaInsets();
+
+  if (route === 'changePassword') {
+    return <ChangePasswordScreen onBack={() => setRoute('list')} />;
+  }
+  if (route === 'twoStep') {
+    return <TwoStepVerificationScreen onBack={() => setRoute('list')} />;
+  }
+  if (route === 'activity') {
+    return <SecurityActivityScreen onBack={() => setRoute('list')} />;
+  }
+
+  const handleOptionPress = (nextRoute: SecurityRoute) => {
+    setRoute(nextRoute);
+  };
+
+  const handleBiometricsToggle = (value: boolean) => {
+    setIsBiometricsEnabled(value);
+    showAlert({
+      title: value ? 'Biometría activada' : 'Biometría desactivada',
+      message: value
+        ? 'Ahora puedes iniciar sesión con tu huella dactilar o reconocimiento facial.'
+        : 'Desactivaste la biometría. Tu cuenta queda protegida únicamente con tu contraseña.',
+      variant: value ? 'success' : 'warning',
+      confirmText: 'Entendido',
+    });
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -69,7 +104,7 @@ export const PatientSecurityScreen: React.FC<PatientSecurityScreenProps> = ({
             value="Inicia sesión con tu huella dactilar o reconocimiento facial."
             accessory="switch"
             switchValue={isBiometricsEnabled}
-            onSwitchChange={setIsBiometricsEnabled}
+            onSwitchChange={handleBiometricsToggle}
           />
         </View>
 
@@ -79,6 +114,7 @@ export const PatientSecurityScreen: React.FC<PatientSecurityScreenProps> = ({
             title="Cambiar contraseña"
             value="Actualiza tu contraseña regularmente para mayor seguridad."
             accessory="chevron"
+            onPress={() => handleOptionPress('changePassword')}
           />
         </View>
 
@@ -88,6 +124,7 @@ export const PatientSecurityScreen: React.FC<PatientSecurityScreenProps> = ({
             title="Verificación en dos pasos"
             value="Añade una capa extra de seguridad a tu cuenta."
             accessory="chevron"
+            onPress={() => handleOptionPress('twoStep')}
           />
         </View>
 
@@ -97,9 +134,11 @@ export const PatientSecurityScreen: React.FC<PatientSecurityScreenProps> = ({
             title="Actividad de seguridad"
             value="Revisa los últimos accesos a tu cuenta."
             accessory="chevron"
+            onPress={() => handleOptionPress('activity')}
           />
         </View>
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };

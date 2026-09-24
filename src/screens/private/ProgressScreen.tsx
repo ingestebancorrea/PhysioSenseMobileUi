@@ -10,7 +10,7 @@ import { DateRangeHeader } from '@/components/progress/DateRangeHeader';
 import { PeriodSelectorTabs } from '@/components/progress/PeriodSelectorTabs';
 import { ProgressMetricCard } from '@/components/progress/ProgressMetricCard';
 import { RangeMotionChartCard } from '@/components/progress/RangeMotionChartCard';
-import { MOCK_PROGRESS_DATA } from '@/mock/progressData';
+import { MOCK_PROGRESS_DATA, PROGRESS_WINDOWS } from '@/mock/progressData';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
 import type { ProgressFlowParamList } from '@/navigation/types/progressFlowParams';
@@ -24,13 +24,24 @@ type ProgressScreenProps = NativeStackScreenProps<
 export const ProgressScreen: React.FC<ProgressScreenProps> = ({
   navigation,
 }) => {
-  const { dateRange, motionPoints, metrics, completedSessions } =
-    MOCK_PROGRESS_DATA;
   const [selectedPeriod, setSelectedPeriod] = useState<ProgressPeriod>(
     MOCK_PROGRESS_DATA.activePeriod,
   );
+  const [windowIndex, setWindowIndex] = useState(0);
   const { open } = useDrawer();
   const navigate = useNavigate();
+
+  const windows = PROGRESS_WINDOWS[selectedPeriod];
+  const { dateRange, motionPoints, metrics, completedSessions } =
+    windows[windowIndex];
+
+  const handleSelectPeriod = (period: ProgressPeriod) => {
+    setSelectedPeriod(period);
+    setWindowIndex(0);
+  };
+
+  const canGoPrevious = windowIndex > 0;
+  const canGoNext = windowIndex < windows.length - 1;
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -42,10 +53,16 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
 
         <PeriodSelectorTabs
           selected={selectedPeriod}
-          onSelect={setSelectedPeriod}
+          onSelect={handleSelectPeriod}
         />
 
-        <DateRangeHeader dateRange={dateRange} />
+        <DateRangeHeader
+          dateRange={dateRange}
+          canGoPrevious={canGoPrevious}
+          canGoNext={canGoNext}
+          onPrevious={() => setWindowIndex(index => index - 1)}
+          onNext={() => setWindowIndex(index => index + 1)}
+        />
 
         <View style={styles.section}>
           <RangeMotionChartCard points={motionPoints} />

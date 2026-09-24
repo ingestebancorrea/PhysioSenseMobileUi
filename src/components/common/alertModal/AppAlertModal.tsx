@@ -33,9 +33,9 @@ export interface AppAlertModalProps {
 
 const VARIANT_META = {
   info: { Icon: Info, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
-  success: { Icon: CheckCircle2, accent: COLORS.success, soft: COLORS.successSoft },
-  warning: { Icon: TriangleAlert, accent: COLORS.warningAmber, soft: COLORS.warningAmberSoft },
-  error: { Icon: XCircle, accent: COLORS.dangerRed, soft: COLORS.dangerRedSoft },
+  success: { Icon: CheckCircle2, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
+  warning: { Icon: TriangleAlert, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
+  error: { Icon: XCircle, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
 } as const;
 
 export const AppAlertModal: React.FC<AppAlertModalProps> = ({

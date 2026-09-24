@@ -11,6 +11,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { COLORS } from '@/constants/theme';
 import { MOCK_SESSION_DETAIL } from '@/mock/sessionDetailData';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import type { ProgressFlowParamList } from '@/navigation/types/progressFlowParams';
 import type { Exercise, SessionDetail } from '@/types/progress';
 
@@ -56,6 +57,7 @@ export const SessionDetailScreen: React.FC<SessionDetailScreenProps> = ({
   navigation,
 }) => {
   const detail: SessionDetail = MOCK_SESSION_DETAIL;
+  const { alertModal, showAlert } = useAppAlert();
 
   const statusStyle = STATUS_COLORS[detail.status];
 
@@ -95,7 +97,19 @@ export const SessionDetailScreen: React.FC<SessionDetailScreenProps> = ({
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Detalle de sesión</Text>
-        <TouchableOpacity style={styles.headerButton} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.headerButton}
+          activeOpacity={0.7}
+          onPress={() =>
+            showAlert({
+              title: 'Compartir sesión',
+              message:
+                'Estamos trabajando en esta función para que compartas el resumen de esta sesión muy pronto.',
+              variant: 'warning',
+              confirmText: 'Entendido',
+            })
+          }
+        >
           <MaterialCommunityIcons
             name="share-variant"
             size={22}
@@ -150,6 +164,7 @@ export const SessionDetailScreen: React.FC<SessionDetailScreenProps> = ({
           </Text>
         </View>
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };

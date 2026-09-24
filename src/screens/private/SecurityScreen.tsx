@@ -15,22 +15,65 @@ import { PreferenceRowItem } from '@/components/settings/PreferenceRowItem';
 import { SECURITY_OPTIONS } from '@/mock/settingsData';
 import { ICONS, type IconName } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
+import { useAppAlert } from '@/hooks/useAppAlert';
 import type { SecurityOption } from '@/types/settings';
+
+import { ChangePasswordScreen } from '@/screens/security/ChangePasswordScreen';
+import { TwoStepVerificationScreen } from '@/screens/security/TwoStepVerificationScreen';
+import { SecurityActivityScreen } from '@/screens/security/SecurityActivityScreen';
 
 const DESIGN_WIDTH = 390;
 const PAGE_BACKGROUND = '#f1f4f8';
 const SUBTITLE_COLOR = '#6B7280';
+
+type SecurityRoute = 'list' | 'changePassword' | 'twoStep' | 'activity';
 
 interface SecurityScreenProps {
   onBack?: () => void;
 }
 
 export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
+  const [route, setRoute] = useState<SecurityRoute>('list');
   const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(true);
+  const { alertModal, showAlert } = useAppAlert();
 
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
+
+  if (route === 'changePassword') {
+    return <ChangePasswordScreen onBack={() => setRoute('list')} />;
+  }
+  if (route === 'twoStep') {
+    return <TwoStepVerificationScreen onBack={() => setRoute('list')} />;
+  }
+  if (route === 'activity') {
+    return <SecurityActivityScreen onBack={() => setRoute('list')} />;
+  }
+
+  const handleOptionPress = (option: SecurityOption) => {
+    if (option.id === 'sec_contrasena') {
+      setRoute('changePassword');
+    }
+    if (option.id === 'sec_verificacion') {
+      setRoute('twoStep');
+    }
+    if (option.id === 'sec_actividad') {
+      setRoute('activity');
+    }
+  };
+
+  const handleBiometricsToggle = (value: boolean) => {
+    setIsBiometricsEnabled(value);
+    showAlert({
+      title: value ? 'Biometría activada' : 'Biometría desactivada',
+      message: value
+        ? 'Ahora puedes iniciar sesión con tu huella dactilar o reconocimiento facial.'
+        : 'Desactivaste la biometría. Tu cuenta queda protegida únicamente con tu contraseña.',
+      variant: value ? 'success' : 'warning',
+      confirmText: 'Entendido',
+    });
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -71,9 +114,12 @@ export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
                 title={option.title}
                 value={option.subtitle}
                 accessory={option.accessory}
+                onPress={
+                  isBiometrics ? undefined : () => handleOptionPress(option)
+                }
                 switchValue={isBiometrics ? isBiometricsEnabled : option.switchValue}
                 onSwitchChange={
-                  isBiometrics ? setIsBiometricsEnabled : undefined
+                  isBiometrics ? handleBiometricsToggle : undefined
                 }
               />
             </View>
@@ -86,6 +132,7 @@ export const SecurityScreen: React.FC<SecurityScreenProps> = ({ onBack }) => {
           description="Usamos los más altos estándares de seguridad para cuidar tu información."
         />
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };
