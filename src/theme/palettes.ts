@@ -1,0 +1,60 @@
+import { COLORS } from '@/constants/theme';
+
+export type ColorToken = keyof typeof COLORS;
+
+/** Paleta tipada por token pero con valores `string` (permite varaciones en dark). */
+export type ThemeColors = Record<ColorToken, string>;
+
+export const lightPalette: ThemeColors = COLORS;
+
+export const darkPalette: ThemeColors = {
+  primary: '#8B7CF6',
+  primaryDark: '#A79DF9',
+  primarySoft: '#2A2745',
+  success: '#4ADE80',
+  successSoft: '#1E3A2F',
+  warning: '#FBBF24',
+  danger: '#F87171',
+  dangerSoft: '#3F2A2B',
+  background: '#12131A',
+  surface: '#1A1B24',
+  cardBackground: '#1E2029',
+  white: '#FFFFFF',
+  cardSoft: '#23252F',
+  textPrimary: '#ECECF1',
+  textSecondary: '#B9BBC7',
+  textMuted: '#8A8C9C',
+  border: '#2C2E3A',
+  divider: '#262833',
+  progressTrack: '#2E303D',
+  shadow: '#000000',
+  whiteSoft: 'rgba(255, 255, 255, 0.08)',
+  whiteOverlay: 'rgba(255, 255, 255, 0.12)',
+  blackOverlay: 'rgba(0, 0, 0, 0.75)',
+  violet: '#8B7CF6',
+  violetSoft: '#2E2B4A',
+  backgroundMuted: '#17181F',
+  borderSubtle: '#23252F',
+  textSubtitle: '#9BA0B0',
+  blue: '#60A5FA',
+  blueSoft: '#1E3A5F',
+  skyBlue: '#7DD3FC',
+  skyBlueSoft: '#10344A',
+  warningAmber: '#FBBF24',
+  warningAmberSoft: '#40360F',
+  inactive: '#8A8C9C',
+  inactiveSoft: '#262833',
+  active: '#4ADE80',
+  activeSoft: '#1E3A2F',
+  orange: '#FB923C',
+  primaryViolet: '#8B7CF6',
+  primaryVioletSoft: '#2E2B4A',
+  surfaceSoft: '#23252F',
+  backgroundLight: '#17181F',
+  textStrong: '#F5F5F8',
+  textNeutral: '#B9BBC7',
+  dangerRed: '#F87171',
+  dangerRedSoft: '#3F2A2B',
+  dividerLight: '#262833',
+  switchOff: '#3A3C4A',
+};
