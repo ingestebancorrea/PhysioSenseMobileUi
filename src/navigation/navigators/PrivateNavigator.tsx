@@ -228,7 +228,15 @@ const PatientNavigatorContent: React.FC = () => {
     }
 
     if (activeTab === 'notifications') {
-      return <NotificationsScreen onBack={() => setActiveTab('home')} />;
+      return (
+        <NotificationsScreen
+          onBack={() => setActiveTab('home')}
+          onOpenSettings={() => {
+            setSettingsRoute('notifications');
+            setShowSettings(true);
+          }}
+        />
+      );
     }
 
     const Screen = SCREENS[activeTab];
@@ -411,6 +419,7 @@ const TherapistNavigatorContent: React.FC = () => {
           onBack={() => setShowNotifications(false)}
           onOpenSettings={() => {
             setShowNotifications(false);
+            setSettingsRoute('notifications');
             setActiveTab('mas');
           }}
         />
