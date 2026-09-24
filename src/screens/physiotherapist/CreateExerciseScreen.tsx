@@ -666,7 +666,7 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
             <ExerciseSpecsCard specs={previewDetail.specs} />
             {!video && (
               <View style={styles.noVideoWarning}>
-                {WarningIcon && <WarningIcon size={18} color="#B45309" />}
+                {WarningIcon && <WarningIcon size={18} color={COLORS.primaryViolet} />}
                 <Text style={styles.noVideoWarningText}>
                   No agregaste el video demostrativo. El paciente verá el ejercicio sin video.
                 </Text>
@@ -876,9 +876,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: COLORS.primaryVioletSoft,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: 'rgba(108, 92, 231, 0.35)',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -887,7 +887,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     lineHeight: 18,
-    color: '#B45309',
+    color: COLORS.primaryDark,
   },
   inputLabel: {
     fontSize: 13,
