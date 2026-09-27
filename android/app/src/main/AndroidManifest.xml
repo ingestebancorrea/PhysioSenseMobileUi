@@ -19,7 +19,7 @@
         android:value="@string/facebook_app_id" />
       <meta-data
         android:name="com.facebook.sdk.ClientToken"
-        android:value="@string/facebook_client_token" />
+        android:value="${fbClientToken}" />
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

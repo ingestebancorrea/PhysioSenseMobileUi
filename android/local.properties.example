@@ -1,0 +1,6 @@
+# Copia este archivo como local.properties y completa los valores.
+# local.properties está en .gitignore: nunca se sube al repositorio.
+#
+# Client Token de Facebook (App Settings > Basic > Client Token).
+# Se inyecta en el manifest como el placeholder ${fbClientToken}.
+fbClientToken=
