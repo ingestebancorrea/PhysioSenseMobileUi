@@ -4,3 +4,9 @@
 # Client Token de Facebook (App Settings > Basic > Client Token).
 # Se inyecta en el manifest como el placeholder ${fbClientToken}.
 fbClientToken=
+
+# Credenciales del keystore de release (android/app/physiosense.keystore).
+# El archivo .keystore tampoco se versiona.
+releaseStorePassword=
+releaseKeyAlias=
+releaseKeyPassword=
