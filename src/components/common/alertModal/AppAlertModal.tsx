@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -88,11 +87,6 @@ export const AppAlertModal: React.FC<AppAlertModalProps> = ({
           style={[styles.card, { opacity, transform: [{ scale }] }]}
         >
           <View style={styles.header}>
-            <Image
-              source={require('../../../assets/images/drawer_logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleClose}
@@ -163,11 +157,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  logo: {
-    width: 174,
-    height: 74,
+    justifyContent: 'flex-end',
   },
   closeButton: {
     width: 36,
