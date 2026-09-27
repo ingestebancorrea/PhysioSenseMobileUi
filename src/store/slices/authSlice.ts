@@ -1,5 +1,5 @@
 // src/store/slices/authSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '@/services/api/authApi';
 import { secureStorage } from '@/services/storage/secureStorage';
 

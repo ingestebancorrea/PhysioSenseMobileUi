@@ -1,0 +1,60 @@
+import type { SessionRecord } from '@/types/progress';
+
+export const MOCK_SESSION_HISTORY: SessionRecord[] = [
+  {
+    id: 'session_2025_05_17',
+    date: '17 Mayo 2025',
+    duration: '25 min',
+    repetitions: 120,
+    exerciseCount: 5,
+    status: 'completed',
+  },
+  {
+    id: 'session_2025_05_15',
+    date: '15 Mayo 2025',
+    duration: '30 min',
+    repetitions: 145,
+    exerciseCount: 5,
+    status: 'completed',
+  },
+  {
+    id: 'session_2025_05_14',
+    date: '14 Mayo 2025',
+    duration: '15 min',
+    repetitions: 60,
+    exerciseCount: 3,
+    status: 'cancelled',
+  },
+  {
+    id: 'session_2025_05_12',
+    date: '12 Mayo 2025',
+    duration: '28 min',
+    repetitions: 130,
+    exerciseCount: 4,
+    status: 'completed',
+  },
+  {
+    id: 'session_2025_05_10',
+    date: '10 Mayo 2025',
+    duration: '32 min',
+    repetitions: 150,
+    exerciseCount: 5,
+    status: 'completed',
+  },
+  {
+    id: 'session_2025_05_08',
+    date: '8 Mayo 2025',
+    duration: '20 min',
+    repetitions: 95,
+    exerciseCount: 4,
+    status: 'completed',
+  },
+  {
+    id: 'session_2025_05_06',
+    date: '6 Mayo 2025',
+    duration: '18 min',
+    repetitions: 80,
+    exerciseCount: 3,
+    status: 'in_progress',
+  },
+];
