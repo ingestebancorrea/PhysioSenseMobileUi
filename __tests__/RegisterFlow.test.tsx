@@ -6,6 +6,7 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { NavigationContainer } from '@react-navigation/native';
 
+import { AuthProvider } from '../src/context/AuthContext';
 import { RegisterFlowNavigator } from '../src/navigation/navigators/RegisterFlowNavigator';
 
 const findText = (
@@ -48,9 +49,11 @@ test('renders registration step 0 (role selection)', async () => {
 
   await ReactTestRenderer.act(async () => {
     tree = ReactTestRenderer.create(
-      <NavigationContainer>
-        <RegisterFlowNavigator />
-      </NavigationContainer>,
+      <AuthProvider>
+        <NavigationContainer>
+          <RegisterFlowNavigator />
+        </NavigationContainer>
+      </AuthProvider>,
     );
   });
 
@@ -65,9 +68,11 @@ test('selecting fisioterapeuta navigates to Crea tu cuenta', async () => {
 
   await ReactTestRenderer.act(async () => {
     tree = ReactTestRenderer.create(
-      <NavigationContainer>
-        <RegisterFlowNavigator />
-      </NavigationContainer>,
+      <AuthProvider>
+        <NavigationContainer>
+          <RegisterFlowNavigator />
+        </NavigationContainer>
+      </AuthProvider>,
     );
   });
 
@@ -76,4 +81,7 @@ test('selecting fisioterapeuta navigates to Crea tu cuenta', async () => {
   });
 
   expect(findText(tree!.root, 'Crea tu cuenta')).toBe(true);
+  expect(findText(tree!.root, 'o regístrate con')).toBe(true);
+  expect(findText(tree!.root, 'Google')).toBe(true);
+  expect(findText(tree!.root, 'Facebook')).toBe(true);
 });

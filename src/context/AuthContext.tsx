@@ -12,13 +12,18 @@ import {
   clearAccessToken,
   hydrateAccessToken,
   loginWithPassword,
+  loginWithProvider as loginWithProviderRequest,
+  registerWithProvider as registerWithProviderRequest,
 } from '@/services/auth/AuthService';
 import {
   onSessionEstablished,
   onSessionExpired,
 } from '@/services/auth/sessionEvents';
+import { USER_ROLE_BY_ALIAS } from '@/constants/roles';
 import type {
   LoginPasswordRequest,
+  SocialLoginRequest,
+  SocialRegisterRequest,
   UserAccountRole,
 } from '@/types/auth';
 
@@ -29,6 +34,8 @@ interface AuthContextValue {
   role: UserAccountRole | null;
   pendingRole: UserAccountRole | null;
   login: (credentials: LoginPasswordRequest) => Promise<void>;
+  loginWithProvider: (credentials: SocialLoginRequest) => Promise<void>;
+  registerWithProvider: (credentials: SocialRegisterRequest) => Promise<void>;
   setPendingRole: (role?: UserAccountRole) => void;
   logout: () => Promise<void>;
 }
@@ -95,6 +102,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await loginWithPassword(credentials);
   }, []);
 
+  const loginWithProvider = useCallback(
+    async (credentials: SocialLoginRequest) => {
+      await loginWithProviderRequest(credentials);
+    },
+    [],
+  );
+
+  const registerWithProvider = useCallback(
+    async (credentials: SocialRegisterRequest) => {
+      pendingRoleRef.current = USER_ROLE_BY_ALIAS[credentials.alias_role];
+      setPendingRoleState(pendingRoleRef.current);
+
+      await registerWithProviderRequest(credentials);
+    },
+    [],
+  );
+
   const setPendingRole = useCallback((selectedRole?: UserAccountRole) => {
     const nextRole = selectedRole ?? DEFAULT_ROLE;
 
@@ -119,6 +143,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       role,
       pendingRole,
       login,
+      loginWithProvider,
+      registerWithProvider,
       setPendingRole,
       logout,
     }),
@@ -129,6 +155,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       role,
       pendingRole,
       login,
+      loginWithProvider,
+      registerWithProvider,
       setPendingRole,
       logout,
     ],

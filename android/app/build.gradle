@@ -3,6 +3,18 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: "com.google.gms.google-services"
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+def fbClientToken = localProperties.getProperty('fbClientToken', '')
+def releaseStorePassword = localProperties.getProperty('releaseStorePassword', '')
+def releaseKeyAlias = localProperties.getProperty('releaseKeyAlias', '')
+def releaseKeyPassword = localProperties.getProperty('releaseKeyPassword', '')
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -85,6 +97,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
         versionName "1.2"
+        manifestPlaceholders = [fbClientToken: fbClientToken]
     }
     signingConfigs {
         debug {
@@ -95,9 +108,9 @@ android {
         }
         release {
             storeFile file('physiosense.keystore')
-            storePassword 'PhysioSense2026'
-            keyAlias 'physiosense'
-            keyPassword 'PhysioSense2026'
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
         }
     }
     buildTypes {
