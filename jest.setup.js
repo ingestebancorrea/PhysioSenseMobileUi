@@ -32,3 +32,34 @@ jest.mock('react-native-safe-area-context', () =>
 
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => MockIcon);
 jest.mock('react-native-vector-icons/Ionicons', () => MockIcon);
+
+jest.mock('react-native-keychain', () => {
+  const mockStore = new Map();
+  const mockStorage = 'KeystoreAESGCM_NoAuth';
+
+  return {
+    ACCESSIBLE: {
+      WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'AccessibleWhenUnlockedThisDeviceOnly',
+    },
+    SECURITY_LEVEL: { SECURE_SOFTWARE: 'SECURE_SOFTWARE' },
+    STORAGE_TYPE: { AES_GCM_NO_AUTH: mockStorage },
+    setGenericPassword: jest.fn(async (username, password) => {
+      mockStore.set(username, password);
+      return { service: username, storage: mockStorage };
+    }),
+    getGenericPassword: jest.fn(async () => {
+      const entry = mockStore.entries().next().value;
+
+      if (!entry) {
+        return false;
+      }
+
+      const [username, password] = entry;
+      return { username, password, service: username, storage: mockStorage };
+    }),
+    resetGenericPassword: jest.fn(async () => {
+      mockStore.clear();
+      return true;
+    }),
+  };
+});

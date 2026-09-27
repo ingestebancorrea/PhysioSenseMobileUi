@@ -1,6 +1,7 @@
 // src/navigation/navigators/AuthStackNavigator.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useAuth } from '@/context/AuthContext';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { WelcomeScreen } from '@/screens/welcome/WelcomeScreen';
 import LoginScreen from '@/screens/auth/LoginScreen';
@@ -11,16 +12,20 @@ import { RegisterFlowNavigator } from '@/navigation/navigators/RegisterFlowNavig
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
-export const AuthStackNavigator = () => (
-  <Stack.Navigator
-    initialRouteName="Welcome"
-    screenOptions={{ headerShown: false }}
-  >
-    <Stack.Screen name="Welcome" component={WelcomeScreen} />
-    <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="Register" component={RegisterScreen} />
-    <Stack.Screen name="RegisterFlow" component={RegisterFlowNavigator} />
-    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-    <Stack.Screen name="EmailSent" component={EmailSentScreen} />
-  </Stack.Navigator>
-);
+export const AuthStackNavigator = () => {
+  const { isSessionExpired } = useAuth();
+
+  return (
+    <Stack.Navigator
+      initialRouteName={isSessionExpired ? 'Login' : 'Welcome'}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="RegisterFlow" component={RegisterFlowNavigator} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="EmailSent" component={EmailSentScreen} />
+    </Stack.Navigator>
+  );
+};

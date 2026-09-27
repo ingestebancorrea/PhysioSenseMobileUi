@@ -2,11 +2,12 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useRegistration } from '@/context/RegistrationContext';
 import { useAuth } from '@/context/AuthContext';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
+import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { COLORS } from '@/constants/theme';
 
 type FinalWelcomeScreenProps = NativeStackScreenProps<
@@ -23,12 +24,21 @@ const CONFETTI = [
   { top: 8, right: 70, size: 9, color: COLORS.primary, rotate: '60deg' },
 ];
 
-const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = () => {
+const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
+  navigation,
+}) => {
   const { data } = useRegistration();
-  const { registerAccount } = useAuth();
+  const { setPendingRole } = useAuth();
 
   const isTherapist = data.role === 'fisioterapeuta';
   const firstName = data.fullName.split(' ')[0] || 'Laura';
+
+  const goToLogin = () => {
+    setPendingRole(data.role ?? 'paciente');
+    navigation
+      .getParent<NativeStackNavigationProp<AuthStackParamList>>()
+      ?.navigate('Login');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -77,7 +87,7 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = () => {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={() => registerAccount(data.role ?? 'paciente')}
+            onPress={goToLogin}
           >
             <Text style={styles.primaryButtonText}>
               {isTherapist ? 'Ir al dashboard' : 'Ir a mi recuperación'}
@@ -87,7 +97,7 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = () => {
           <TouchableOpacity
             style={styles.outlineButton}
             activeOpacity={0.8}
-            onPress={() => registerAccount(data.role ?? 'paciente')}
+            onPress={goToLogin}
           >
             <Text style={styles.outlineButtonText}>
               Completar perfil después
