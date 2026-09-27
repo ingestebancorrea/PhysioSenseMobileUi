@@ -20,24 +20,43 @@ import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
+type PendingProvider = 'password' | null;
+
+const GENERIC_ERROR_MESSAGE = 'No pudimos iniciar sesión. Inténtalo de nuevo.';
+
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [pendingProvider, setPendingProvider] = useState<PendingProvider>(null);
 
   const { login } = useAuth();
   const { alertModal, showAlert } = useAppAlert();
 
-  const handleLogin = () => {
-    const success = login(username, password);
+  const isBusy = pendingProvider !== null;
 
-    if (!success) {
+  const handleLogin = async () => {
+    setPendingProvider('password');
+
+    try {
+      await login({ username: username.trim(), password });
+    } catch (error) {
       showAlert({
         title: 'Error',
-        message: 'Usuario o contraseña incorrectos',
+        message: error instanceof Error ? error.message : GENERIC_ERROR_MESSAGE,
         variant: 'error',
       });
+    } finally {
+      setPendingProvider(null);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    showAlert({
+      title: 'Próximamente',
+      message: 'El acceso con Google todavía no está disponible.',
+      variant: 'info',
+    });
   };
 
   return (
@@ -69,13 +88,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Usuario</Text>
+              <Text style={styles.label}>Correo electrónico</Text>
               <TextInput
                 style={styles.input}
-                placeholder="paciente / fisioterapeuta"
+                placeholder="tu@correo.com"
                 placeholderTextColor="#94A3B8"
                 autoCapitalize="none"
                 autoCorrect={false}
+                keyboardType="email-address"
                 textContentType="username"
                 value={username}
                 onChangeText={(text: string) => setUsername(text)}
@@ -121,11 +141,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
 
           <TouchableOpacity
-            style={styles.primaryButton}
+            style={[
+              styles.primaryButton,
+              isBusy && styles.primaryButtonDisabled,
+            ]}
             activeOpacity={0.8}
             onPress={handleLogin}
+            disabled={isBusy}
           >
-            <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+            <Text style={styles.primaryButtonText}>
+              {pendingProvider === 'password'
+                ? 'Iniciando sesión...'
+                : 'Iniciar sesión'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.dividerContainer}>
@@ -135,7 +163,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7} onPress={handleGoogleLogin}>
               <MaterialCommunityIcons
                 name="google"
                 size={20}
@@ -154,12 +182,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               />
               <Text style={styles.socialButtonText}>Facebook</Text>
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.demoBox}>
-            <Text style={styles.demoTitle}>Cuentas de prueba</Text>
-            <Text style={styles.demoItem}>Fisioterapeuta: fisioterapeuta / fisio123</Text>
-            <Text style={styles.demoItem}>Paciente: paciente / paciente123</Text>
           </View>
 
           <View style={styles.footer}>
@@ -345,26 +367,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 20,
   },
-  demoBox: {
-    marginTop: 18,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#F1EFFD',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  demoTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#5B46E8',
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  demoItem: {
-    fontSize: 13,
-    color: '#2D3142',
-    marginTop: 2,
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   footer: {
     flexDirection: 'row',

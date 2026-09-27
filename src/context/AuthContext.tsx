@@ -1,75 +1,137 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
+import {
+  clearAccessToken,
+  hydrateAccessToken,
+  loginWithPassword,
+} from '@/services/auth/AuthService';
+import {
+  onSessionEstablished,
+  onSessionExpired,
+} from '@/services/auth/sessionEvents';
 import type {
-  MockAccount,
+  LoginPasswordRequest,
   UserAccountRole,
 } from '@/types/auth';
 
-const MOCK_ACCOUNTS: Record<UserAccountRole, MockAccount> = {
-  fisioterapeuta: {
-    user: 'fisioterapeuta',
-    password: 'fisio123',
-  },
-  paciente: {
-    user: 'paciente',
-    password: 'paciente123',
-  },
-};
-
 interface AuthContextValue {
   isAuthenticated: boolean;
+  isBootstrapping: boolean;
+  isSessionExpired: boolean;
   role: UserAccountRole | null;
-  login: (user: string, password: string) => boolean;
-  registerAccount: (role?: UserAccountRole) => void;
-  logout: () => void;
+  pendingRole: UserAccountRole | null;
+  login: (credentials: LoginPasswordRequest) => Promise<void>;
+  setPendingRole: (role?: UserAccountRole) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+const DEFAULT_ROLE: UserAccountRole = 'paciente';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [role, setRole] = useState<UserAccountRole | null>(null);
+  const [pendingRole, setPendingRoleState] = useState<UserAccountRole | null>(
+    null,
+  );
+
+  const pendingRoleRef = useRef<UserAccountRole | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const bootstrap = async () => {
+      const token = await hydrateAccessToken();
+
+      if (!isActive) {
+        return;
+      }
+
+      setIsAuthenticated(token !== null);
+      setIsBootstrapping(false);
+    };
+
+    bootstrap();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(
+    () =>
+      onSessionEstablished(() => {
+        setRole(pendingRoleRef.current ?? DEFAULT_ROLE);
+        setIsSessionExpired(false);
+        setIsAuthenticated(true);
+      }),
+    [],
+  );
+
+  useEffect(
+    () =>
+      onSessionExpired(() => {
+        setIsAuthenticated(false);
+        setRole(null);
+        setIsSessionExpired(true);
+      }),
+    [],
+  );
+
+  const login = useCallback(async (credentials: LoginPasswordRequest) => {
+    await loginWithPassword(credentials);
+  }, []);
+
+  const setPendingRole = useCallback((selectedRole?: UserAccountRole) => {
+    const nextRole = selectedRole ?? DEFAULT_ROLE;
+
+    pendingRoleRef.current = nextRole;
+    setPendingRoleState(nextRole);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await clearAccessToken();
+    setIsAuthenticated(false);
+    setRole(null);
+    setIsSessionExpired(false);
+    pendingRoleRef.current = null;
+    setPendingRoleState(null);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       isAuthenticated,
+      isBootstrapping,
+      isSessionExpired,
       role,
-      login: (user: string, password: string): boolean => {
-        const accounts = Object.entries(MOCK_ACCOUNTS) as [
-          UserAccountRole,
-          MockAccount,
-        ][];
-        const matched = accounts.find(
-          ([, account]) =>
-            account.user === user && account.password === password,
-        );
-
-        if (!matched) {
-          return false;
-        }
-
-        setRole(matched[0]);
-        setIsAuthenticated(true);
-
-        return true;
-      },
-      registerAccount: (registeredRole: UserAccountRole = 'paciente') => {
-        setRole(registeredRole);
-        setIsAuthenticated(true);
-      },
-      logout: () => {
-        setIsAuthenticated(false);
-        setRole(null);
-      },
+      pendingRole,
+      login,
+      setPendingRole,
+      logout,
     }),
-    [isAuthenticated, role],
+    [
+      isAuthenticated,
+      isBootstrapping,
+      isSessionExpired,
+      role,
+      pendingRole,
+      login,
+      setPendingRole,
+      logout,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
