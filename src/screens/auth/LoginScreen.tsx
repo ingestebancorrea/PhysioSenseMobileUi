@@ -16,13 +16,22 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '@/context/AuthContext';
 import { useAppAlert } from '@/hooks/useAppAlert';
+import {
+  configureSocialSignIn,
+  describeSocialAuthError,
+  getFacebookAccessToken,
+  getGoogleIdToken,
+} from '@/services/auth/socialAuth';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
+import { SocialLoginProvider } from '@/types/auth';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-type PendingProvider = 'password' | null;
+type PendingProvider = 'password' | SocialLoginProvider | null;
 
 const GENERIC_ERROR_MESSAGE = 'No pudimos iniciar sesión. Inténtalo de nuevo.';
+
+configureSocialSignIn();
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [username, setUsername] = useState<string>('');
@@ -30,10 +39,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [pendingProvider, setPendingProvider] = useState<PendingProvider>(null);
 
-  const { login } = useAuth();
+  const { login, loginWithProvider } = useAuth();
   const { alertModal, showAlert } = useAppAlert();
 
   const isBusy = pendingProvider !== null;
+
+  const showAuthError = (error: unknown) => {
+    showAlert({
+      title: 'Error',
+      message: describeSocialAuthError(error) || GENERIC_ERROR_MESSAGE,
+      variant: 'error',
+    });
+  };
 
   const handleLogin = async () => {
     setPendingProvider('password');
@@ -41,22 +58,52 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     try {
       await login({ username: username.trim(), password });
     } catch (error) {
-      showAlert({
-        title: 'Error',
-        message: error instanceof Error ? error.message : GENERIC_ERROR_MESSAGE,
-        variant: 'error',
-      });
+      showAuthError(error);
     } finally {
       setPendingProvider(null);
     }
   };
 
-  const handleGoogleLogin = () => {
-    showAlert({
-      title: 'Próximamente',
-      message: 'El acceso con Google todavía no está disponible.',
-      variant: 'info',
-    });
+  const handleGoogleLogin = async () => {
+    setPendingProvider(SocialLoginProvider.GOOGLE);
+
+    try {
+      const idToken = await getGoogleIdToken();
+
+      if (!idToken) {
+        return;
+      }
+
+      await loginWithProvider({
+        token: idToken,
+        loginprovider: SocialLoginProvider.GOOGLE,
+      });
+    } catch (error) {
+      showAuthError(error);
+    } finally {
+      setPendingProvider(null);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    setPendingProvider(SocialLoginProvider.FACEBOOK);
+
+    try {
+      const accessToken = await getFacebookAccessToken();
+
+      if (!accessToken) {
+        return;
+      }
+
+      await loginWithProvider({
+        token: accessToken,
+        loginprovider: SocialLoginProvider.FACEBOOK,
+      });
+    } catch (error) {
+      showAuthError(error);
+    } finally {
+      setPendingProvider(null);
+    }
   };
 
   return (
@@ -163,7 +210,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7} onPress={handleGoogleLogin}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              activeOpacity={0.7}
+              disabled={isBusy}
+              onPress={handleGoogleLogin}
+            >
               <MaterialCommunityIcons
                 name="google"
                 size={20}
@@ -173,7 +225,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               <Text style={styles.socialButtonText}>Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              activeOpacity={0.7}
+              disabled={isBusy}
+              onPress={handleFacebookLogin}
+            >
               <MaterialCommunityIcons
                 name="facebook"
                 size={20}

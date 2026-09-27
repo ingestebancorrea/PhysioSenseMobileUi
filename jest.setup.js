@@ -33,6 +33,25 @@ jest.mock('react-native-safe-area-context', () =>
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => MockIcon);
 jest.mock('react-native-vector-icons/Ionicons', () => MockIcon);
 
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn(async () => true),
+    signIn: jest.fn(async () => ({ type: 'cancelled', data: null })),
+    signOut: jest.fn(async () => null),
+  },
+}));
+
+jest.mock('react-native-fbsdk-next', () => ({
+  AccessToken: {
+    getCurrentAccessToken: jest.fn(async () => null),
+  },
+  LoginManager: {
+    logInWithPermissions: jest.fn(async () => ({ isCancelled: true })),
+    logOut: jest.fn(async () => {}),
+  },
+}));
+
 jest.mock('react-native-keychain', () => {
   const mockStore = new Map();
   const mockStorage = 'KeystoreAESGCM_NoAuth';

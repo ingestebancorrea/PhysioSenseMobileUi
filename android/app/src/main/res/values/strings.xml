@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PhysioSense</string>
+    <string name="facebook_app_id">1804034234240254</string>
+    <string name="facebook_client_token">0fed66070935a8dc40da818ef4e6d088</string>
 </resources>

@@ -1,6 +1,7 @@
 // src/screens/register/CreateAccountScreen.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -17,21 +19,42 @@ import type {
 import { LockKeyhole, Mail, User } from 'lucide-react-native';
 
 import { useRegistration } from '@/context/RegistrationContext';
+import { useAuth } from '@/context/AuthContext';
+import { useAppAlert } from '@/hooks/useAppAlert';
+import {
+  configureSocialSignIn,
+  describeSocialAuthError,
+  getFacebookAccessToken,
+  getGoogleIdToken,
+} from '@/services/auth/socialAuth';
 import { FormField } from '@/components/common/formField/FormField';
 import { CheckboxRow } from '@/components/common/checkboxRow/CheckboxRow';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { COLORS } from '@/constants/theme';
+import { ROLE_ALIAS_BY_ROLE } from '@/constants/roles';
+import { SocialLoginProvider } from '@/types/auth';
 
 type CreateAccountScreenProps = NativeStackScreenProps<
   RegisterFlowParamList,
   'CreateAccount'
 >;
 
+const GENERIC_ERROR_MESSAGE = 'No pudimos crear tu cuenta. Inténtalo de nuevo.';
+
+configureSocialSignIn();
+
 const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
   navigation,
 }) => {
   const { data, updateField } = useRegistration();
+  const { registerWithProvider } = useAuth();
+  const { alertModal, showAlert } = useAppAlert();
+  const [pendingProvider, setPendingProvider] =
+    useState<SocialLoginProvider | null>(null);
+
+  const aliasRole = data.role ? ROLE_ALIAS_BY_ROLE[data.role] : null;
+  const isBusy = pendingProvider !== null;
 
   const handleContinue = () => {
     if (data.role === 'fisioterapeuta') {
@@ -45,6 +68,50 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
     navigation
       .getParent<NativeStackNavigationProp<AuthStackParamList>>()
       ?.navigate('Login');
+
+  const registerWith = async (
+    provider: SocialLoginProvider,
+    getToken: () => Promise<string | null>,
+  ) => {
+    if (!aliasRole) {
+      showAlert({
+        title: 'Error',
+        message: 'Selecciona primero cómo utilizarás PhysioSense.',
+        variant: 'error',
+      });
+      return;
+    }
+
+    setPendingProvider(provider);
+
+    try {
+      const token = await getToken();
+
+      if (!token) {
+        return;
+      }
+
+      await registerWithProvider({
+        token,
+        loginprovider: provider,
+        alias_role: aliasRole,
+      });
+    } catch (error) {
+      showAlert({
+        title: 'Error',
+        message: describeSocialAuthError(error) || GENERIC_ERROR_MESSAGE,
+        variant: 'error',
+      });
+    } finally {
+      setPendingProvider(null);
+    }
+  };
+
+  const handleGoogleRegister = () =>
+    registerWith(SocialLoginProvider.GOOGLE, getGoogleIdToken);
+
+  const handleFacebookRegister = () =>
+    registerWith(SocialLoginProvider.FACEBOOK, getFacebookAccessToken);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -120,6 +187,55 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
             <Text style={styles.primaryButtonText}>Continuar</Text>
           </TouchableOpacity>
 
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>o regístrate con</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <View style={styles.socialRow}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              activeOpacity={0.8}
+              disabled={isBusy}
+              onPress={handleGoogleRegister}
+            >
+              {pendingProvider === SocialLoginProvider.GOOGLE ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="google"
+                  size={22}
+                  color="#4285F4"
+                />
+              )}
+              <Text style={styles.socialButtonText}>Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.socialButton}
+              activeOpacity={0.8}
+              disabled={isBusy}
+              onPress={handleFacebookRegister}
+            >
+              {pendingProvider === SocialLoginProvider.FACEBOOK ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="facebook"
+                  size={22}
+                  color="#1877F2"
+                />
+              )}
+              <Text style={styles.socialButtonText}>Facebook</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.socialHint}>
+            Tu cuenta se creará con los datos de tu perfil y el rol
+            seleccionado.
+          </Text>
+
           <TouchableOpacity
             style={styles.loginButton}
             activeOpacity={0.7}
@@ -132,6 +248,7 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      {alertModal}
     </SafeAreaView>
   );
 };
@@ -183,6 +300,49 @@ const styles = StyleSheet.create({
   loginButton: {
     alignItems: 'center',
     paddingVertical: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+  dividerText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+  },
+  socialButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  socialHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginTop: 12,
   },
   loginText: {
     fontSize: 14,
