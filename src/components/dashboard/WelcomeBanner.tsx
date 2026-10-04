@@ -1,13 +1,20 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { COLORS } from '@/constants/theme';
 
 interface WelcomeBannerProps {
   firstName: string;
+  /** Initials of the full name, preferred over the first letter when present. */
+  initials?: string;
+  photoURL?: string;
 }
 
-export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ firstName }) => (
+export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
+  firstName,
+  initials,
+  photoURL,
+}) => (
   <LinearGradient
     colors={[COLORS.primary, COLORS.primaryDark]}
     start={{ x: 0, y: 0 }}
@@ -15,7 +22,13 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ firstName }) => (
     style={styles.banner}
   >
     <View style={styles.avatar}>
-      <Text style={styles.avatarText}>{firstName.charAt(0)}</Text>
+      {photoURL ? (
+        <Image source={{ uri: photoURL }} style={styles.avatarImage} />
+      ) : (
+        <Text style={styles.avatarText}>
+          {initials ?? firstName.charAt(0)}
+        </Text>
+      )}
     </View>
     <View style={styles.bannerTexts}>
       <Text style={styles.bannerTitle}>Hola, {firstName}</Text>
@@ -49,6 +62,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: COLORS.white,
+  },
+  avatarImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
   bannerTexts: {
     flex: 1,

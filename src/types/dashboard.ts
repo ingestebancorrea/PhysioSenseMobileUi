@@ -28,9 +28,7 @@ export interface LastSession {
 
 export interface DashboardMetrics {
   id: string;
-  user: {
-    firstName: string;
-  };
+  /** The patient name comes from the signed-in user, not from here. */
   summary: DashboardMetric[];
   lastSession: LastSession;
 }

@@ -1,10 +1,7 @@
 import type { TherapistDashboardData } from '@/types/therapistDashboard';
 
 export const THERAPIST_DASHBOARD_DATA: TherapistDashboardData = {
-  therapist: {
-    name: 'Dr. Esteban',
-    unreadNotifications: 5,
-  },
+  unreadNotifications: 5,
   stats: [
     { id: 'stat_01', value: '12', label: 'Pacientes Activos' },
     { id: 'stat_02', value: '7', label: 'Sesiones hoy' },
