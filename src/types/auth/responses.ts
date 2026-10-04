@@ -31,7 +31,14 @@ export interface AuthUserRecord {
   role: UserRoleId;
 }
 
-export interface RegisterPasswordResponse extends AuthUserRecord {
+/**
+ * `POST /auth/register` (social sign-up): the user plus the token. It carries no
+ * `profile` because a social registration does not go through `createProfile`.
+ *
+ * The password flow has its own answer, `RegisterPasswordResponse`, kept in
+ * `register-password/` because each endpoint gets its own DTO.
+ */
+export interface SocialRegisterResponse extends AuthUserRecord {
   access_token: string;
 }
 

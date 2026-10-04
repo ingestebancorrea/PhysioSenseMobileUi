@@ -18,7 +18,8 @@ import {
   Stethoscope,
 } from 'lucide-react-native';
 
-import { useRegistration } from '@/context/RegistrationContext';
+import { useRegistrationStep } from '@/hooks/useRegistrationStep';
+import { validateProfessionalStep } from '@/utils/validation/registrationValidation';
 import { FormField } from '@/components/common/formField/FormField';
 import { SelectField } from '@/components/common/selectField/SelectField';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
@@ -49,7 +50,15 @@ const EXPERIENCE_OPTIONS = [
 const ProfessionalInfoScreen: React.FC<ProfessionalInfoScreenProps> = ({
   navigation,
 }) => {
-  const { data, updateField } = useRegistration();
+  const { data, errors, submit, change } = useRegistrationStep();
+
+  const handleContinue = () => {
+    if (!submit(validateProfessionalStep)) {
+      return;
+    }
+
+    navigation.navigate('AdditionalInfo');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -76,41 +85,45 @@ const ProfessionalInfoScreen: React.FC<ProfessionalInfoScreenProps> = ({
           <SelectField
             label="Especialidad"
             value={data.specialty}
-            onSelect={value => updateField('specialty', value)}
+            onSelect={value => change('specialty', value)}
             options={SPECIALTIES}
             placeholder="Ej. Terapia de mano"
+            error={errors.specialty}
           />
 
           <FormField
             label="Número de licencia profesional"
             placeholder="Ej. TP-123456"
             value={data.licenseNumber}
-            onChangeText={text => updateField('licenseNumber', text)}
+            onChangeText={text => change('licenseNumber', text)}
             icon={IdCard}
             autoCapitalize="characters"
+            error={errors.licenseNumber}
           />
 
           <FormField
             label="Institución / Universidad"
             placeholder="Ej. Universidad del Rosario"
             value={data.institution}
-            onChangeText={text => updateField('institution', text)}
+            onChangeText={text => change('institution', text)}
             icon={GraduationCap}
             autoCapitalize="words"
+            error={errors.institution}
           />
 
           <SelectField
             label="Años de experiencia"
             value={data.yearsExperience}
-            onSelect={value => updateField('yearsExperience', value)}
+            onSelect={value => change('yearsExperience', value)}
             options={EXPERIENCE_OPTIONS}
             placeholder="Selecciona"
+            error={errors.yearsExperience}
           />
 
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={() => navigation.navigate('AdditionalInfo')}
+            onPress={handleContinue}
           >
             <Text style={styles.primaryButtonText}>Continuar</Text>
           </TouchableOpacity>

@@ -21,8 +21,13 @@ import {
 } from 'lucide-react-native';
 
 import { useRegistration } from '@/context/RegistrationContext';
+import { useRegistrationStep } from '@/hooks/useRegistrationStep';
 import { FormField } from '@/components/common/formField/FormField';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
+import {
+  PHONE_MAX_LENGTH,
+  validateAdditionalStep,
+} from '@/utils/validation/registrationValidation';
 import { COLORS } from '@/constants/theme';
 
 type AdditionalInfoScreenProps = NativeStackScreenProps<
@@ -35,11 +40,20 @@ const NOTES_MAX_LENGTH = 200;
 const AdditionalInfoScreen: React.FC<AdditionalInfoScreenProps> = ({
   navigation,
 }) => {
-  const { data, updateField } = useRegistration();
+  const { data } = useRegistration();
+  const { errors, submit, change } = useRegistrationStep();
   const [notes, setNotes] = useState<string>(data.notes);
 
   const handleUploadPhoto = () => {
-    updateField('photoName', 'perfil.jpg');
+    change('photoName', 'perfil.jpg');
+  };
+
+  const handleContinue = () => {
+    if (!submit(validateAdditionalStep)) {
+      return;
+    }
+
+    navigation.navigate('ReviewInformation');
   };
 
   return (
@@ -62,10 +76,11 @@ const AdditionalInfoScreen: React.FC<AdditionalInfoScreenProps> = ({
             label="Teléfono (opcional)"
             placeholder="Ej. 300 123 4567"
             value={data.phone}
-            onChangeText={text => updateField('phone', text)}
+            onChangeText={text => change('phone', text)}
             icon={Phone}
             keyboardType="phone-pad"
-            maxLength={15}
+            maxLength={PHONE_MAX_LENGTH}
+            error={errors.phone}
           />
 
           <View style={styles.photoSection}>
@@ -102,9 +117,9 @@ const AdditionalInfoScreen: React.FC<AdditionalInfoScreenProps> = ({
               multiline
               maxLength={NOTES_MAX_LENGTH}
               value={notes}
-              onChangeText={text => {
+onChangeText={text => {
                 setNotes(text);
-                updateField('notes', text);
+                change('notes', text);
               }}
               textAlignVertical="top"
             />
@@ -116,7 +131,7 @@ const AdditionalInfoScreen: React.FC<AdditionalInfoScreenProps> = ({
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={() => navigation.navigate('ReviewInformation')}
+            onPress={handleContinue}
           >
             <Text style={styles.primaryButtonText}>Continuar</Text>
           </TouchableOpacity>

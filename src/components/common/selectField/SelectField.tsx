@@ -19,6 +19,7 @@ export interface SelectFieldProps {
   options: string[];
   icon?: LucideIcon;
   placeholder?: string;
+  error?: string;
 }
 
 export const SelectField: React.FC<SelectFieldProps> = ({
@@ -28,6 +29,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   options,
   icon: Icon,
   placeholder,
+  error,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -40,7 +42,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TouchableOpacity
-        style={styles.wrapper}
+        style={[styles.wrapper, error && styles.wrapperError]}
         activeOpacity={0.7}
         onPress={() => setOpen(true)}
       >
@@ -63,6 +65,8 @@ export const SelectField: React.FC<SelectFieldProps> = ({
           <ChevronDown size={20} color={COLORS.textMuted} strokeWidth={2} />
         </View>
       </TouchableOpacity>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <Modal
         visible={open}
@@ -130,6 +134,14 @@ const styles = StyleSheet.create({
   },
   leftIcon: {
     paddingLeft: 16,
+  },
+  wrapperError: {
+    borderColor: COLORS.dangerRed,
+  },
+  errorText: {
+    fontSize: 12,
+    color: COLORS.dangerRed,
+    marginTop: 6,
   },
   value: {
     flex: 1,

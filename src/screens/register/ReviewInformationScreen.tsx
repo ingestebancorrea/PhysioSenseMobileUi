@@ -1,9 +1,17 @@
 // src/screens/register/ReviewInformationScreen.tsx
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
+  AlertCircle,
   Briefcase,
   ChevronLeft,
   Globe,
@@ -20,7 +28,15 @@ import {
 } from 'lucide-react-native';
 
 import { useRegistration } from '@/context/RegistrationContext';
+import { registerWithPassword } from '@/services/auth/AuthService';
+import { toRegisterPasswordRequest } from '@/services/auth/registerPasswordMapper';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
+import {
+  validateAccountStep,
+  validateAdditionalStep,
+  validatePatientStep,
+  validateProfessionalStep,
+} from '@/utils/validation/registrationValidation';
 import { COLORS } from '@/constants/theme';
 
 type ReviewInformationScreenProps = NativeStackScreenProps<
@@ -67,11 +83,55 @@ const InfoSection: React.FC<InfoSectionProps> = ({ title, rows, onEdit }) => (
 const orFallback = (value: string, fallback: string) =>
   value.trim() || fallback;
 
+/** Everything the flow collected must be valid again before the user is created. */
+const hasBlockingErrors = (
+  data: Parameters<typeof validateAccountStep>[0],
+  isTherapist: boolean,
+): boolean =>
+  [
+    validateAccountStep(data),
+    validateAdditionalStep(data),
+    isTherapist ? validateProfessionalStep(data) : validatePatientStep(data),
+  ].some(errors => Object.values(errors).some(Boolean));
+
 const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
   navigation,
 }) => {
   const { data } = useRegistration();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const isTherapist = data.role === 'fisioterapeuta';
+
+  const handleCreateAccount = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (hasBlockingErrors(data, isTherapist)) {
+      setSubmitError(
+        'Revisa los datos de las pantallas anteriores antes de crear la cuenta.',
+      );
+      return;
+    }
+
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const registration = await registerWithPassword(
+        toRegisterPasswordRequest(data),
+      );
+      navigation.navigate('FinalWelcome', { registration });
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo crear la cuenta. Intenta de nuevo.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const basicRows: InfoRow[] = [
     {
@@ -181,12 +241,24 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
           onEdit={() => navigation.navigate('AdditionalInfo')}
         />
 
+        {submitError !== null && (
+          <View style={styles.errorBanner}>
+            <AlertCircle size={18} color={COLORS.dangerRed} strokeWidth={2} />
+            <Text style={styles.errorText}>{submitError}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={[styles.primaryButton, isSubmitting && styles.primaryButtonDisabled]}
           activeOpacity={0.85}
-          onPress={() => navigation.navigate('FinalWelcome')}
+          disabled={isSubmitting}
+          onPress={handleCreateAccount}
         >
-          <Text style={styles.primaryButtonText}>Crear cuenta</Text>
+          {isSubmitting ? (
+            <ActivityIndicator color={COLORS.white} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Crear cuenta</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -292,6 +364,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.dangerRedSoft,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  errorText: {
+    flex: 1,
+    color: COLORS.dangerRed,
+    fontSize: 13,
+    lineHeight: 18,
   },
   primaryButtonText: {
     color: COLORS.white,

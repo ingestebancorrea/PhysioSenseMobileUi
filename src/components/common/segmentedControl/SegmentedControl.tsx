@@ -9,6 +9,7 @@ interface SegmentedControlProps {
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
@@ -16,10 +17,11 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   options,
   value,
   onChange,
+  error,
 }) => (
   <View style={styles.container}>
     {label && <Text style={styles.label}>{label}</Text>}
-    <View style={styles.segment}>
+    <View style={[styles.segment, error && styles.segmentError]}>
       {options.map((option, index) => {
         const selected = option === value;
         return (
@@ -43,6 +45,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         );
       })}
     </View>
+    {error ? <Text style={styles.errorText}>{error}</Text> : null}
   </View>
 );
 
@@ -65,6 +68,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6FA',
     overflow: 'hidden',
   },
+  segmentError: {
+    borderColor: COLORS.dangerRed,
+  },
   separator: {
     width: 1,
     backgroundColor: COLORS.border,
@@ -84,5 +90,10 @@ const styles = StyleSheet.create({
   },
   optionTextSelected: {
     color: COLORS.white,
+  },
+  errorText: {
+    fontSize: 12,
+    color: COLORS.dangerRed,
+    marginTop: 6,
   },
 });

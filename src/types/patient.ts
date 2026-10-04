@@ -1,4 +1,9 @@
-export type DominantHand = 'Derecha' | 'Izquierda' | 'Ambidiestra';
+/**
+ * Values accepted by the `dominant_hand_enum` column on the backend
+ * (`DominantHand` in `profile-role.enum`). The strings are the persisted ones,
+ * not a display label we are free to change.
+ */
+export type DominantHand = 'Derecha' | 'Izquierda' | 'Ambidiestro';
 
 export type PatientStatus = 'Activo' | 'Inactivo';
 

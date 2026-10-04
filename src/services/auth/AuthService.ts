@@ -8,12 +8,16 @@ import type {
   ForgotPasswordResponse,
   LoginPasswordRequest,
   LoginResponse,
-  RegisterPasswordResponse,
   SocialLoginRequest,
   SocialRegisterRequest,
+  SocialRegisterResponse,
   UserRoleId,
   UserToReturnDto,
 } from '@/types/auth';
+import type {
+  RegisterPasswordRequest,
+  RegisterPasswordResponse,
+} from '@/types/auth/register-password';
 
 export {
   ACCESS_TOKEN_SERVICE,
@@ -121,8 +125,8 @@ export const requestPasswordReset = async (
 
 export const registerWithProvider = async (
   credentials: SocialRegisterRequest,
-): Promise<RegisterPasswordResponse> => {
-  const response = await authApi.post<RegisterPasswordResponse>(
+): Promise<SocialRegisterResponse> => {
+  const response = await authApi.post<SocialRegisterResponse>(
     '/auth/register',
     credentials,
   );
@@ -130,4 +134,46 @@ export const registerWithProvider = async (
   await establishSession(response);
 
   return response;
+};
+
+/**
+ * `POST /auth/register-password`.
+ *
+ * The session is NOT opened here on purpose. This endpoint answers with the
+ * created user row spread at the root (`username`, `full_name`, `image_url`)
+ * instead of the `UserToReturnDto` the other entry points return, and opening
+ * the session right away would swap the whole navigation tree for the private
+ * one, unmounting the registration flow before the user sees the welcome
+ * screen. The welcome screen calls `openSessionWithRegistration` instead.
+ */
+export const registerWithPassword = async (
+  data: RegisterPasswordRequest,
+): Promise<RegisterPasswordResponse> =>
+  authApi.post<RegisterPasswordResponse>('/auth/register-password', data);
+
+/**
+ * Renames the identity of a registration answer into the session shape.
+ *
+ * Without this the user would finish registration with a blank name and avatar
+ * in the whole app, because the created user row uses the column names.
+ */
+const toSessionResponse = (
+  registration: RegisterPasswordResponse,
+): SessionResponse => ({
+  id: registration.id,
+  role: registration.role,
+  access_token: registration.access_token,
+  email: registration.username,
+  displayName: registration.full_name,
+  photoURL: registration.image_url ?? '',
+});
+
+/**
+ * Opens the session with the token the registration already returned, so the
+ * user lands on the app instead of having to type the credentials again.
+ */
+export const openSessionWithRegistration = async (
+  registration: RegisterPasswordResponse,
+): Promise<void> => {
+  await establishSession(toSessionResponse(registration));
 };

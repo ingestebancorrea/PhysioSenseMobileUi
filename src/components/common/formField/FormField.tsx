@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   wrapperError: {
-    borderColor: '#E74C3C',
+    borderColor: COLORS.dangerRed,
   },
   leftIcon: {
     paddingLeft: 16,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: '#E74C3C',
+    color: COLORS.dangerRed,
     marginTop: 6,
   },
 });
