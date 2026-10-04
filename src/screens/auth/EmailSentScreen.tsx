@@ -1,5 +1,5 @@
 // src/screens/auth/EmailSentScreen.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -11,15 +11,43 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useAppAlert } from '@/hooks/useAppAlert';
+import { requestPasswordReset } from '@/services/auth/AuthService';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 type EmailSentScreenProps = NativeStackScreenProps<AuthStackParamList, 'EmailSent'>;
 
+const GENERIC_ERROR_MESSAGE =
+  'No pudimos reenviar el correo. Inténtalo de nuevo.';
+
 const EmailSentScreen: React.FC<EmailSentScreenProps> = ({ navigation, route }) => {
   const { email } = route.params;
 
-  const handleResend = () => {
-    // TODO: Conectar con la API para reenviar el correo de recuperación
+  const [isResending, setIsResending] = useState<boolean>(false);
+
+  const { alertModal, showAlert } = useAppAlert();
+
+  const handleResend = async () => {
+    setIsResending(true);
+
+    try {
+      await requestPasswordReset({ username: email });
+
+      showAlert({
+        title: 'Correo reenviado',
+        message: `Volvimos a enviar las instrucciones a ${email}.`,
+        variant: 'success',
+      });
+    } catch (error) {
+      showAlert({
+        title: 'Error',
+        message:
+          error instanceof Error ? error.message : GENERIC_ERROR_MESSAGE,
+        variant: 'error',
+      });
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -69,11 +97,17 @@ const EmailSentScreen: React.FC<EmailSentScreenProps> = ({ navigation, route }) 
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.resendButton}
+            style={[
+              styles.resendButton,
+              isResending && styles.resendButtonDisabled,
+            ]}
             activeOpacity={0.7}
             onPress={handleResend}
+            disabled={isResending}
           >
-            <Text style={styles.resendText}>Reenviar correo</Text>
+            <Text style={styles.resendText}>
+              {isResending ? 'Reenviando...' : 'Reenviar correo'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -87,6 +121,7 @@ const EmailSentScreen: React.FC<EmailSentScreenProps> = ({ navigation, route }) 
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {alertModal}
     </SafeAreaView>
   );
 };
@@ -204,6 +239,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: PRIMARY,
+  },
+  resendButtonDisabled: {
+    opacity: 0.6,
   },
   footer: {
     marginTop: 'auto',

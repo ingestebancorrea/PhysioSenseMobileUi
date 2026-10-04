@@ -14,6 +14,8 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useAppAlert } from '@/hooks/useAppAlert';
+import { requestPasswordReset } from '@/services/auth/AuthService';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 
 type ForgotPasswordScreenProps = NativeStackScreenProps<
@@ -21,14 +23,44 @@ type ForgotPasswordScreenProps = NativeStackScreenProps<
   'ForgotPassword'
 >;
 
+const GENERIC_ERROR_MESSAGE =
+  'No pudimos enviar el correo de recuperación. Inténtalo de nuevo.';
+
 const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = () => {
-    if (!email.trim()) {
+  const { alertModal, showAlert } = useAppAlert();
+
+  const handleSubmit = async () => {
+    const username = email.trim();
+
+    if (!username) {
+      showAlert({
+        title: 'Falta el correo',
+        message: 'Ingresa el correo con el que te registraste.',
+        variant: 'error',
+      });
+
       return;
     }
-    navigation.navigate('EmailSent', { email: email.trim() });
+
+    setIsSubmitting(true);
+
+    try {
+      await requestPasswordReset({ username });
+
+      navigation.navigate('EmailSent', { email: username });
+    } catch (error) {
+      showAlert({
+        title: 'Error',
+        message:
+          error instanceof Error ? error.message : GENERIC_ERROR_MESSAGE,
+        variant: 'error',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,11 +110,17 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
             />
 
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[
+                styles.primaryButton,
+                isSubmitting && styles.primaryButtonDisabled,
+              ]}
               activeOpacity={0.8}
               onPress={handleSubmit}
+              disabled={isSubmitting}
             >
-              <Text style={styles.primaryButtonText}>Enviar instrucciones</Text>
+              <Text style={styles.primaryButtonText}>
+                {isSubmitting ? 'Enviando...' : 'Enviar instrucciones'}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -96,6 +134,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation 
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      {alertModal}
     </SafeAreaView>
   );
 };
@@ -183,6 +222,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
   backContainer: {
     flexDirection: 'row',
