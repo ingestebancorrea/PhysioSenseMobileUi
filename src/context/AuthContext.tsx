@@ -4,45 +4,45 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 
+import { toAccountRole } from '@/constants/roles';
 import {
-  clearAccessToken,
-  hydrateAccessToken,
+  clearSession,
+  hydrateSession,
   loginWithPassword,
   loginWithProvider as loginWithProviderRequest,
   registerWithProvider as registerWithProviderRequest,
+  type StoredSession,
 } from '@/services/auth/AuthService';
 import {
   onSessionEstablished,
   onSessionExpired,
 } from '@/services/auth/sessionEvents';
-import { USER_ROLE_BY_ALIAS } from '@/constants/roles';
 import type {
   LoginPasswordRequest,
   SocialLoginRequest,
   SocialRegisterRequest,
   UserAccountRole,
+  UserToReturnDto,
 } from '@/types/auth';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   isBootstrapping: boolean;
   isSessionExpired: boolean;
+  /** Profile returned by the auth service on the last successful sign-in. */
+  user: UserToReturnDto | null;
+  /** Role the navigator branches on. Never invented: `null` until the service answers. */
   role: UserAccountRole | null;
-  pendingRole: UserAccountRole | null;
   login: (credentials: LoginPasswordRequest) => Promise<void>;
   loginWithProvider: (credentials: SocialLoginRequest) => Promise<void>;
   registerWithProvider: (credentials: SocialRegisterRequest) => Promise<void>;
-  setPendingRole: (role?: UserAccountRole) => void;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-const DEFAULT_ROLE: UserAccountRole = 'paciente';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -50,24 +50,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [user, setUser] = useState<UserToReturnDto | null>(null);
   const [role, setRole] = useState<UserAccountRole | null>(null);
-  const [pendingRole, setPendingRoleState] = useState<UserAccountRole | null>(
-    null,
-  );
 
-  const pendingRoleRef = useRef<UserAccountRole | null>(null);
+  /**
+   * Token, profile and role are restored together, so the app never keeps a
+   * session whose role it cannot prove.
+   */
+  const applySession = (session: StoredSession | null): void => {
+    setUser(session?.user ?? null);
+    setRole(session === null ? null : toAccountRole(session.user.role));
+  };
 
   useEffect(() => {
     let isActive = true;
 
     const bootstrap = async () => {
-      const token = await hydrateAccessToken();
+      const session = await hydrateSession();
 
       if (!isActive) {
         return;
       }
 
-      setIsAuthenticated(token !== null);
+      applySession(session);
+      setIsAuthenticated(session !== null);
       setIsBootstrapping(false);
     };
 
@@ -80,8 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(
     () =>
-      onSessionEstablished(() => {
-        setRole(pendingRoleRef.current ?? DEFAULT_ROLE);
+      onSessionEstablished(session => {
+        applySession(session);
         setIsSessionExpired(false);
         setIsAuthenticated(true);
       }),
@@ -92,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     () =>
       onSessionExpired(() => {
         setIsAuthenticated(false);
-        setRole(null);
+        applySession(null);
         setIsSessionExpired(true);
       }),
     [],
@@ -111,28 +117,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const registerWithProvider = useCallback(
     async (credentials: SocialRegisterRequest) => {
-      pendingRoleRef.current = USER_ROLE_BY_ALIAS[credentials.alias_role];
-      setPendingRoleState(pendingRoleRef.current);
-
       await registerWithProviderRequest(credentials);
     },
     [],
   );
 
-  const setPendingRole = useCallback((selectedRole?: UserAccountRole) => {
-    const nextRole = selectedRole ?? DEFAULT_ROLE;
-
-    pendingRoleRef.current = nextRole;
-    setPendingRoleState(nextRole);
-  }, []);
-
   const logout = useCallback(async () => {
-    await clearAccessToken();
+    await clearSession();
     setIsAuthenticated(false);
+    setUser(null);
     setRole(null);
     setIsSessionExpired(false);
-    pendingRoleRef.current = null;
-    setPendingRoleState(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -140,24 +135,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       isAuthenticated,
       isBootstrapping,
       isSessionExpired,
+      user,
       role,
-      pendingRole,
       login,
       loginWithProvider,
       registerWithProvider,
-      setPendingRole,
       logout,
     }),
     [
       isAuthenticated,
       isBootstrapping,
       isSessionExpired,
+      user,
       role,
-      pendingRole,
       login,
       loginWithProvider,
       registerWithProvider,
-      setPendingRole,
       logout,
     ],
   );

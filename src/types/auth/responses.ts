@@ -1,10 +1,23 @@
 import type { UserRoleId } from './enums';
 
-export interface LoginResponse {
+/**
+ * `UserToReturnDto` of the auth service: the profile every entry point returns
+ * once the credentials are accepted.
+ *
+ * `role` travels as its numeric id (`UserRoleId`), never as a display string,
+ * so the frontend maps it in one place (`toAccountRole`) instead of trusting a
+ * label that the backend is free to change.
+ */
+export interface UserToReturnDto {
   id: number;
+  role: UserRoleId;
   email: string;
   displayName: string;
   photoURL: string;
+}
+
+/** `POST /auth/login-password`: the DTO plus the token used on every request. */
+export interface LoginResponse extends UserToReturnDto {
   access_token: string;
 }
 

@@ -1,6 +1,3 @@
-export interface AppUser {
-  id: number;
-  email: string;
-  displayName: string;
-  photoURL: string;
-}
+import type { UserToReturnDto } from '@/types/auth';
+
+export type AppUser = Omit<UserToReturnDto, 'role'>;
