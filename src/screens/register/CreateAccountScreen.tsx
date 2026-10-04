@@ -18,9 +18,10 @@ import type {
 } from '@react-navigation/native-stack';
 import { LockKeyhole, Mail, User } from 'lucide-react-native';
 
-import { useRegistration } from '@/context/RegistrationContext';
+import { useRegistrationStep } from '@/hooks/useRegistrationStep';
 import { useAuth } from '@/context/AuthContext';
 import { useAppAlert } from '@/hooks/useAppAlert';
+import { validateAccountStep } from '@/utils/validation/registrationValidation';
 import {
   configureSocialSignIn,
   describeSocialAuthError,
@@ -47,7 +48,7 @@ configureSocialSignIn();
 const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
   navigation,
 }) => {
-  const { data, updateField } = useRegistration();
+  const { data, errors, submit, change, changeTerms } = useRegistrationStep();
   const { registerWithProvider } = useAuth();
   const { alertModal, showAlert } = useAppAlert();
   const [pendingProvider, setPendingProvider] =
@@ -57,11 +58,16 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
   const isBusy = pendingProvider !== null;
 
   const handleContinue = () => {
+    if (!submit(validateAccountStep)) {
+      return;
+    }
+
     if (data.role === 'fisioterapeuta') {
       navigation.navigate('ProfessionalInfo');
-    } else {
-      navigation.navigate('PatientInfo');
+      return;
     }
+
+    navigation.navigate('PatientInfo');
   };
 
   const goToLogin = () =>
@@ -133,50 +139,55 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
             label="Nombre completo"
             placeholder="Ej. Laura Martínez"
             value={data.fullName}
-            onChangeText={text => updateField('fullName', text)}
+            onChangeText={text => change('fullName', text)}
             icon={User}
             autoCapitalize="words"
+            error={errors.fullName}
           />
 
           <FormField
             label="Correo electrónico"
             placeholder="ejemplo@correo.com"
             value={data.email}
-            onChangeText={text => updateField('email', text)}
+            onChangeText={text => change('email', text)}
             icon={Mail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             textContentType="emailAddress"
+            error={errors.email}
           />
 
           <FormField
             label="Contraseña"
             placeholder="••••••••"
             value={data.password}
-            onChangeText={text => updateField('password', text)}
+            onChangeText={text => change('password', text)}
             icon={LockKeyhole}
             secureTextEntry
             showSecureToggle
             textContentType="newPassword"
+            error={errors.password}
           />
 
           <FormField
             label="Confirmar contraseña"
             placeholder="••••••••"
             value={data.confirmPassword}
-            onChangeText={text => updateField('confirmPassword', text)}
+            onChangeText={text => change('confirmPassword', text)}
             icon={LockKeyhole}
             secureTextEntry
             showSecureToggle
             textContentType="newPassword"
+            error={errors.confirmPassword}
           />
 
           <CheckboxRow
             checked={data.acceptTerms}
-            onToggle={() => updateField('acceptTerms', !data.acceptTerms)}
+            onToggle={() => changeTerms(!data.acceptTerms)}
             text="Acepto los Términos y condiciones y la Política de"
             highlight="privacidad"
+            error={errors.acceptTerms}
           />
 
           <TouchableOpacity

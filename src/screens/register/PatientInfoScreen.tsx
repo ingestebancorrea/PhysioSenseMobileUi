@@ -13,10 +13,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CalendarDays, ChevronLeft, MapPin, UserRound } from 'lucide-react-native';
 
-import { useRegistration } from '@/context/RegistrationContext';
+import { useRegistrationStep } from '@/hooks/useRegistrationStep';
+import {
+  formatBirthDateInput,
+  validatePatientStep,
+} from '@/utils/validation/registrationValidation';
 import { FormField } from '@/components/common/formField/FormField';
 import { SelectField } from '@/components/common/selectField/SelectField';
 import { SegmentedControl } from '@/components/common/segmentedControl/SegmentedControl';
+import type { DominantHand } from '@/types/patient';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
 import { COLORS } from '@/constants/theme';
 
@@ -36,10 +41,19 @@ const COUNTRIES = [
   'Estados Unidos',
 ];
 
-const HAND_OPTIONS = ['Derecha', 'Izquierda', 'Ambidestro'];
+/** The three values of the backend `DominantHand` enum, sent as-is. */
+const HAND_OPTIONS: DominantHand[] = ['Derecha', 'Izquierda', 'Ambidiestro'];
 
 const PatientInfoScreen: React.FC<PatientInfoScreenProps> = ({ navigation }) => {
-  const { data, updateField } = useRegistration();
+  const { data, errors, submit, change } = useRegistrationStep();
+
+  const handleContinue = () => {
+    if (!submit(validatePatientStep)) {
+      return;
+    }
+
+    navigation.navigate('AdditionalInfo');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -67,40 +81,44 @@ const PatientInfoScreen: React.FC<PatientInfoScreenProps> = ({ navigation }) => 
             label="Fecha de nacimiento"
             placeholder="DD / MM / AAAA"
             value={data.birthDate}
-            onChangeText={text => updateField('birthDate', text)}
+            onChangeText={text => change('birthDate', formatBirthDateInput(text))}
             icon={CalendarDays}
             keyboardType="number-pad"
             maxLength={10}
+            error={errors.birthDate}
           />
 
           <SelectField
             label="País"
             value={data.country}
-            onSelect={value => updateField('country', value)}
+            onSelect={value => change('country', value)}
             options={COUNTRIES}
             placeholder="Ej. Colombia"
+            error={errors.country}
           />
 
           <FormField
             label="Ciudad"
             placeholder="Ej. Bogotá"
             value={data.city}
-            onChangeText={text => updateField('city', text)}
+            onChangeText={text => change('city', text)}
             icon={MapPin}
             autoCapitalize="words"
+            error={errors.city}
           />
 
           <SegmentedControl
             label="Mano dominante"
             options={HAND_OPTIONS}
             value={data.dominantHand}
-            onChange={value => updateField('dominantHand', value)}
+            onChange={value => change('dominantHand', value)}
+            error={errors.dominantHand}
           />
 
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.85}
-            onPress={() => navigation.navigate('AdditionalInfo')}
+            onPress={handleContinue}
           >
             <Text style={styles.primaryButtonText}>Continuar</Text>
           </TouchableOpacity>
