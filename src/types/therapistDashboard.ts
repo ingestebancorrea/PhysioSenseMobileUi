@@ -28,10 +28,8 @@ export interface HomeTabItem {
 }
 
 export interface TherapistDashboardData {
-  therapist: {
-    name: string;
-    unreadNotifications: number;
-  };
+  /** The therapist name comes from the signed-in user, not from here. */
+  unreadNotifications: number;
   stats: TherapistStat[];
   activities: TherapistActivity[];
 }

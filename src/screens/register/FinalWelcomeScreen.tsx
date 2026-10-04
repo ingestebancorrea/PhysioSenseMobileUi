@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useRegistration } from '@/context/RegistrationContext';
-import { useAuth } from '@/context/AuthContext';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { COLORS } from '@/constants/theme';
@@ -28,13 +27,11 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
   navigation,
 }) => {
   const { data } = useRegistration();
-  const { setPendingRole } = useAuth();
 
   const isTherapist = data.role === 'fisioterapeuta';
-  const firstName = data.fullName.split(' ')[0] || 'Laura';
+  const firstName = data.fullName.trim().split(' ')[0] ?? '';
 
   const goToLogin = () => {
-    setPendingRole(data.role ?? 'paciente');
     navigation
       .getParent<NativeStackNavigationProp<AuthStackParamList>>()
       ?.navigate('Login');
@@ -75,7 +72,9 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
         </View>
 
         <View style={styles.header}>
-          <Text style={styles.title}>¡Bienvenida, {firstName}! 👋</Text>
+          <Text style={styles.title}>
+            {firstName.length > 0 ? `¡Bienvenida, ${firstName}! 👋` : '¡Bienvenida! 👋'}
+          </Text>
           <Text style={styles.message}>
             {isTherapist
               ? 'Tu cuenta está lista. Ahora puedes configurar tu perfil profesional y comenzar a gestionar pacientes.'

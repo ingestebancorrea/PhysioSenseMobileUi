@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { DASHBOARD_DATA } from '@/mock/dashboardData';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ExerciseCard } from '@/components/dashboard/ExerciseCard';
@@ -13,9 +14,10 @@ import { SessionStatusBadge } from '@/components/dashboard/SessionStatusBadge';
 import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner';
 
 export const HomeScreen: React.FC = () => {
-  const { user, summary, lastSession } = DASHBOARD_DATA;
+  const { summary, lastSession } = DASHBOARD_DATA;
   const { open } = useDrawer();
   const navigate = useNavigate();
+  const currentUser = useCurrentUser();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -29,7 +31,11 @@ export const HomeScreen: React.FC = () => {
           onNotificationsPress={() => navigate('notifications')}
         />
 
-        <WelcomeBanner firstName={user.firstName} />
+        <WelcomeBanner
+          firstName={currentUser.firstName}
+          initials={currentUser.initials}
+          photoURL={currentUser.photoURL}
+        />
 
         <SectionHeader title="Resumen de hoy" />
         <View style={styles.grid}>

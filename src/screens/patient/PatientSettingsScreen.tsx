@@ -20,10 +20,10 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 
-import { getInitials } from '@/utils/helpers/nameInitials';
 import { useAuth } from '@/context/AuthContext';
-import { PATIENT_PROFILE } from '@/mock/patientProfileData';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
 import { COLORS } from '@/constants/theme';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const DESIGN_WIDTH = 390;
 
@@ -81,7 +81,7 @@ export const PatientSettingsScreen: React.FC<PatientSettingsScreenProps> = ({
   const styles = useMemo(() => createStyles(scale), [scale]);
   const insets = useSafeAreaInsets();
 
-  const { name, avatarUrl } = PATIENT_PROFILE;
+  const currentUser = useCurrentUser();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -106,21 +106,25 @@ export const PatientSettingsScreen: React.FC<PatientSettingsScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileCard}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          {currentUser.photoURL ? (
+            <Image source={{ uri: currentUser.photoURL }} style={styles.avatar} />
           ) : (
             <View style={styles.avatar}>
-              <Text style={styles.avatarInitials}>{getInitials(name)}</Text>
+              <Text style={styles.avatarInitials}>{currentUser.initials}</Text>
             </View>
           )}
 
           <View style={styles.profileInfo}>
             <Text style={styles.profileName} numberOfLines={1}>
-              {name}
+              {currentUser.displayName}
             </Text>
-            <View style={styles.roleBadge}>
-              <Text style={styles.roleBadgeText}>Paciente</Text>
-            </View>
+            {currentUser.role && (
+              <View style={styles.roleBadge}>
+                <Text style={styles.roleBadgeText}>
+                  {ACCOUNT_ROLE_LABEL[currentUser.role]}
+                </Text>
+              </View>
+            )}
           </View>
 
           <ChevronRight size={22} color={COLORS.textMuted} />

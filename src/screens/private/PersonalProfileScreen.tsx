@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,17 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, ChevronLeft, Pencil } from 'lucide-react-native';
 
-import { getInitials } from '@/utils/helpers/nameInitials';
 import { useAppAlert } from '@/hooks/useAppAlert';
-import {
-  THERAPIST_SETTINGS_PROFILE,
-} from '@/mock/settingsData';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
+import { THERAPIST_PROFESSIONAL_DATA } from '@/mock/therapistProfileData';
 import { COLORS } from '@/constants/theme';
 
 const DESIGN_WIDTH = 390;
-
-const PROFILE_NAME = THERAPIST_SETTINGS_PROFILE.name;
-const PROFILE_ROLE = THERAPIST_SETTINGS_PROFILE.role;
 
 type FieldKey = 'fullName' | 'email' | 'phone' | 'specialty' | 'license';
 
@@ -40,14 +37,6 @@ const PROFILE_FIELDS: ProfileFieldConfig[] = [
   { key: 'license', label: 'Licencia profesional' },
 ];
 
-const INITIAL_FORM: Record<FieldKey, string> = {
-  fullName: 'María López',
-  email: 'maria.lopez@fisioapp.com',
-  phone: '+57 300 123 4567',
-  specialty: 'Fisioterapia de mano',
-  license: 'LP-123456',
-};
-
 interface PersonalProfileScreenProps {
   onBack?: () => void;
 }
@@ -55,11 +44,22 @@ interface PersonalProfileScreenProps {
 export const PersonalProfileScreen: React.FC<PersonalProfileScreenProps> = ({
   onBack,
 }) => {
-  const [form, setForm] = useState<Record<FieldKey, string>>(INITIAL_FORM);
+  const currentUser = useCurrentUser();
+  const [form, setForm] = useState<Record<FieldKey, string>>(() => ({
+    fullName: currentUser.displayName,
+    email: currentUser.email,
+    phone: THERAPIST_PROFESSIONAL_DATA.phone,
+    specialty: THERAPIST_PROFESSIONAL_DATA.specialty,
+    license: THERAPIST_PROFESSIONAL_DATA.license,
+  }));
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
   const { alertModal, showAlert } = useAppAlert();
+
+  const roleLabel = currentUser.role
+    ? ACCOUNT_ROLE_LABEL[currentUser.role]
+    : '';
 
   const handleChange = (key: FieldKey, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -97,9 +97,16 @@ export const PersonalProfileScreen: React.FC<PersonalProfileScreenProps> = ({
       >
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarInitials}>{getInitials(PROFILE_NAME)}</Text>
-            </View>
+            {currentUser.photoURL ? (
+              <Image
+                source={{ uri: currentUser.photoURL }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarInitials}>{currentUser.initials}</Text>
+              </View>
+            )}
             <View style={styles.cameraBadge}>
               <Camera size={14} color={COLORS.background} />
             </View>
@@ -107,11 +114,13 @@ export const PersonalProfileScreen: React.FC<PersonalProfileScreenProps> = ({
 
           <View style={styles.profileInfo}>
             <Text style={styles.profileName} numberOfLines={1}>
-              {PROFILE_NAME}
+              {currentUser.displayName}
             </Text>
-            <View style={styles.roleBadge}>
-              <Text style={styles.roleBadgeText}>{PROFILE_ROLE}</Text>
-            </View>
+            {roleLabel.length > 0 && (
+              <View style={styles.roleBadge}>
+                <Text style={styles.roleBadgeText}>{roleLabel}</Text>
+              </View>
+            )}
           </View>
         </View>
 

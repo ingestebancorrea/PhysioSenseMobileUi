@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { THERAPIST_DASHBOARD_DATA } from '@/mock/therapistDashboardData';
 import { ActivityItem } from '@/components/dashboard/ActivityItem';
 import { SectionHeader } from '@/components/dashboard/SectionHeader';
@@ -11,9 +12,10 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { TherapistDashboardHeader } from '@/components/dashboard/TherapistDashboardHeader';
 
 export const TherapistHomeScreen: React.FC = () => {
-  const { therapist, stats, activities } = THERAPIST_DASHBOARD_DATA;
+  const { unreadNotifications, stats, activities } = THERAPIST_DASHBOARD_DATA;
   const { open } = useDrawer();
   const navigate = useNavigate();
+  const currentUser = useCurrentUser();
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -22,8 +24,8 @@ export const TherapistHomeScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         <TherapistDashboardHeader
-          name={therapist.name}
-          notificationCount={therapist.unreadNotifications}
+          name={currentUser.firstName}
+          notificationCount={unreadNotifications}
           onMenuPress={open}
           onNotificationsPress={() => navigate('notifications')}
         />

@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/config/env';
 import { emitSessionExpired } from '@/services/auth/sessionEvents';
-import { clearAccessToken, getAccessToken } from '@/services/auth/tokenStorage';
+import { clearSession, getAccessToken } from '@/services/auth/tokenStorage';
 import type { ApiErrorResponse } from '@/types/auth';
 
 const UNAUTHORIZED_STATUS = 401;
@@ -59,7 +59,7 @@ const buildHeaders = async (
 const expireSession = async (): Promise<void> => {
   const hadToken = (await getAccessToken()) !== null;
 
-  await clearAccessToken();
+  await clearSession();
 
   if (hadToken) {
     emitSessionExpired();

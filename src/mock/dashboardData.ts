@@ -2,9 +2,6 @@ import type { DashboardMetrics } from '@/types/dashboard';
 
 export const DASHBOARD_DATA: DashboardMetrics = {
   id: 'dashboard_2025_05_17',
-  user: {
-    firstName: 'Esteban',
-  },
   summary: [
     {
       id: 'metric_01',

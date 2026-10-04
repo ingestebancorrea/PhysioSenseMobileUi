@@ -22,6 +22,7 @@ import {
 } from 'lucide-react-native';
 
 import { useAppAlert } from '@/hooks/useAppAlert';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { COLORS } from '@/constants/theme';
 
 const DESIGN_WIDTH = 390;
@@ -64,7 +65,9 @@ interface TwoStepVerificationScreenProps {
 
 export const TwoStepVerificationScreen: React.FC<
   TwoStepVerificationScreenProps
-> = ({ onBack, phone = '+57 300 123 4567', email = 'usuario@fisiosense.com' }) => {
+> = ({ onBack, phone = '+57 300 123 4567', email: emailProp }) => {
+  const { email: sessionEmail } = useCurrentUser();
+  const email = emailProp ?? sessionEmail;
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);

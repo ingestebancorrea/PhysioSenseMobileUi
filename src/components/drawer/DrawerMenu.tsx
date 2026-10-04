@@ -11,12 +11,11 @@ import {
   View,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
 import { COLORS } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useDrawer } from '@/context/DrawerContext';
-import { PATIENT_PROFILE } from '@/mock/patientProfileData';
-import { THERAPIST_DASHBOARD_DATA } from '@/mock/therapistDashboardData';
-import { getInitials } from '@/utils/helpers/nameInitials';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -61,16 +60,14 @@ export const DrawerMenu: React.FC<DrawerMenuProps> = ({
   onSelect,
 }) => {
   const { isOpen, close } = useDrawer();
-  const { logout, role } = useAuth();
+  const { logout } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
+  const currentUser = useCurrentUser();
 
+  const { role } = currentUser;
   const isTherapist = role === 'fisioterapeuta';
   const mainItems = isTherapist ? THERAPIST_MAIN_ITEMS : PATIENT_MAIN_ITEMS;
-  const userName = isTherapist
-    ? THERAPIST_DASHBOARD_DATA.therapist.name
-    : PATIENT_PROFILE.name;
-  const avatarUrl = isTherapist ? null : PATIENT_PROFILE.avatarUrl;
-  const roleBadgeLabel = isTherapist ? 'Fisioterapeuta' : 'Paciente';
+  const roleBadgeLabel = role ? ACCOUNT_ROLE_LABEL[role] : '';
 
   const drawerWidth = Math.min(
     screenWidth * DRAWER_WIDTH_RATIO,
@@ -135,15 +132,18 @@ export const DrawerMenu: React.FC<DrawerMenuProps> = ({
         accessibilityViewIsModal={isOpen}
       >
         <View style={styles.header}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.profileImage} />
+          {currentUser.photoURL ? (
+            <Image
+              source={{ uri: currentUser.photoURL }}
+              style={styles.profileImage}
+            />
           ) : (
             <View style={[styles.profileImage, styles.profileInitials]}>
-              <Text style={styles.initials}>{getInitials(userName)}</Text>
+              <Text style={styles.initials}>{currentUser.initials}</Text>
             </View>
           )}
           <View style={styles.headerInfo}>
-            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userName}>{currentUser.displayName}</Text>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{roleBadgeLabel}</Text>
             </View>

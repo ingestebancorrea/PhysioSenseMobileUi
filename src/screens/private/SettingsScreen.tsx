@@ -11,14 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react-native';
 
-import { getInitials } from '@/utils/helpers/nameInitials';
 import { useAuth } from '@/context/AuthContext';
-import {
-  THERAPIST_SETTING_OPTIONS,
-  THERAPIST_SETTINGS_PROFILE,
-} from '@/mock/settingsData';
+import { THERAPIST_SETTING_OPTIONS } from '@/mock/settingsData';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
 import { ICONS, type IconName } from '@/constants/icons';
 import { COLORS } from '@/constants/theme';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import type { SettingOption } from '@/types/settings';
 
 const DESIGN_WIDTH = 390;
@@ -37,7 +35,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
 
-  const { name, role, avatarUrl } = THERAPIST_SETTINGS_PROFILE;
+  const currentUser = useCurrentUser();
+  const { displayName, photoURL, initials, role } = currentUser;
+  const roleLabel = role ? ACCOUNT_ROLE_LABEL[role] : '';
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -62,23 +62,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           style={styles.profileCard}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel={`Perfil de ${name}`}
+          accessibilityLabel={`Perfil de ${displayName}`}
         >
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          {photoURL ? (
+            <Image source={{ uri: photoURL }} style={styles.avatar} />
           ) : (
             <View style={styles.avatar}>
-              <Text style={styles.avatarInitials}>{getInitials(name)}</Text>
+              <Text style={styles.avatarInitials}>{initials}</Text>
             </View>
           )}
 
           <View style={styles.profileInfo}>
             <Text style={styles.profileName} numberOfLines={1}>
-              {name}
+              {displayName}
             </Text>
-            <View style={styles.roleBadge}>
-              <Text style={styles.roleBadgeText}>{role}</Text>
-            </View>
+            {roleLabel.length > 0 && (
+              <View style={styles.roleBadge}>
+                <Text style={styles.roleBadgeText}>{roleLabel}</Text>
+              </View>
+            )}
           </View>
 
           <ChevronRight size={22} color={COLORS.textMuted} />

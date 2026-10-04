@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
+import { COLORS } from '@/constants/theme';
 import { DrawerMenu } from '@/components/drawer/DrawerMenu';
 import { DrawerProvider } from '@/context/DrawerContext';
 import { PrivateNavigationProvider } from '@/context/PrivateNavigationContext';
@@ -588,8 +589,22 @@ const TherapistNavigatorContent: React.FC = () => {
   );
 };
 
+/**
+ * Only a session whose role could be resolved reaches this navigator, so the
+ * two stacks are picked from the role the auth service reported and never from
+ * a fallback. An authenticated session without a role renders the loader instead
+ * of the patient screens: showing the wrong stack is worse than waiting.
+ */
 export const PrivateNavigator: React.FC = () => {
-  const { role } = useAuth();
+  const { role, isBootstrapping } = useAuth();
+
+  if (isBootstrapping || role === null) {
+    return (
+      <View style={[styles.container, styles.loading]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (role === 'fisioterapeuta') {
     return (
@@ -615,5 +630,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  loading: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

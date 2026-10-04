@@ -2,12 +2,14 @@ export type DominantHand = 'Derecha' | 'Izquierda' | 'Ambidiestra';
 
 export type PatientStatus = 'Activo' | 'Inactivo';
 
+/**
+ * Clinical data of the signed-in patient.
+ *
+ * Identity fields (id, name, email, avatar) are intentionally absent: they come
+ * from `UserToReturnDto` through `useCurrentUser`.
+ */
 export interface PatientProfile {
-  id: string;
-  name: string;
-  email: string;
   phone: string;
-  avatarUrl: string;
   birthDate: string;
   dominantHand: DominantHand;
   diagnosis: string;

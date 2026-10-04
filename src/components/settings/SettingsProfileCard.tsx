@@ -1,20 +1,20 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
 import { COLORS } from '@/constants/theme';
-import { getInitials } from '@/utils/helpers/nameInitials';
-import type { TherapistProfile } from '@/types/settings';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface SettingsProfileCardProps {
-  profile: TherapistProfile;
   onPress?: () => void;
 }
 
+/** Identity of the signed-in user, taken from `UserToReturnDto`. */
 export const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
-  profile,
   onPress,
 }) => {
-  const { name, role, avatarUrl } = profile;
+  const { displayName, photoURL, initials, role } = useCurrentUser();
+  const roleLabel = role ? ACCOUNT_ROLE_LABEL[role] : '';
 
   return (
     <TouchableOpacity
@@ -22,23 +22,25 @@ export const SettingsProfileCard: React.FC<SettingsProfileCardProps> = ({
       activeOpacity={0.85}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Perfil de ${name}`}
+      accessibilityLabel={`Perfil de ${displayName}`}
     >
-      {avatarUrl ? (
-        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+      {photoURL ? (
+        <Image source={{ uri: photoURL }} style={styles.avatar} />
       ) : (
         <View style={styles.avatar}>
-          <Text style={styles.avatarInitials}>{getInitials(name)}</Text>
+          <Text style={styles.avatarInitials}>{initials}</Text>
         </View>
       )}
 
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
-          {name}
+          {displayName}
         </Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>{role}</Text>
-        </View>
+        {roleLabel.length > 0 && (
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>{roleLabel}</Text>
+          </View>
+        )}
       </View>
 
       <ChevronRight size={22} color={COLORS.textMuted} />

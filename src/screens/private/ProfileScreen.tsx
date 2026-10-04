@@ -47,7 +47,7 @@ export const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <UserCard profile={PATIENT_PROFILE} />
+        <UserCard />
 
         <ProfileSectionCard title="Paciente">
           <InfoRow label="Fecha de nacimiento" value={birthDate} showDivider />
