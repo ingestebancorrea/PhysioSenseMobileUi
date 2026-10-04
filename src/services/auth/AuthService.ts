@@ -4,6 +4,8 @@ import { createApiClient } from '@/services/api/client';
 import { emitSessionEstablished } from '@/services/auth/sessionEvents';
 import { persistSession } from '@/services/auth/tokenStorage';
 import type {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   LoginPasswordRequest,
   LoginResponse,
   RegisterPasswordResponse,
@@ -102,6 +104,17 @@ export const loginWithProvider = async (
   );
 
   await establishSession(response);
+
+  return response;
+};
+
+export const requestPasswordReset = async (
+  credentials: ForgotPasswordRequest,
+): Promise<ForgotPasswordResponse> => {
+  const response = await authApi.post<ForgotPasswordResponse>(
+    '/auth/forgot-password',
+    credentials,
+  );
 
   return response;
 };

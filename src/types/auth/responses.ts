@@ -35,6 +35,10 @@ export interface RegisterPasswordResponse extends AuthUserRecord {
   access_token: string;
 }
 
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
 export interface ApiErrorResponse {
   statusCode: number;
   message: string | string[];
