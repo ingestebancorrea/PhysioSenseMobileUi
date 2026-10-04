@@ -1,12 +1,19 @@
 // src/screens/register/FinalWelcomeScreen.tsx
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useRegistration } from '@/context/RegistrationContext';
+import { openSessionWithRegistration } from '@/services/auth/AuthService';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
-import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { COLORS } from '@/constants/theme';
 
 type FinalWelcomeScreenProps = NativeStackScreenProps<
@@ -24,17 +31,38 @@ const CONFETTI = [
 ];
 
 const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
-  navigation,
+  route,
 }) => {
   const { data } = useRegistration();
+  const [isEntering, setIsEntering] = useState(false);
+  const [enterError, setEnterError] = useState<string | null>(null);
 
   const isTherapist = data.role === 'fisioterapeuta';
   const firstName = data.fullName.trim().split(' ')[0] ?? '';
 
-  const goToLogin = () => {
-    navigation
-      .getParent<NativeStackNavigationProp<AuthStackParamList>>()
-      ?.navigate('Login');
+  /**
+   * The session is opened here and not in the registration call: opening it
+   * earlier would make `RootNavigator` swap the auth stack for the private one
+   * and this screen would never be shown.
+   */
+  const enterTheApp = async () => {
+    if (isEntering) {
+      return;
+    }
+
+    setEnterError(null);
+    setIsEntering(true);
+
+    try {
+      await openSessionWithRegistration(route.params.registration);
+    } catch (error) {
+      setEnterError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo iniciar tu sesión. Intenta de nuevo.',
+      );
+      setIsEntering(false);
+    }
   };
 
   return (
@@ -73,7 +101,9 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
 
         <View style={styles.header}>
           <Text style={styles.title}>
-            {firstName.length > 0 ? `¡Bienvenida, ${firstName}! 👋` : '¡Bienvenida! 👋'}
+            {firstName.length > 0
+              ? `¡Bienvenido/a, ${firstName}! 👋`
+              : '¡Bienvenido/a! 👋'}
           </Text>
           <Text style={styles.message}>
             {isTherapist
@@ -83,20 +113,32 @@ const FinalWelcomeScreen: React.FC<FinalWelcomeScreenProps> = ({
         </View>
 
         <View style={styles.footer}>
+          {enterError !== null && (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorText}>{enterError}</Text>
+            </View>
+          )}
+
           <TouchableOpacity
-            style={styles.primaryButton}
+            style={[styles.primaryButton, isEntering && styles.buttonDisabled]}
             activeOpacity={0.85}
-            onPress={goToLogin}
+            disabled={isEntering}
+            onPress={enterTheApp}
           >
-            <Text style={styles.primaryButtonText}>
-              {isTherapist ? 'Ir al dashboard' : 'Ir a mi recuperación'}
-            </Text>
+            {isEntering ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <Text style={styles.primaryButtonText}>
+                {isTherapist ? 'Ir al dashboard' : 'Ir a mi recuperación'}
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.outlineButton}
             activeOpacity={0.8}
-            onPress={goToLogin}
+            disabled={isEntering}
+            onPress={enterTheApp}
           >
             <Text style={styles.outlineButtonText}>
               Completar perfil después
@@ -169,6 +211,20 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 17,
     fontWeight: '700',
+  },
+  errorBanner: {
+    backgroundColor: COLORS.dangerRedSoft,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: COLORS.dangerRed,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   outlineButton: {
     height: 50,
