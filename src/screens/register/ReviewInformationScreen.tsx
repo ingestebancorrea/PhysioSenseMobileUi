@@ -77,12 +77,12 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
     {
       icon: User,
       label: 'Nombre',
-      value: orFallback(data.fullName, 'Laura Martínez'),
+      value: data.fullName.trim() || 'Sin nombre',
     },
     {
       icon: Mail,
       label: 'Correo',
-      value: orFallback(data.email, 'laura.martinez@correo.com'),
+      value: data.email.trim() || 'Sin correo',
     },
   ];
 
