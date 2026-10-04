@@ -1,28 +1,24 @@
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '@/constants/theme';
-import { getInitials } from '@/utils/helpers/nameInitials';
-import type { PatientProfile } from '@/types/patient';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
-interface UserCardProps {
-  profile: Pick<PatientProfile, 'name' | 'email' | 'avatarUrl'>;
-}
-
-export const UserCard: React.FC<UserCardProps> = ({ profile }) => {
-  const { name, email, avatarUrl } = profile;
+/** Identity of the signed-in user, taken from `UserToReturnDto`. */
+export const UserCard: React.FC = () => {
+  const { displayName, email, photoURL, initials } = useCurrentUser();
 
   return (
     <View style={styles.card}>
-      {avatarUrl ? (
-        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+      {photoURL ? (
+        <Image source={{ uri: photoURL }} style={styles.avatar} />
       ) : (
         <View style={styles.avatar}>
-          <Text style={styles.initials}>{getInitials(name)}</Text>
+          <Text style={styles.initials}>{initials}</Text>
         </View>
       )}
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
-          {name}
+          {displayName}
         </Text>
         <Text style={styles.email} numberOfLines={1}>
           {email}

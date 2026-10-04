@@ -4,14 +4,7 @@ import type {
   PrivacyOption,
   SecurityOption,
   SettingOption,
-  TherapistProfile,
 } from '@/types/settings';
-
-export const THERAPIST_SETTINGS_PROFILE: TherapistProfile = {
-  name: 'María López',
-  role: 'Fisioterapeuta',
-  avatarUrl: '',
-};
 
 export const THERAPIST_SETTING_OPTIONS: SettingOption[] = [
   {

@@ -12,8 +12,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, ChevronLeft, Pencil } from 'lucide-react-native';
 
-import { getInitials } from '@/utils/helpers/nameInitials';
 import { useAppAlert } from '@/hooks/useAppAlert';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { ACCOUNT_ROLE_LABEL } from '@/constants/roles';
 import { PATIENT_PROFILE } from '@/mock/patientProfileData';
 import { COLORS } from '@/constants/theme';
 
@@ -40,13 +41,16 @@ const PROFILE_FIELDS: ProfileFieldConfig[] = [
   { key: 'dominantHand', label: 'Mano dominante' },
 ];
 
-const INITIAL_FORM: Record<FieldKey, string> = {
-  fullName: PATIENT_PROFILE.name,
-  email: PATIENT_PROFILE.email,
+const buildInitialForm = (
+  displayName: string,
+  email: string,
+): Record<FieldKey, string> => ({
+  fullName: displayName,
+  email,
   phone: PATIENT_PROFILE.phone,
   birthDate: PATIENT_PROFILE.birthDate,
   dominantHand: PATIENT_PROFILE.dominantHand,
-};
+});
 
 interface PatientEditProfileScreenProps {
   onBack?: () => void;
@@ -55,7 +59,10 @@ interface PatientEditProfileScreenProps {
 export const PatientEditProfileScreen: React.FC<
   PatientEditProfileScreenProps
 > = ({ onBack }) => {
-  const [form, setForm] = useState<Record<FieldKey, string>>(INITIAL_FORM);
+  const currentUser = useCurrentUser();
+  const [form, setForm] = useState<Record<FieldKey, string>>(() =>
+    buildInitialForm(currentUser.displayName, currentUser.email),
+  );
   const { width } = useWindowDimensions();
   const scale = Math.min(Math.max(width / DESIGN_WIDTH, 0.8), 1);
   const styles = useMemo(() => createStyles(scale), [scale]);
@@ -103,7 +110,7 @@ export const PatientEditProfileScreen: React.FC<
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
               <Text style={styles.avatarInitials}>
-                {getInitials(form.fullName)}
+                {currentUser.initials}
               </Text>
             </View>
             <View style={styles.cameraBadge}>
@@ -115,9 +122,13 @@ export const PatientEditProfileScreen: React.FC<
             <Text style={styles.profileName} numberOfLines={1}>
               {form.fullName}
             </Text>
-            <View style={styles.roleBadge}>
-              <Text style={styles.roleBadgeText}>Paciente</Text>
-            </View>
+            {currentUser.role && (
+              <View style={styles.roleBadge}>
+                <Text style={styles.roleBadgeText}>
+                  {ACCOUNT_ROLE_LABEL[currentUser.role]}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 

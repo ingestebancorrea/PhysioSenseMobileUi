@@ -44,9 +44,3 @@ export interface PrivacyOption {
   iconName: string;
   route: string;
 }
-
-export interface TherapistProfile {
-  name: string;
-  role: string;
-  avatarUrl: string;
-}
