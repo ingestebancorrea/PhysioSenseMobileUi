@@ -79,24 +79,3 @@ export const getFacebookAccessToken = async (): Promise<string | null> => {
 
   return currentToken.accessToken;
 };
-
-export const describeSocialAuthError = (error: unknown): string => {
-  log('error', error);
-
-  if (error === null || error === undefined) {
-    return 'Error desconocido.';
-  }
-
-  if (!(error instanceof Error)) {
-    return String(error);
-  }
-
-  const code = (error as Error & { code?: unknown }).code;
-  const lines = [error.message, error.name];
-
-  if (code !== undefined) {
-    lines.push(`code: ${String(code)}`);
-  }
-
-  return lines.filter(Boolean).join('\n');
-};

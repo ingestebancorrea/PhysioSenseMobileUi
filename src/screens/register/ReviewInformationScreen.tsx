@@ -29,6 +29,7 @@ import {
 
 import { useRegistration } from '@/context/RegistrationContext';
 import { registerWithPassword } from '@/services/auth/AuthService';
+import { describeAuthError } from '@/services/auth/authErrors';
 import { toRegisterPasswordRequest } from '@/services/auth/registerPasswordMapper';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
 import {
@@ -48,6 +49,7 @@ interface InfoRow {
   icon: LucideIcon;
   label: string;
   value: string;
+  isPlaceholder?: boolean;
 }
 
 interface InfoSectionProps {
@@ -64,14 +66,20 @@ const InfoSection: React.FC<InfoSectionProps> = ({ title, rows, onEdit }) => (
         <Text style={styles.editText}>Editar</Text>
       </TouchableOpacity>
     </View>
-    {rows.map(({ icon: Icon, label, value }) => (
+    {rows.map(({ icon: Icon, label, value, isPlaceholder }) => (
       <View key={label} style={styles.row}>
         <View style={styles.rowIcon}>
           <Icon size={18} color={COLORS.primary} strokeWidth={2} />
         </View>
         <View style={styles.rowTexts}>
           <Text style={styles.rowLabel}>{label}</Text>
-          <Text style={styles.rowValue} numberOfLines={1}>
+          <Text
+            style={[
+              styles.rowValue,
+              isPlaceholder === true && styles.rowValuePlaceholder,
+            ]}
+            numberOfLines={1}
+          >
             {value}
           </Text>
         </View>
@@ -80,8 +88,21 @@ const InfoSection: React.FC<InfoSectionProps> = ({ title, rows, onEdit }) => (
   </View>
 );
 
-const orFallback = (value: string, fallback: string) =>
-  value.trim() || fallback;
+/**
+ * A field the user left blank shows a neutral "nothing here" label, never sample
+ * data. The value the user typed is the only thing that can look like their data,
+ * and `isPlaceholder` marks the difference so the row renders in muted italics.
+ */
+const readRowValue = (
+  value: string,
+  placeholder: string,
+): Pick<InfoRow, 'value' | 'isPlaceholder'> => {
+  const trimmed = value.trim();
+
+  return trimmed.length > 0
+    ? { value: trimmed, isPlaceholder: false }
+    : { value: placeholder, isPlaceholder: true };
+};
 
 /** Everything the flow collected must be valid again before the user is created. */
 const hasBlockingErrors = (
@@ -123,11 +144,7 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
       );
       navigation.navigate('FinalWelcome', { registration });
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo crear la cuenta. Intenta de nuevo.',
-      );
+      setSubmitError(describeAuthError(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,12 +154,12 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
     {
       icon: User,
       label: 'Nombre',
-      value: data.fullName.trim() || 'Sin nombre',
+      ...readRowValue(data.fullName, 'Sin nombre'),
     },
     {
       icon: Mail,
       label: 'Correo',
-      value: data.email.trim() || 'Sin correo',
+      ...readRowValue(data.email, 'Sin correo'),
     },
   ];
 
@@ -152,26 +169,27 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
           icon: Briefcase,
           label: 'Rol',
           value: 'Fisioterapeuta',
+          isPlaceholder: false,
         },
         {
           icon: Star,
           label: 'Especialidad',
-          value: orFallback(data.specialty, 'Terapia de mano'),
+          ...readRowValue(data.specialty, 'Sin especialidad'),
         },
         {
           icon: IdCard,
           label: 'Licencia',
-          value: orFallback(data.licenseNumber, 'TP-123456'),
+          ...readRowValue(data.licenseNumber, 'Sin número de licencia'),
         },
         {
           icon: GraduationCap,
           label: 'Universidad',
-          value: orFallback(data.institution, 'Universidad del Rosario'),
+          ...readRowValue(data.institution, 'Sin universidad'),
         },
         {
           icon: Stethoscope,
           label: 'Experiencia',
-          value: orFallback(data.yearsExperience, '5 años'),
+          ...readRowValue(data.yearsExperience, 'Sin experiencia'),
         },
       ]
     : [
@@ -179,21 +197,22 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
           icon: UserRound,
           label: 'Rol',
           value: 'Paciente',
+          isPlaceholder: false,
         },
         {
           icon: MapPin,
           label: 'Ciudad',
-          value: orFallback(data.city, 'Bogotá'),
+          ...readRowValue(data.city, 'Sin ciudad'),
         },
         {
           icon: Globe,
           label: 'País',
-          value: orFallback(data.country, 'Colombia'),
+          ...readRowValue(data.country, 'Sin país'),
         },
         {
           icon: UserRound,
           label: 'Mano dominante',
-          value: orFallback(data.dominantHand, 'Derecha'),
+          ...readRowValue(data.dominantHand, 'Sin mano dominante'),
         },
       ];
 
@@ -201,12 +220,12 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
     {
       icon: Phone,
       label: 'Teléfono',
-      value: orFallback(data.phone, '300 123 4567'),
+      ...readRowValue(data.phone, 'Sin teléfono'),
     },
     {
       icon: Stethoscope,
       label: 'Notas',
-      value: orFallback(data.notes, 'Sin notas adicionales'),
+      ...readRowValue(data.notes, 'Sin notas adicionales'),
     },
   ];
 
@@ -351,6 +370,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textPrimary,
     marginTop: 2,
+  },
+  rowValuePlaceholder: {
+    fontWeight: '500',
+    fontStyle: 'italic',
+    color: COLORS.textMuted,
   },
   primaryButton: {
     height: 54,

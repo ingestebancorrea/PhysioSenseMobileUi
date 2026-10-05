@@ -24,10 +24,10 @@ import { useAppAlert } from '@/hooks/useAppAlert';
 import { validateAccountStep } from '@/utils/validation/registrationValidation';
 import {
   configureSocialSignIn,
-  describeSocialAuthError,
   getFacebookAccessToken,
   getGoogleIdToken,
 } from '@/services/auth/socialAuth';
+import { describeAuthError } from '@/services/auth/authErrors';
 import { FormField } from '@/components/common/formField/FormField';
 import { CheckboxRow } from '@/components/common/checkboxRow/CheckboxRow';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
@@ -40,8 +40,6 @@ type CreateAccountScreenProps = NativeStackScreenProps<
   RegisterFlowParamList,
   'CreateAccount'
 >;
-
-const GENERIC_ERROR_MESSAGE = 'No pudimos crear tu cuenta. Inténtalo de nuevo.';
 
 configureSocialSignIn();
 
@@ -105,7 +103,7 @@ const CreateAccountScreen: React.FC<CreateAccountScreenProps> = ({
     } catch (error) {
       showAlert({
         title: 'Error',
-        message: describeSocialAuthError(error) || GENERIC_ERROR_MESSAGE,
+        message: describeAuthError(error),
         variant: 'error',
       });
     } finally {

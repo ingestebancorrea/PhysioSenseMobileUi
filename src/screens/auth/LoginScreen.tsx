@@ -18,18 +18,19 @@ import { useAuth } from '@/context/AuthContext';
 import { useAppAlert } from '@/hooks/useAppAlert';
 import {
   configureSocialSignIn,
-  describeSocialAuthError,
   getFacebookAccessToken,
   getGoogleIdToken,
 } from '@/services/auth/socialAuth';
+import {
+  describeCredentialError,
+  validateLoginCredentials,
+} from '@/services/auth/authErrors';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { SocialLoginProvider } from '@/types/auth';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 type PendingProvider = 'password' | SocialLoginProvider | null;
-
-const GENERIC_ERROR_MESSAGE = 'No pudimos iniciar sesión. Inténtalo de nuevo.';
 
 configureSocialSignIn();
 
@@ -47,12 +48,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const showAuthError = (error: unknown) => {
     showAlert({
       title: 'Error',
-      message: describeSocialAuthError(error) || GENERIC_ERROR_MESSAGE,
+      message: describeCredentialError(error),
       variant: 'error',
     });
   };
 
   const handleLogin = async () => {
+    const formError = validateLoginCredentials({ username, password });
+
+    if (formError) {
+      showAlert({ title: 'Error', message: formError, variant: 'error' });
+
+      return;
+    }
+
     setPendingProvider('password');
 
     try {
@@ -135,7 +144,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Correo electrónico</Text>
+              <Text style={styles.label}>
+                Correo electrónico
+                <Text style={styles.required}> *</Text>
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="tu@correo.com"
@@ -150,7 +162,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Contraseña</Text>
+              <Text style={styles.label}>
+                Contraseña
+                <Text style={styles.required}> *</Text>
+              </Text>
               <View style={styles.passwordWrapper}>
                 <TextInput
                   style={styles.passwordInput}
@@ -322,6 +337,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2D3142',
     marginBottom: 8,
+  },
+  required: {
+    color: '#E5484D',
   },
   input: {
     height: 52,
