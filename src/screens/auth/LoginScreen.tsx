@@ -18,10 +18,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useAppAlert } from '@/hooks/useAppAlert';
 import {
   configureSocialSignIn,
-  describeSocialAuthError,
   getFacebookAccessToken,
   getGoogleIdToken,
 } from '@/services/auth/socialAuth';
+import { describeAuthError, isUnauthorized } from '@/services/auth/authErrors';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { SocialLoginProvider } from '@/types/auth';
 
@@ -29,7 +29,11 @@ type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 type PendingProvider = 'password' | SocialLoginProvider | null;
 
-const GENERIC_ERROR_MESSAGE = 'No pudimos iniciar sesión. Inténtalo de nuevo.';
+const INVALID_CREDENTIALS_MESSAGE =
+  'Correo o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.';
+
+const CREDENTIALS_REQUIRED_MESSAGE =
+  'Escribe tu correo y tu contraseña para continuar.';
 
 configureSocialSignIn();
 
@@ -43,16 +47,29 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { alertModal, showAlert } = useAppAlert();
 
   const isBusy = pendingProvider !== null;
+  const hasCredentials = username.trim().length > 0 && password.length > 0;
 
   const showAuthError = (error: unknown) => {
     showAlert({
       title: 'Error',
-      message: describeSocialAuthError(error) || GENERIC_ERROR_MESSAGE,
+      message: isUnauthorized(error)
+        ? INVALID_CREDENTIALS_MESSAGE
+        : describeAuthError(error),
       variant: 'error',
     });
   };
 
   const handleLogin = async () => {
+    if (!hasCredentials) {
+      showAlert({
+        title: 'Error',
+        message: CREDENTIALS_REQUIRED_MESSAGE,
+        variant: 'error',
+      });
+
+      return;
+    }
+
     setPendingProvider('password');
 
     try {
