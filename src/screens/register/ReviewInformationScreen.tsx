@@ -29,6 +29,7 @@ import {
 
 import { useRegistration } from '@/context/RegistrationContext';
 import { registerWithPassword } from '@/services/auth/AuthService';
+import { describeAuthError } from '@/services/auth/authErrors';
 import { toRegisterPasswordRequest } from '@/services/auth/registerPasswordMapper';
 import { RegisterFlowParamList } from '@/navigation/types/registerFlowParams';
 import {
@@ -143,11 +144,7 @@ const ReviewInformationScreen: React.FC<ReviewInformationScreenProps> = ({
       );
       navigation.navigate('FinalWelcome', { registration });
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo crear la cuenta. Intenta de nuevo.',
-      );
+      setSubmitError(describeAuthError(error));
     } finally {
       setIsSubmitting(false);
     }

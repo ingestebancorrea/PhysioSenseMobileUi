@@ -21,19 +21,16 @@ import {
   getFacebookAccessToken,
   getGoogleIdToken,
 } from '@/services/auth/socialAuth';
-import { describeAuthError, isUnauthorized } from '@/services/auth/authErrors';
+import {
+  describeCredentialError,
+  validateLoginCredentials,
+} from '@/services/auth/authErrors';
 import { AuthStackParamList } from '@/navigation/types/authStackParams';
 import { SocialLoginProvider } from '@/types/auth';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 type PendingProvider = 'password' | SocialLoginProvider | null;
-
-const INVALID_CREDENTIALS_MESSAGE =
-  'Correo o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.';
-
-const CREDENTIALS_REQUIRED_MESSAGE =
-  'Escribe tu correo y tu contraseña para continuar.';
 
 configureSocialSignIn();
 
@@ -47,25 +44,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { alertModal, showAlert } = useAppAlert();
 
   const isBusy = pendingProvider !== null;
-  const hasCredentials = username.trim().length > 0 && password.length > 0;
 
   const showAuthError = (error: unknown) => {
     showAlert({
       title: 'Error',
-      message: isUnauthorized(error)
-        ? INVALID_CREDENTIALS_MESSAGE
-        : describeAuthError(error),
+      message: describeCredentialError(error),
       variant: 'error',
     });
   };
 
   const handleLogin = async () => {
-    if (!hasCredentials) {
-      showAlert({
-        title: 'Error',
-        message: CREDENTIALS_REQUIRED_MESSAGE,
-        variant: 'error',
-      });
+    const formError = validateLoginCredentials({ username, password });
+
+    if (formError) {
+      showAlert({ title: 'Error', message: formError, variant: 'error' });
 
       return;
     }
@@ -152,7 +144,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Correo electrónico</Text>
+              <Text style={styles.label}>
+                Correo electrónico
+                <Text style={styles.required}> *</Text>
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder="tu@correo.com"
@@ -167,7 +162,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Contraseña</Text>
+              <Text style={styles.label}>
+                Contraseña
+                <Text style={styles.required}> *</Text>
+              </Text>
               <View style={styles.passwordWrapper}>
                 <TextInput
                   style={styles.passwordInput}
@@ -339,6 +337,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2D3142',
     marginBottom: 8,
+  },
+  required: {
+    color: '#E5484D',
   },
   input: {
     height: 52,

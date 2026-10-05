@@ -1,5 +1,10 @@
 import { ApiClientError } from '@/services/api/client';
-import { describeAuthError, isUnauthorized } from '@/services/auth/authErrors';
+import {
+  describeAuthError,
+  describeCredentialError,
+  isUnauthorized,
+  validateLoginCredentials,
+} from '@/services/auth/authErrors';
 
 /** Every failure is logged on purpose; the noise is not interesting to read. */
 let warn: jest.SpyInstance;
@@ -56,6 +61,24 @@ describe('describeAuthError', () => {
 
     expect(message).not.toContain('[object Object]');
   });
+
+  it('never shows the validation text of the backend, which is in English', () => {
+    const backend = 'password must be longer than or equal to 6 characters';
+
+    const message = describeAuthError(new ApiClientError(backend, 400));
+
+    expect(message).not.toContain('password');
+    expect(message).not.toContain('characters');
+    expect(message).toBe(
+      'Revisa los datos que escribiste e inténtalo de nuevo.',
+    );
+  });
+
+  it('logs the rejected payload so the cause is still traceable', () => {
+    describeAuthError(new ApiClientError('email must be an email', 400));
+
+    expect(warn).toHaveBeenCalled();
+  });
 });
 
 describe('isUnauthorized', () => {
@@ -79,5 +102,86 @@ describe('isUnauthorized', () => {
       isUnauthorized(new Error('Google Play Services no está disponible')),
     ).toBe(false);
     expect(isUnauthorized(null)).toBe(false);
+  });
+});
+
+describe('describeCredentialError', () => {
+  it('blames the credentials on a 401 instead of echoing the server wording', () => {
+    expect(
+      describeCredentialError(new ApiClientError('Credenciales inválidas', 401)),
+    ).toBe('Correo o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.');
+  });
+
+  it('does not blame the password when the request never left the device', () => {
+    expect(
+      describeCredentialError(
+        new ApiClientError('No hay conexión con el servidor.'),
+      ),
+    ).toBe('No hay conexión con el servidor.');
+  });
+
+  it('does not blame the password on a server error', () => {
+    const message = describeCredentialError(
+      new ApiClientError('Error del servidor (500)', 500),
+    );
+
+    expect(message).toBe('Error del servidor (500)');
+    expect(message).not.toMatch(/contraseña incorrectos/i);
+  });
+});
+
+describe('validateLoginCredentials', () => {
+  it('asks for both fields when the form is empty', () => {
+    const expected =
+      'Escribe tu correo y tu contraseña para continuar.';
+
+    expect(validateLoginCredentials({ username: '', password: '' })).toBe(
+      expected,
+    );
+  });
+
+  it('asks again when only the password is missing', () => {
+    expect(
+      validateLoginCredentials({ username: 'laura@correo.com', password: '' }),
+    ).toBeTruthy();
+  });
+
+  it('treats an email made of spaces as missing', () => {
+    expect(
+      validateLoginCredentials({ username: '   ', password: 'Rehab2026' }),
+    ).toBeTruthy();
+  });
+
+  it('accepts a password made of spaces, because it is what was typed', () => {
+    expect(
+      validateLoginCredentials({ username: 'laura@correo.com', password: '      ' }),
+    ).toBeUndefined();
+  });
+
+  it('lets a complete form through even with padding around the email', () => {
+    expect(
+      validateLoginCredentials({
+        username: '  laura@correo.com  ',
+        password: 'Rehab2026',
+      }),
+    ).toBeUndefined();
+  });
+
+  it('explains a short password before asking the server', () => {
+    expect(
+      validateLoginCredentials({
+        username: 'laura@correo.com',
+        password: 'Re1',
+      }),
+    ).toBe('La contraseña debe tener al menos 6 caracteres.');
+  });
+
+  it('accepts a password that reaches the minimum length', () => {
+    expect(
+      validateLoginCredentials({
+        username: 'laura@correo.com',
+        password: 'R1b2c3',
+      }),
+    ).toBeUndefined();
   });
 });
