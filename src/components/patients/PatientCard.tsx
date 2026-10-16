@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/patients/StatusBadge';
 
 interface PatientCardProps {
   patient: Patient;
-  onPress: (patientId: string) => void;
+  onPress: (patient: Patient) => void;
 }
 
 export const PatientCard: React.FC<PatientCardProps> = React.memo(
@@ -14,7 +14,7 @@ export const PatientCard: React.FC<PatientCardProps> = React.memo(
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.7}
-      onPress={() => onPress(patient.id)}
+      onPress={() => onPress(patient)}
     >
       <Image source={{ uri: patient.avatarUrl }} style={styles.avatar} />
       <View style={styles.info}>
@@ -24,9 +24,11 @@ export const PatientCard: React.FC<PatientCardProps> = React.memo(
         <Text style={styles.subtitle}>
           ID: {patient.id} • {patient.age} años
         </Text>
-        <Text style={styles.lastSession}>
-          Última sesión: {patient.lastSession}
-        </Text>
+        {patient.lastSession ? (
+          <Text style={styles.lastSession}>
+            Última sesión: {patient.lastSession}
+          </Text>
+        ) : null}
       </View>
       <StatusBadge status={patient.status} />
     </TouchableOpacity>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +14,8 @@ import {
   Ellipsis,
 } from 'lucide-react-native';
 import { COLORS, CARD } from '@/constants/theme';
-import { getPatientById } from '@/mock/patientData';
+import { ApiClientError } from '@/services/api/client';
+import { patientService } from '@/services/patientService';
 import type { Patient } from '@/types/patient';
 import { StatusBadge } from '@/components/patients/StatusBadge';
 import { ProgressRing } from '@/components/patients/ProgressRing';
@@ -29,20 +31,61 @@ interface PatientDetailScreenProps {
 
 const DETAIL_TABS: DetailTab[] = ['Resumen', 'Progreso', 'Sesiones', 'Evaluaciones'];
 
+const NOT_FOUND_MESSAGE = 'Paciente no encontrado';
+const LOAD_ERROR_MESSAGE = 'No se pudo cargar el paciente.';
+
 export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
   patientId,
   onBack,
   onCreateSession,
 }) => {
   const [activeTab, setActiveTab] = useState<DetailTab>('Resumen');
-  const patient: Patient | undefined = getPatientById(patientId);
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!patient) {
+  const loadPatient = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      setPatient(await patientService.getPatientById(patientId));
+    } catch (loadError) {
+      if (loadError instanceof ApiClientError && loadError.status === 404) {
+        setError(NOT_FOUND_MESSAGE);
+      } else {
+        setError(
+          loadError instanceof ApiClientError
+            ? loadError.message
+            : LOAD_ERROR_MESSAGE,
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [patientId]);
+
+  useEffect(() => {
+    loadPatient();
+  }, [loadPatient]);
+
+  if (loading) {
     return (
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>Paciente no encontrado</Text>
-          <Button title="Volver" onPress={onBack} variant="primary" />
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !patient) {
+    return (
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.centered}>
+          <Text style={styles.emptyText}>{error ?? NOT_FOUND_MESSAGE}</Text>
+          <Button title="Reintentar" onPress={loadPatient} variant="primary" />
+          <Button title="Volver" onPress={onBack} variant="secondary" />
         </View>
       </SafeAreaView>
     );
@@ -146,7 +189,7 @@ export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
               </View>
             )}
 
-            {patient.lastSessionDetail && (
+            {patient.lastSessionDetail && patient.lastSession && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Última sesión</Text>
                 <View style={styles.lastSessionCard}>
