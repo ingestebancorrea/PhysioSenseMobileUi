@@ -27,7 +27,7 @@ export interface Patient {
   age: number;
   avatarUrl: string;
   status: PatientStatus;
-  lastSession: string;
+  lastSession?: string;
   diagnosis?: string;
   startDate?: string;
   therapistName?: string;

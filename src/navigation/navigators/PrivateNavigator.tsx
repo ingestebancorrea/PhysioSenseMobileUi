@@ -41,7 +41,7 @@ import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseSc
 import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
 import { THERAPIST_EXERCISES } from '@/mock/therapistExercisesData';
 import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
-import { getPatientById } from '@/mock/patientData';
+import type { Patient } from '@/types/patient';
 import type { Session } from '@/types/session';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 
@@ -270,7 +270,7 @@ type SessionRoute = 'list' | 'detail' | 'assign' | 'create';
 const TherapistNavigatorContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('inicio');
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
-  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
@@ -357,14 +357,14 @@ const TherapistNavigatorContent: React.FC = () => {
     setSessionRoute('assign');
   };
 
-  const handleSelectPatient = (patientId: string) => {
-    setSelectedPatientId(patientId);
+  const handleSelectPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
     setPatientRoute('detail');
   };
 
   const handleBackToPatientList = () => {
     setPatientRoute('list');
-    setSelectedPatientId('');
+    setSelectedPatient(null);
   };
 
   const handleOpenAssignSession = () => {
@@ -373,7 +373,7 @@ const TherapistNavigatorContent: React.FC = () => {
 
   const handleBackFromAssignSession = () => {
     setPatientRoute('list');
-    setSelectedPatientId('');
+    setSelectedPatient(null);
   };
 
   const handleOpenCreateSession = () => {
@@ -432,10 +432,10 @@ const TherapistNavigatorContent: React.FC = () => {
     }
 
     if (activeTab === 'pacientes') {
-      if (patientRoute === 'detail' && selectedPatientId) {
+      if (patientRoute === 'detail' && selectedPatient) {
         return (
           <PatientDetailScreen
-            patientId={selectedPatientId}
+            patientId={selectedPatient.id}
             onBack={handleBackToPatientList}
             onCreateSession={handleOpenAssignSession}
           />
@@ -446,7 +446,7 @@ const TherapistNavigatorContent: React.FC = () => {
           <AssignSessionScreen
             onBack={handleBackFromAssignSession}
             onCreateSession={handleOpenCreateSession}
-            initialPatient={selectedPatientId ? getPatientById(selectedPatientId)?.name : undefined}
+            initialPatient={selectedPatient?.name}
           />
         );
       }
