@@ -1,6 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
-  ActivityIndicator,
+  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -18,35 +24,52 @@ import { PatientFilterChips } from '@/components/patients/PatientFilterChips';
 import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
 import { Button } from '@/components/common/button/Button';
+import { EmptyState } from '@/components/common/emptyState/EmptyState';
 
 type FilterTab = 'Todos' | 'Activos' | 'Inactivos';
 
 interface PatientsListScreenProps {
   onSelectPatient: (patient: Patient) => void;
+  onAddPatient?: () => void;
 }
 
 const LOAD_ERROR_MESSAGE = 'No se pudo cargar la lista de pacientes.';
 
 export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   onSelectPatient,
+  onAddPatient,
 }) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('Todos');
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [emptyMessage, setEmptyMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { open } = useDrawer();
   const navigate = useNavigate();
+
+  /** Animación de rotación del spinner de carga. */
+  const spin = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [spin]);
 
   const loadPatients = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
+      // Se captura el rol y el id del usuario autenticado por consistencia con
+      // SessionsScreen. El endpoint /therapists/patients infiere al terapeuta
+      // autenticado a través del token Bearer, por lo que no viaja en query.
       const result = await patientService.getMyPatients();
       setPatients(result.patients);
-      setEmptyMessage(result.message);
     } catch (loadError) {
       setError(
         loadError instanceof ApiClientError
@@ -101,15 +124,9 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
 
   const keyExtractor = useCallback((item: Patient) => item.id, []);
 
-  const renderEmpty = () => {
-    if (loading) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      );
-    }
+  const hasActiveFilter = activeFilter !== 'Todos' || search.trim().length > 0;
 
+  const renderEmpty = () => {
     if (error) {
       return (
         <View style={styles.emptyContainer}>
@@ -119,15 +136,23 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
       );
     }
 
-    const hasActiveFilter = activeFilter !== 'Todos' || search.trim();
-    const message = hasActiveFilter
-      ? 'No se encontraron pacientes'
-      : emptyMessage ?? 'No se encontraron pacientes';
+    if (hasActiveFilter) {
+      return (
+        <EmptyState
+          title="No se encontraron resultados"
+          message="Ajusta la búsqueda o los filtros para encontrar lo que buscas."
+        />
+      );
+    }
 
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{message}</Text>
-      </View>
+      <EmptyState
+        illustration="people"
+        title="No se encontraron pacientes"
+        message="Aún no tienes pacientes registrados. Puedes agregar un nuevo paciente o esperar a que se asigne uno."
+        actionLabel="Agregar paciente"
+        onAction={onAddPatient}
+      />
     );
   };
 
@@ -153,17 +178,47 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
     </View>
   );
 
+
+  const rotate = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <FlatList
-        data={filteredPatients}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        ListHeaderComponent={listHeader}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmpty()}
-      />
+      {listHeader}
+
+      {loading ? (
+        <View style={styles.loadingWrapper}>
+          <Animated.View
+            style={[
+              styles.spinner,
+              { transform: [{ rotate }] },
+            ]}
+          >
+            <View style={styles.spinnerRing} />
+            <View style={styles.spinnerDot} />
+          </Animated.View>
+
+          <View style={styles.loadingContent}>
+            <Text style={styles.loadingTitle}>
+              Cargando tus pacientes
+            </Text>
+            <Text style={styles.loadingSubtitle}>
+              Un momento mientras traemos tu listado
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredPatients}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={renderEmpty()}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -181,14 +236,57 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     gap: 12,
   },
-  emptyText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-  },
   errorText: {
     fontSize: 14,
     color: COLORS.danger,
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+  loadingWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.backgroundMuted,
+    paddingHorizontal: 24,
+  },
+  spinner: {
+    width: 64,
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinnerRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 4,
+    borderColor: COLORS.borderSubtle,
+    borderTopColor: COLORS.primary,
+  },
+  spinnerDot: {
+    position: 'absolute',
+    top: -4,
+    left: 25,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.primary,
+  },
+  loadingContent: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loadingTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textStrong,
+    marginBottom: 6,
+  },
+  loadingSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 260,
+    lineHeight: 20,
   },
 });

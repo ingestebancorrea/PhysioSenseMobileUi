@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, CARD } from '@/constants/theme';
 import type { Session } from '@/types/session';
 import { SessionStatusBadge } from '@/components/sessions/SessionStatusBadge';
+import { getInitials } from '@/utils/helpers/nameInitials';
 
 interface SessionCardProps {
   session: Session;
@@ -16,10 +17,15 @@ export const SessionCard: React.FC<SessionCardProps> = React.memo(
       activeOpacity={0.7}
       onPress={() => onPress(session.id)}
     >
-      <Image
-        source={{ uri: session.patientAvatarUrl }}
-        style={styles.avatar}
-      />
+      {session.patientAvatarUrl ? (
+        <Image source={{ uri: session.patientAvatarUrl }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarCenter]}>
+          <Text style={styles.avatarInitials}>
+            {getInitials(session.patientName)}
+          </Text>
+        </View>
+      )}
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
           {session.title}
@@ -49,7 +55,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.progressTrack,
+    backgroundColor: COLORS.primarySoft,
+  },
+  avatarCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitials: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.primaryDark,
   },
   info: {
     flex: 1,

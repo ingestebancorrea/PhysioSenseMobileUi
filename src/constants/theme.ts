@@ -40,6 +40,7 @@ export const COLORS = {
   orange: '#FF9800',
   primaryViolet: '#6C5CE7',
   primaryVioletSoft: '#EFEDFF',
+  primaryVioletDeep: '#CFC8F4',
   surfaceSoft: '#F4F5FB',
   backgroundLight: '#F8F9FA',
   textStrong: '#1E1E2C',
