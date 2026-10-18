@@ -20,6 +20,7 @@ import type { Patient } from '@/types/patient';
 import { StatusBadge } from '@/components/patients/StatusBadge';
 import { ProgressRing } from '@/components/patients/ProgressRing';
 import { Button } from '@/components/common/button/Button';
+import { getInitials } from '@/utils/helpers/nameInitials';
 
 type DetailTab = 'Resumen' | 'Progreso' | 'Sesiones' | 'Evaluaciones';
 
@@ -116,7 +117,7 @@ export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
         <View style={styles.profileCard}>
           <View style={styles.avatarLarge}>
             <Text style={styles.avatarInitial}>
-              {patient.name.charAt(0)}
+              {getInitials(patient.name)}
             </Text>
           </View>
           <View style={styles.profileInfo}>

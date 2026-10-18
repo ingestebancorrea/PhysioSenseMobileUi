@@ -1,4 +1,4 @@
-export type SessionStatus = 'Activa' | 'Programada' | 'Borrador' | 'Completada';
+export type SessionStatus = 'Activa' | 'Programada' | 'Borrador' | 'Completada' | 'Cancelada';
 
 export interface Session {
   id: string;
@@ -30,4 +30,89 @@ export interface SessionFormData {
   selectedTime: string;
   estimatedDuration: string;
   exercises: SessionExercise[];
+}
+
+/*──────────────────────────────────────────────────────────────
+  DTOs de RESPUESTA del backend (NestJS / TypeORM)
+  Coinciden con SessionResponseDto y PaginatedDto del microservicio.
+──────────────────────────────────────────────────────────────*/
+
+export type BackendSessionStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface BackendSessionExercise {
+  id: number;
+  code: string;
+  title: string;
+  imageUrl?: string;
+  series: number;
+  reps: number;
+  measure_unit: string;
+  setsAndReps: string;
+  completedRepetitions: number;
+  progressPercentage: number;
+  averageForce?: number | null;
+  averageQuality?: string;
+}
+
+export interface BackendSessionResponse {
+  id: number;
+  patient_id: number;
+  patientName: string;
+  patientAvatarUrl?: string | null;
+  therapist_id: number;
+  title: string;
+  objective?: string | null;
+  scheduledAt: string; // ISO 8601
+  durationMinutes: number;
+  status: BackendSessionStatus;
+  statusLabel: string; // 'Borrador' | 'Programada' | 'Activa' | 'Completada' | 'Cancelada'
+  exerciseCount: number;
+  progress: number;
+  totalRepetitions: number;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  observations?: string | null;
+  exercises?: BackendSessionExercise[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedBackendSessions {
+  items: BackendSessionResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+/*──────────────────────────────────────────────────────────────
+  Parámetros de consulta que el front envía al endpoint GET /sessions
+  Coinciden con QuerySessionsDto del backend.
+──────────────────────────────────────────────────────────────*/
+
+export interface QuerySessionsParams {
+  patient_id?: number;
+  therapist_id?: number;
+  status?: BackendSessionStatus;
+  duration_range?: 'short' | 'medium' | 'long';
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+/*──────────────────────────────────────────────────────────────
+  Resultado mapeado listo para la UI (ya transformado del backend)
+──────────────────────────────────────────────────────────────*/
+
+export interface SessionsPageResult {
+  sessions: Session[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

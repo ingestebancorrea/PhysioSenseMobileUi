@@ -49,6 +49,7 @@ export const darkPalette: ThemeColors = {
   orange: '#FB923C',
   primaryViolet: '#8B7CF6',
   primaryVioletSoft: '#2E2B4A',
+  primaryVioletDeep: '#3D3766',
   surfaceSoft: '#23252F',
   backgroundLight: '#17181F',
   textStrong: '#F5F5F8',

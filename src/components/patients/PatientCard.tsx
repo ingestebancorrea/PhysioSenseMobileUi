@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, CARD } from '@/constants/theme';
 import type { Patient } from '@/types/patient';
 import { StatusBadge } from '@/components/patients/StatusBadge';
+import { getInitials } from '@/utils/helpers/nameInitials';
 
 interface PatientCardProps {
   patient: Patient;
@@ -16,7 +17,13 @@ export const PatientCard: React.FC<PatientCardProps> = React.memo(
       activeOpacity={0.7}
       onPress={() => onPress(patient)}
     >
-      <Image source={{ uri: patient.avatarUrl }} style={styles.avatar} />
+      {patient.avatarUrl ? (
+        <Image source={{ uri: patient.avatarUrl }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarCenter]}>
+          <Text style={styles.avatarInitials}>{getInitials(patient.name)}</Text>
+        </View>
+      )}
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
           {patient.name}
@@ -47,7 +54,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.progressTrack,
+    backgroundColor: COLORS.primarySoft,
+  },
+  avatarCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitials: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.primaryDark,
   },
   info: {
     flex: 1,
