@@ -1,10 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { COLORS } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { AuthStackNavigator } from '@/navigation/navigators/AuthStackNavigator';
 import { PrivateNavigator } from '@/navigation/navigators/PrivateNavigator';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 
 export const RootNavigator: React.FC = () => {
   const { isAuthenticated, isBootstrapping } = useAuth();
@@ -12,7 +13,7 @@ export const RootNavigator: React.FC = () => {
   if (isBootstrapping) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <AppLoader />
       </View>
     );
   }
