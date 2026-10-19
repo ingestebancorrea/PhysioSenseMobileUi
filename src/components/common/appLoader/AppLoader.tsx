@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
-  Easing,
   Image,
   StyleSheet,
   useWindowDimensions,
@@ -49,25 +48,26 @@ const BRAID_PASTEL_2 = createBraidPath((3 * Math.PI) / 2, 2 * Math.PI, Math.PI);
 
 export const AppLoader: React.FC<AppLoaderProps> = ({ size }) => {
   const { width } = useWindowDimensions();
-  const computedSize = size ?? Math.min(Math.round(width * 0.32), 160);
+  const computedSize =
+    size ??
+    Math.max(
+      80,
+      width > 0 ? Math.min(Math.round(width * 0.32), 160) : 120,
+    );
 
   // Rotación del trenzado interior
   const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const rotationLoop = Animated.loop(
-      Animated.timing(rotation, {
-        toValue: 1,
-        duration: 5000,
-        easing: Easing.linear,
-        useNativeDriver: false,
-      }),
-    );
-    rotationLoop.start();
-
-    return () => {
-      rotationLoop.stop();
+    let frame: number;
+    const start = Date.now();
+    const animate = () => {
+      const elapsed = (Date.now() - start) % 5000;
+      rotation.setValue(elapsed / 5000);
+      frame = requestAnimationFrame(animate);
     };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
   }, [rotation]);
 
   const rotate = rotation.interpolate({

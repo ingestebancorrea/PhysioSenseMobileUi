@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import type { Patient } from '@/types/patient';
 import { StatusBadge } from '@/components/patients/StatusBadge';
 import { ProgressRing } from '@/components/patients/ProgressRing';
 import { Button } from '@/components/common/button/Button';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 import { getInitials } from '@/utils/helpers/nameInitials';
 
 type DetailTab = 'Resumen' | 'Progreso' | 'Sesiones' | 'Evaluaciones';
@@ -74,7 +74,7 @@ export const PatientDetailScreen: React.FC<PatientDetailScreenProps> = ({
     return (
       <SafeAreaView edges={['top']} style={styles.safeArea}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <AppLoader />
         </View>
       </SafeAreaView>
     );
