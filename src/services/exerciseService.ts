@@ -3,11 +3,7 @@ import { MEDIA_LIMITS } from '@/config/env';
 import type { PickedMedia } from '@/services/media/mediaService';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 
-/**
- * Respuesta del endpoint GET /exercises (ExerciseResponseDto).
- * Se tipan solo los campos que el frontend utiliza.
- */
-export interface ExerciseResponse {
+export interface ExerciseResponseDto {
   id: string;
   exercise_id: number;
   title: string;
@@ -30,15 +26,15 @@ export interface ExerciseResponse {
 }
 
 /** Query params opcionales para GET /exercises. */
-export interface ExerciseListQuery {
+export interface ExerciseListQueryDto {
   category?: string;
   search?: string;
 }
 
 /**
- * Mapea un ExerciseResponse del backend al ExerciseItem que consume la UI.
+ * Mapea un ExerciseResponseDto del backend al ExerciseItem que consume la UI.
  */
-export const toExerciseItem = (dto: ExerciseResponse): ExerciseItem => ({
+export const toExerciseItem = (dto: ExerciseResponseDto): ExerciseItem => ({
   id: dto.id,
   title: dto.title,
   description: dto.description ?? '',
@@ -118,9 +114,9 @@ export const exerciseService = {
    *
    * Ejemplo de uso desde un componente:
    * ```ts
-   * import { exerciseService, type ExerciseResponse } from '@/services/exerciseService';
+   * import { exerciseService, type ExerciseResponseDto } from '@/services/exerciseService';
    *
-   * const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
+   * const [exercises, setExercises] = useState<ExerciseResponseDto[]>([]);
    * const [error, setError] = useState<string | null>(null);
    *
    * useEffect(() => {
@@ -137,7 +133,7 @@ export const exerciseService = {
    * }, []);
    * ```
    */
-  getExercises: async (query?: ExerciseListQuery): Promise<ExerciseResponse[]> => {
+  getExercises: async (query?: ExerciseListQueryDto): Promise<ExerciseResponseDto[]> => {
     const params = new URLSearchParams();
 
     if (query?.category) {
@@ -150,6 +146,6 @@ export const exerciseService = {
     const queryString = params.toString();
     const path = queryString ? `/exercises?${queryString}` : '/exercises';
 
-    return apiClient.get<ExerciseResponse[]>(path);
+    return apiClient.get<ExerciseResponseDto[]>(path);
   },
 };
