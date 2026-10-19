@@ -2,11 +2,9 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import {
-  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -25,6 +23,7 @@ import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
 import { Button } from '@/components/common/button/Button';
 import { EmptyState } from '@/components/common/emptyState/EmptyState';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 
 type FilterTab = 'Todos' | 'Activos' | 'Inactivos';
 
@@ -46,19 +45,6 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { open } = useDrawer();
   const navigate = useNavigate();
-
-  /** Animación de rotación del spinner de carga. */
-  const spin = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(spin, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: true,
-      }),
-    ).start();
-  }, [spin]);
 
   const loadPatients = useCallback(async () => {
     setLoading(true);
@@ -179,26 +165,13 @@ export const PatientsListScreen: React.FC<PatientsListScreenProps> = ({
   );
 
 
-  const rotate = spin.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       {listHeader}
 
       {loading ? (
         <View style={styles.loadingWrapper}>
-          <Animated.View
-            style={[
-              styles.spinner,
-              { transform: [{ rotate }] },
-            ]}
-          >
-            <View style={styles.spinnerRing} />
-            <View style={styles.spinnerDot} />
-          </Animated.View>
+          <AppLoader />
 
           <View style={styles.loadingContent}>
             <Text style={styles.loadingTitle}>
@@ -248,29 +221,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.backgroundMuted,
     paddingHorizontal: 24,
-  },
-  spinner: {
-    width: 64,
-    height: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  spinnerRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 4,
-    borderColor: COLORS.borderSubtle,
-    borderTopColor: COLORS.primary,
-  },
-  spinnerDot: {
-    position: 'absolute',
-    top: -4,
-    left: 25,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: COLORS.primary,
   },
   loadingContent: {
     alignItems: 'center',
