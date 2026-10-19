@@ -148,4 +148,12 @@ export const sessionService = {
       totalPages: response?.total_pages ?? 0,
     };
   },
+
+  getSessionById: async (id: number | string): Promise<Session> => {
+    const response = await coreApi.get<BackendSessionResponse>(
+      `/sessions/${id}`,
+    );
+
+    return mapSessionFromBackend(response);
+  },
 };

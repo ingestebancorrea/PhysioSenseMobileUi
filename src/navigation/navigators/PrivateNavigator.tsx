@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
 import { COLORS } from '@/constants/theme';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 import { DrawerMenu } from '@/components/drawer/DrawerMenu';
 import { DrawerProvider } from '@/context/DrawerContext';
 import { PrivateNavigationProvider } from '@/context/PrivateNavigationContext';
@@ -44,6 +45,9 @@ import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScre
 import type { Patient } from '@/types/patient';
 import type { Session } from '@/types/session';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
+import { sessionService } from '@/services/sessionService';
+import { ApiClientError } from '@/services/api/client';
+import { useAppAlert } from '@/hooks/useAppAlert';
 
 const SCREENS: Record<string, React.ComponentType> = {
   home: HomeScreen,
@@ -267,7 +271,14 @@ type PatientRoute = 'list' | 'detail' | 'assign' | 'create';
 type ExerciseRoute = 'list' | 'form';
 type SessionRoute = 'list' | 'detail' | 'assign' | 'create';
 
+const SESSION_DETAIL_ERROR_MESSAGES: Record<number, string> = {
+  400: 'El identificador de la sesión no es válido.',
+  401: 'Tu sesión ha expirado. Inicia sesión de nuevo.',
+  404: 'No se encontró la sesión solicitada.',
+};
+
 const TherapistNavigatorContent: React.FC = () => {
+  const { alertModal, showAlert } = useAppAlert();
   const [activeTab, setActiveTab] = useState('inicio');
   const [patientRoute, setPatientRoute] = useState<PatientRoute>('list');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -276,6 +287,7 @@ const TherapistNavigatorContent: React.FC = () => {
   const [exerciseRoute, setExerciseRoute] = useState<ExerciseRoute>('list');
   const [sessionRoute, setSessionRoute] = useState<SessionRoute>('list');
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [sessionDetailLoading, setSessionDetailLoading] = useState(false);
   const [settingsRoute, setSettingsRoute] = useState<
     | 'main'
     | 'profile'
@@ -336,9 +348,25 @@ const TherapistNavigatorContent: React.FC = () => {
     setActiveTab(tab);
   };
 
-  const handleSelectSession = (session: Session) => {
-    setSelectedSession(session);
-    setSessionRoute('detail');
+  const handleSelectSession = async (session: Session) => {
+    setSessionDetailLoading(true);
+    try {
+      const detail = await sessionService.getSessionById(session.id);
+      setSelectedSession(detail);
+      setSessionRoute('detail');
+    } catch (error) {
+      showAlert({
+        title: 'No se pudo cargar la sesión',
+        message:
+          error instanceof ApiClientError
+            ? SESSION_DETAIL_ERROR_MESSAGES[error.status ?? -1] ??
+              error.message
+            : 'Ocurrió un error inesperado. Intenta de nuevo.',
+        variant: 'error',
+      });
+    } finally {
+      setSessionDetailLoading(false);
+    }
   };
 
   const handleOpenCreateSessionFromSessions = () => {
@@ -583,6 +611,12 @@ const TherapistNavigatorContent: React.FC = () => {
       <PrivateNavigationProvider onNavigate={handleNavigate}>
         <View style={styles.content}>{renderActiveScreen()}</View>
       </PrivateNavigationProvider>
+      {sessionDetailLoading ? (
+        <View style={styles.loadingOverlay}>
+          <AppLoader />
+        </View>
+      ) : null}
+      {alertModal}
       <HomeTabBar activeTab={activeTab} onTabPress={handleTabPress} />
       <DrawerMenu activeItem={activeTab} onSelect={handleDrawerSelect} />
     </View>
@@ -634,5 +668,15 @@ const styles = StyleSheet.create({
   loading: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
   },
 });

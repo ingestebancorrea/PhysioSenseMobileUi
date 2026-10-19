@@ -11,6 +11,7 @@ const STATUS_CONFIG: Record<
   Programada: { color: COLORS.blue, background: COLORS.blueSoft },
   Borrador: { color: COLORS.inactive, background: COLORS.inactiveSoft },
   Completada: { color: COLORS.violet, background: COLORS.violetSoft },
+  Cancelada: { color: COLORS.danger, background: COLORS.dangerSoft },
 };
 
 interface SessionStatusBadgeProps {
