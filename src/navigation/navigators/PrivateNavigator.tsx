@@ -40,12 +40,13 @@ import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
 import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
-import { THERAPIST_EXERCISES } from '@/mock/therapistExercisesData';
+// (ejercicios ahora se cargan desde el backend)
 import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
 import type { Patient } from '@/types/patient';
 import type { Session } from '@/types/session';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 import { sessionService } from '@/services/sessionService';
+import { exerciseService, toExerciseItem } from '@/services/exerciseService';
 import { ApiClientError } from '@/services/api/client';
 import { useAppAlert } from '@/hooks/useAppAlert';
 
@@ -298,7 +299,21 @@ const TherapistNavigatorContent: React.FC = () => {
     | 'privacy'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
-  const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
+  const [exercises, setExercises] = useState<ExerciseItem[]>([]);
+
+  useEffect(() => {
+    exerciseService
+      .getExercises()
+      .then((items) => setExercises(items.map(toExerciseItem)))
+      .catch((err) => {
+        showAlert({
+          title: 'No se pudieron cargar los ejercicios',
+          message:
+            err instanceof ApiClientError ? err.message : 'Error inesperado.',
+          variant: 'error',
+        });
+      });
+  }, [showAlert]);
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios') {

@@ -1,6 +1,53 @@
 import { apiClient } from '@/services/api/client';
 import { MEDIA_LIMITS } from '@/config/env';
 import type { PickedMedia } from '@/services/media/mediaService';
+import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
+
+/**
+ * Respuesta del endpoint GET /exercises (ExerciseResponseDto).
+ * Se tipan solo los campos que el frontend utiliza.
+ */
+export interface ExerciseResponse {
+  id: string;
+  exercise_id: number;
+  title: string;
+  description?: string;
+  category: string;
+  series: number;
+  reps: number;
+  measure_unit: string;
+  restSeconds: number;
+  imageUri?: string;
+  videoThumbnailUri?: string;
+  video_url?: string;
+  cover_image_url?: string;
+  is_active: boolean;
+  duration?: number;
+  targetRange?: string;
+  requirements?: string[];
+  targetMuscles?: string[];
+  guideSteps?: string[];
+}
+
+/** Query params opcionales para GET /exercises. */
+export interface ExerciseListQuery {
+  category?: string;
+  search?: string;
+}
+
+/**
+ * Mapea un ExerciseResponse del backend al ExerciseItem que consume la UI.
+ */
+export const toExerciseItem = (dto: ExerciseResponse): ExerciseItem => ({
+  id: dto.id,
+  title: dto.title,
+  description: dto.description ?? '',
+  series: `${dto.series} series`,
+  reps: `${dto.reps} rep.`,
+  duration: dto.duration ? `${dto.duration}` : '—',
+  imageUrl: dto.cover_image_url ?? dto.imageUri,
+  coverImageUrl: dto.cover_image_url,
+});
 
 export interface SaveExercisePayload {
   title: string;
@@ -63,4 +110,46 @@ export const exerciseService = {
 
   updateExercise: (id: string, payload: SaveExercisePayload) =>
     apiClient.put(`/exercises/${id}`, payload),
+
+  /**
+   * GET /exercises
+   * Lista el catálogo de ejercicios. Ambos query params son opcionales.
+   * Lanza `ApiClientError` (status 401 si no hay token válido).
+   *
+   * Ejemplo de uso desde un componente:
+   * ```ts
+   * import { exerciseService, type ExerciseResponse } from '@/services/exerciseService';
+   *
+   * const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
+   * const [error, setError] = useState<string | null>(null);
+   *
+   * useEffect(() => {
+   *   exerciseService
+   *     .getExercises({ search: 'mano' })
+   *     .then(setExercises)
+   *     .catch((err) => {
+   *       if (err instanceof ApiClientError && err.status === 401) {
+   *         // redirigir a login / solicitar autenticación
+   *       } else {
+   *         setError(err.message);
+   *       }
+   *     });
+   * }, []);
+   * ```
+   */
+  getExercises: async (query?: ExerciseListQuery): Promise<ExerciseResponse[]> => {
+    const params = new URLSearchParams();
+
+    if (query?.category) {
+      params.append('category', query.category);
+    }
+    if (query?.search) {
+      params.append('search', query.search);
+    }
+
+    const queryString = params.toString();
+    const path = queryString ? `/exercises?${queryString}` : '/exercises';
+
+    return apiClient.get<ExerciseResponse[]>(path);
+  },
 };
