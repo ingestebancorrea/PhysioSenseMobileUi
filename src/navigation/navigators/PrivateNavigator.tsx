@@ -299,6 +299,8 @@ const TherapistNavigatorContent: React.FC = () => {
     | 'privacy'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
+  // Los ejercicios ahora provienen de GET /exercises (backend) y se mapean
+  // con toExerciseItem a ExerciseItem. Se elimina el uso del mock THERAPIST_EXERCISES.
   const [exercises, setExercises] = useState<ExerciseItem[]>([]);
 
   useEffect(() => {
