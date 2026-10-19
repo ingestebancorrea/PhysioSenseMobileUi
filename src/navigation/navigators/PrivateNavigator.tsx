@@ -304,9 +304,13 @@ const TherapistNavigatorContent: React.FC = () => {
   const [exercises, setExercises] = useState<ExerciseItem[]>([]);
 
   useEffect(() => {
+    // 1. Consumo del API
     exerciseService
       .getExercises()
-      .then((items) => setExercises(items.map(toExerciseItem)))
+      .then((items) => {
+        // 2. Mapeo de la respuesta a ExerciseItem
+        setExercises(items.map(toExerciseItem));
+      })
       .catch((err) => {
         showAlert({
           title: 'No se pudieron cargar los ejercicios',
