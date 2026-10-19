@@ -31,6 +31,7 @@ const STATUS_GRADIENT: Record<SessionStatus, readonly [string, string]> = {
   Programada: ['#3B82F6', '#1E40AF'],
   Borrador: ['#98A1B3', '#64748B'],
   Completada: ['#34D399', '#047857'],
+  Cancelada: ['#E5484D', '#A61B1F'],
 };
 
 interface SessionDetailScreenProps {

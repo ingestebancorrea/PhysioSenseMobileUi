@@ -19,18 +19,13 @@ const todayDisplay = () => {
 };
 
 const INITIAL_FORM: SessionFormData = {
-  patientName: 'María López',
-  sessionTitle: 'Sesión de seguimiento - Semana 4',
-  sessionObjective: 'Mejorar fuerza y rango de movimiento de la muñeca.',
+  patientName: '',
+  sessionTitle: '',
+  sessionObjective: '',
   selectedDate: todayDisplay(),
-  selectedTime: '10:00 a. m.',
-  estimatedDuration: '40',
-  exercises: [
-    { id: '1', title: 'Apertura de mano', sessions: '3', repetitions: '15', imageUrl: 'countdownFive' },
-    { id: '2', title: 'Flexión de dedos', sessions: '3', repetitions: '15', imageUrl: 'countdownFour' },
-    { id: '3', title: 'Extensión de muñeca', sessions: '3', repetitions: '15', imageUrl: 'countdownThree' },
-    { id: '4', title: 'Supinación de muñeca', sessions: '3', repetitions: '15', imageUrl: 'countdownTwo' },
-  ],
+  selectedTime: '',
+  estimatedDuration: '',
+  exercises: [],
 };
 
 export interface CreateSessionScreenProps {
