@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
@@ -9,7 +9,10 @@ import { ExerciseCard, type ExerciseItem } from '@/components/exercises/Exercise
 import { ScreenHeader } from '@/components/common/screenHeader/ScreenHeader';
 import { SearchBar } from '@/components/common/searchBar/SearchBar';
 import { FabButton } from '@/components/common/fabButton/FabButton';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 import { useAppAlert } from '@/hooks/useAppAlert';
+import { listExercises } from '@/services/exercise/exerciseList.service';
+import { ApiClientError } from '@/services/api/client';
 
 export interface ExercisesScreenProps {
   exercises: ExerciseItem[];
@@ -19,15 +22,45 @@ export interface ExercisesScreenProps {
 }
 
 export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
-  exercises,
+  exercises: initialExercises,
   onExercisesChange,
   onCreate,
   onEditExercise,
 }) => {
   const [search, setSearch] = useState('');
+  const [exercises, setExercises] = useState<ExerciseItem[]>(initialExercises);
+  const [loading, setLoading] = useState(true);
   const { open } = useDrawer();
   const navigate = useNavigate();
   const { alertModal, showAlert } = useAppAlert();
+
+  const loadExercises = useCallback(async () => {
+    setLoading(true);
+    try {
+      const items = await listExercises();
+      setExercises(items);
+    } catch (err) {
+      if (err instanceof ApiClientError && err.status === 401) {
+        showAlert({
+          title: 'Sesión expirada',
+          message: 'Inicia sesión de nuevo para ver los ejercicios.',
+          variant: 'error',
+        });
+      } else {
+        showAlert({
+          title: 'No se pudieron cargar los ejercicios',
+          message: err instanceof Error ? err.message : 'Error inesperado.',
+          variant: 'error',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [showAlert]);
+
+  useEffect(() => {
+    loadExercises();
+  }, [loadExercises]);
 
   const filteredExercises = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -66,8 +99,10 @@ export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
         variant: 'error',
         cancelText: 'Cancelar',
         confirmText: 'Eliminar',
-        onConfirm: () =>
-          onExercisesChange(prev => prev.filter(item => item.id !== id)),
+        onConfirm: () => {
+          setExercises(prev => prev.filter(item => item.id !== id));
+          onExercisesChange?.(prev => prev.filter(item => item.id !== id));
+        },
       });
     },
     [exercises, onExercisesChange, showAlert],
@@ -100,6 +135,22 @@ export const ExercisesScreen: React.FC<ExercisesScreenProps> = ({
   const keyExtractor = useCallback((item: ExerciseItem) => item.id, []);
 
   const isEmptyBank = exercises.length === 0;
+
+  if (loading) {
+    return (
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.loadingWrapper}>
+          <AppLoader />
+          <View style={styles.loadingContent}>
+            <Text style={styles.loadingTitle}>Cargando tus ejercicios</Text>
+            <Text style={styles.loadingSubtitle}>
+              Un momento mientras traemos tu catálogo
+            </Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -158,6 +209,27 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.backgroundMuted,
+  },
+  loadingWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.backgroundMuted,
+  },
+  loadingContent: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  loadingTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1C20',
+  },
+  loadingSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+    textAlign: 'center',
   },
   listContent: {
     paddingHorizontal: 20,
