@@ -1,18 +1,22 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExerciseGuideScreen } from './ExerciseGuideScreen';
-import { PINZA_GUIDE } from './data/guidePinza';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 
 export const PinzaGuideScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<ExerciseFlowParamList>>();
+  const route = useRoute<RouteProp<ExerciseFlowParamList, 'PinzaGuide'>>();
 
   return (
     <ExerciseGuideScreen
-      guide={PINZA_GUIDE}
-      onStart={() => navigation.navigate('Preparation', { exerciseId: PINZA_GUIDE.id })}
+      exerciseId={route.params.exerciseId}
+      onStart={() =>
+        navigation.navigate('Preparation', {
+          exerciseId: route.params.exerciseId,
+        })
+      }
     />
   );
 };

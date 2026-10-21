@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'http://10.0.2.2:3001/api/v1';
+export const API_BASE_URL =
+  'https://physiosense-core-be-microservice.onrender.com/api/v1';
 
 export const AUTH_SERVICE_BASE_URL =
   'https://authentication-be-microservice-lab.onrender.com/api/v1';

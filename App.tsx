@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { AuthProvider } from '@/context/AuthContext';
+import { ToastProvider } from '@/context/ToastContext';
 import { RootNavigator } from '@/navigation/navigators/RootNavigator';
 
 function App() {
@@ -17,10 +18,12 @@ function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'light-content'} />
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
+        <ToastProvider>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'light-content'} />
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+        </ToastProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

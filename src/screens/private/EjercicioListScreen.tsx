@@ -1,56 +1,100 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Image, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { COLORS } from '@/constants/theme';
 import { useDrawer } from '@/context/DrawerContext';
 import { useNavigate } from '@/context/PrivateNavigationContext';
-import { EXERCISES } from '@/mock/exerciseData';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { CategoryTabs } from '@/components/exercises/CategoryTabs';
 import { ExerciseCard, type ExerciseItem } from '@/components/exercises/ExerciseCard';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
-import type { ExerciseCategory, ExerciseListItem } from '@/types/exercise';
+import type { ExerciseCategory } from '@/types/exercise';
+import { listExercises } from '@/services/exercise/exerciseList.service';
+import { ApiClientError } from '@/services/api/client';
+import { useAppAlert } from '@/hooks/useAppAlert';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
 
 type EjercicioListScreenProps = NativeStackScreenProps<
   ExerciseFlowParamList,
   'ExerciseList'
 >;
 
-const EXERCISE_ROUTES: Record<string, keyof ExerciseFlowParamList> = {
+/**
+ * A qué pantalla de detalle corresponde cada ejercicio del catálogo.
+ *
+ * El código estable del ejercicio no vive acá: viaja por la navegación
+ * (`exerciseId`) y sale del `item.id` del listado, que es la única fuente de
+ * verdad.
+ */
+type ExerciseDetailRoute =
+  | 'CerrarMano'
+  | 'AbrirMano'
+  | 'Pinza'
+  | 'OposicionPulgar';
+
+const EXERCISE_ROUTES: Record<string, ExerciseDetailRoute> = {
   exercise_01: 'CerrarMano',
   exercise_02: 'AbrirMano',
   exercise_03: 'Pinza',
   exercise_04: 'OposicionPulgar',
 };
 
-const toCardItem = (item: ExerciseListItem): ExerciseItem => ({
-  id: item.id,
-  title: item.title,
-  description: item.description,
-  series: `${item.series} series`,
-  reps: `${item.reps} rep.`,
-  duration: item.duration,
-  imageUrl: Image.resolveAssetSource(item.imageUri)?.uri,
-});
+// Tiempo mínimo visible del loader para que nunca quede instantáneo
+const MIN_LOADING_MS = 600;
 
 const ItemSeparator = () => <View style={styles.separator} />;
 
 export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
   navigation,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory>('Todos');
+  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory>(
+    'Todos',
+  );
+  const [exercises, setExercises] = useState<ExerciseItem[]>([]);
+  const [showLoader, setShowLoader] = useState(true);
   const { open } = useDrawer();
   const navigate = useNavigate();
+  const { showAlert } = useAppAlert();
 
-  const filteredExercises = useMemo(() => {
-    const result =
-      selectedCategory === 'Todos'
-        ? EXERCISES
-        : EXERCISES.filter(item => item.category === selectedCategory);
+  const loadExercises = useCallback(async () => {
+    setShowLoader(true);
+    try {
+      // category === 'Todos' => no se envía filtro (catálogo completo)
+      const category =
+        selectedCategory === 'Todos' ? undefined : selectedCategory;
+      const start = Date.now();
+      const items = await listExercises({ category });
+      setExercises(items);
 
-    return result.map(toCardItem);
-  }, [selectedCategory]);
+      // Mantener el loader al menos MIN_LOADING_MS para que se aprecie
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), remaining));
+    } catch (err) {
+      if (err instanceof ApiClientError && err.status === 401) {
+        // 401: el cliente ya limpió la sesión y emitió sessionExpired.
+        // El AuthContext / navegador se encarga de redirigir al login.
+        showAlert({
+          title: 'Sesión expirada',
+          message: 'Inicia sesión de nuevo para ver los ejercicios.',
+          variant: 'error',
+        });
+      } else {
+        showAlert({
+          title: 'No se pudieron cargar los ejercicios',
+          message: err instanceof Error ? err.message : 'Error inesperado.',
+          variant: 'error',
+        });
+      }
+    } finally {
+      setShowLoader(false);
+    }
+  }, [selectedCategory, showAlert]);
+
+  useEffect(() => {
+    loadExercises();
+  }, [loadExercises]);
 
   const renderExerciseItem = useCallback(
     ({ item }: { item: ExerciseItem }) => (
@@ -59,7 +103,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
         onPlay={() => {
           const route = EXERCISE_ROUTES[item.id];
           if (route) {
-            navigation.navigate(route as never);
+            navigation.navigate(route, { exerciseId: item.id });
           }
         }}
       />
@@ -68,6 +112,22 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
   );
 
   const keyExtractor = useCallback((item: ExerciseItem) => item.id, []);
+
+  if (showLoader) {
+    return (
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.loadingWrapper}>
+          <AppLoader />
+          <View style={styles.loadingContent}>
+            <Text style={styles.loadingTitle}>Cargando tus ejercicios</Text>
+            <Text style={styles.loadingSubtitle}>
+              Un momento mientras traemos tu catálogo
+            </Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -79,9 +139,12 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
             onNotificationsPress={() => navigate('notifications')}
           />
         </View>
-        <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
+        <CategoryTabs
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
         <FlatList
-          data={filteredExercises}
+          data={exercises}
           keyExtractor={keyExtractor}
           renderItem={renderExerciseItem}
           ItemSeparatorComponent={ItemSeparator}
@@ -107,5 +170,26 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 12,
+  },
+  loadingWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  loadingContent: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  loadingTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1C20',
+  },
+  loadingSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });

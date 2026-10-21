@@ -2,13 +2,18 @@ import { CORE_SERVICE_BASE_URL } from '@/config/env';
 import { createApiClient } from '@/services/api/client';
 import type { Patient, PatientStatus } from '@/types/patient';
 import type {
+  CorePatientRowDto,
   CorePatientStatus,
   TherapistPatientDetailDto,
-  TherapistPatientItemDto,
+  TherapistPatientsPageResponse,
+  TherapistPatientsQuery,
   TherapistPatientsResponse,
 } from '@/types/therapistPatients';
 
 const coreApi = createApiClient(CORE_SERVICE_BASE_URL);
+
+/** Máximo de pacientes que devuelve por página `GET /patients/mine`. */
+const PATIENTS_PAGE_SIZE = 100;
 
 const STATUS_BY_CODE: Record<CorePatientStatus, PatientStatus> = {
   ACTIVE: 'Activo',
@@ -32,7 +37,7 @@ const MONTHS_ES = [
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
-const ageFromBirthDate = (birthDate?: string): number | undefined => {
+const ageFromBirthDate = (birthDate?: string | null): number | undefined => {
   if (!birthDate) {
     return undefined;
   }
@@ -47,7 +52,7 @@ const ageFromBirthDate = (birthDate?: string): number | undefined => {
 };
 
 /** Formats `YYYY-MM-DD` (or ISO) as `15 Abril, 2024`, mapping style used by the UI. */
-const formatDate = (value?: string): string | undefined => {
+const formatDate = (value?: string | null): string | undefined => {
   if (!value) {
     return undefined;
   }
@@ -63,7 +68,7 @@ const formatDate = (value?: string): string | undefined => {
 };
 
 /** Formats an ISO timestamp in local time as `15 Agosto, 2024, 9:15 a. m.`. */
-const formatDateTime = (value?: string): string | undefined => {
+const formatDateTime = (value?: string | null): string | undefined => {
   if (!value) {
     return undefined;
   }
@@ -83,21 +88,21 @@ const formatDateTime = (value?: string): string | undefined => {
 };
 
 const toMetrics = (
-  compliance?: number,
-  rom?: number,
-  strength?: number,
+  compliance?: number | null,
+  rom?: number | null,
+  strength?: number | null,
 ): Patient['metrics'] =>
   compliance !== undefined || rom !== undefined || strength !== undefined
     ? { compliance: compliance ?? 0, rom: rom ?? 0, strength: strength ?? 0 }
     : undefined;
 
-const toPatient = (dto: TherapistPatientItemDto): Patient => ({
+const toPatient = (dto: CorePatientRowDto): Patient => ({
   id: String(dto.id),
-  name: dto.name,
+  name: dto.name ?? 'Paciente',
   age: dto.age ?? ageFromBirthDate(dto.birthDate) ?? 0,
   avatarUrl: dto.avatarUrl ?? '',
   status: STATUS_BY_CODE[dto.status] ?? 'Activo',
-  diagnosis: dto.diagnosis,
+  diagnosis: dto.diagnosis ?? undefined,
   startDate: formatDate(dto.startDate),
   metrics: toMetrics(dto.compliance, dto.rom, dto.strength),
 });
@@ -109,11 +114,11 @@ const toPatientDetail = (dto: TherapistPatientDetailDto): Patient => {
 
   return {
     id: String(dto.id),
-    name: dto.name,
+    name: dto.name ?? 'Paciente',
     age: dto.age ?? ageFromBirthDate(dto.birthDate) ?? 0,
     avatarUrl: dto.avatarUrl ?? '',
     status: STATUS_BY_CODE[dto.status] ?? 'Activo',
-    diagnosis: dto.diagnosis,
+    diagnosis: dto.diagnosis ?? undefined,
     startDate: formatDate(dto.startDate),
     therapistName: dto.therapistName,
     metrics: toMetrics(dto.compliance, dto.rom, dto.strength),
@@ -132,18 +137,57 @@ export interface TherapistPatientsResult {
   patients: Patient[];
 }
 
+/**
+ * Construye el query string de `GET /patients/mine`.
+ * El backend busca por nombre o por id, sin distinguir mayúsculas.
+ */
+const buildPatientsSearchQuery = (query: TherapistPatientsQuery): string => {
+  const params = new URLSearchParams();
+
+  params.append('page', String(query.page ?? 1));
+  params.append('limit', String(query.limit ?? PATIENTS_PAGE_SIZE));
+
+  const search = query.search?.trim();
+  if (search) {
+    params.append('search', search);
+  }
+
+  return params.toString();
+};
+
 export const patientService = {
   /**
-   * GET /api/v1/therapists/patients
-   * Pacientes asignados al fisioterapeuta autenticado (requiere Bearer token).
+   * Pacientes asignados al fisioterapeuta autenticado.
+   *
+   * - Sin `search`: `GET /api/v1/therapists/patients` → lista completa de
+   *   asignados (sin paginar, con `message` informativo).
+   * - Con `search`: `GET /api/v1/patients/mine?search=...` → el backend
+   *   filtra por nombre o id, sin distinguir mayúsculas.
+   *
+   * En ambos casos devuelve `Patient[]` listo para la UI.
    */
-  getMyPatients: async (): Promise<TherapistPatientsResult> => {
-    const response = await coreApi.get<TherapistPatientsResponse>(
-      '/therapists/patients',
+  getMyPatients: async (
+    query?: TherapistPatientsQuery,
+  ): Promise<TherapistPatientsResult> => {
+    const search = query?.search?.trim();
+
+    if (!search) {
+      const response = await coreApi.get<TherapistPatientsResponse>(
+        '/therapists/patients',
+      );
+
+      return {
+        message: response?.message ?? null,
+        patients: (response?.items ?? []).map(toPatient),
+      };
+    }
+
+    const response = await coreApi.get<TherapistPatientsPageResponse>(
+      `/patients/mine?${buildPatientsSearchQuery({ ...query, search })}`,
     );
 
     return {
-      message: response?.message ?? null,
+      message: null,
       patients: (response?.items ?? []).map(toPatient),
     };
   },

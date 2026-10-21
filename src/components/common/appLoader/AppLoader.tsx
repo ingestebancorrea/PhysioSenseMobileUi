@@ -55,20 +55,24 @@ export const AppLoader: React.FC<AppLoaderProps> = ({ size }) => {
       width > 0 ? Math.min(Math.round(width * 0.32), 160) : 120,
     );
 
-  // Rotación del trenzado interior
+  // Rotación del trenzado interior (bucle continuo de 5s)
   const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    let frame: number;
-    const start = Date.now();
-    const animate = () => {
-      const elapsed = (Date.now() - start) % 5000;
-      rotation.setValue(elapsed / 5000);
-      frame = requestAnimationFrame(animate);
+    const animation = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 5000,
+        useNativeDriver: false,
+      }),
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
     };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [rotation]);
+  }, []);
 
   const rotate = rotation.interpolate({
     inputRange: [0, 1],

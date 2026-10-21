@@ -1,66 +1,13 @@
 import { apiClient } from '@/services/api/client';
+import { assertExerciseDto } from '@/services/exercise/exerciseAssertions';
 import { MEDIA_LIMITS } from '@/config/env';
 import type { PickedMedia } from '@/services/media/mediaService';
-import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
+import type {
+  ExerciseResponseDto,
+  SaveExercisePayload,
+} from '@/types/exercise.dto';
 
-/**
- * Respuesta del endpoint GET /exercises (ExerciseResponseDto).
- * Se tipan solo los campos que el frontend utiliza.
- */
-export interface ExerciseResponse {
-  id: string;
-  exercise_id: number;
-  title: string;
-  description?: string;
-  category: string;
-  series: number;
-  reps: number;
-  measure_unit: string;
-  restSeconds: number;
-  imageUri?: string;
-  videoThumbnailUri?: string;
-  video_url?: string;
-  cover_image_url?: string;
-  is_active: boolean;
-  duration?: number;
-  targetRange?: string;
-  requirements?: string[];
-  targetMuscles?: string[];
-  guideSteps?: string[];
-}
-
-/** Query params opcionales para GET /exercises. */
-export interface ExerciseListQuery {
-  category?: string;
-  search?: string;
-}
-
-/**
- * Mapea un ExerciseResponse del backend al ExerciseItem que consume la UI.
- */
-export const toExerciseItem = (dto: ExerciseResponse): ExerciseItem => ({
-  id: dto.id,
-  title: dto.title,
-  description: dto.description ?? '',
-  series: `${dto.series} series`,
-  reps: `${dto.reps} rep.`,
-  duration: dto.duration ? `${dto.duration}` : '—',
-  imageUrl: dto.cover_image_url ?? dto.imageUri,
-  coverImageUrl: dto.cover_image_url,
-});
-
-export interface SaveExercisePayload {
-  title: string;
-  description: string;
-  instructions: string;
-  series: number;
-  reps: number;
-  restSeconds: number;
-  requirements: string[];
-  targetMuscles: string[];
-  videoUrl: string;
-  coverImageUrl: string;
-}
+export type { SaveExercisePayload } from '@/types/exercise.dto';
 
 interface UploadedMedia {
   url: string;
@@ -74,10 +21,15 @@ const toFormFile = (media: PickedMedia, fallbackName: string, fallbackType: stri
     type: media.fileType ?? fallbackType,
   }) as unknown as Blob;
 
-const appendFile = (formData: FormData, media: PickedMedia, fallbackName: string, fallbackType: string) => {
-  formData.append('file', toFormFile(media, fallbackName, fallbackType));
+const appendFile = (formData: FormData, file: Blob) => {
+  formData.append('file', file);
 };
 
+/**
+ * Servicio de escritura del catálogo de ejercicios:
+ * POST /exercises, PUT /exercises/{ref}, PATCH /exercises/{ref}/deactivate y
+ * subida de multimedia.
+ */
 export const exerciseService = {
   uploadVideo: async (media: PickedMedia): Promise<UploadedMedia> => {
     if (media.fileSize && media.fileSize > MEDIA_LIMITS.videoMaxBytes) {
@@ -85,9 +37,12 @@ export const exerciseService = {
     }
 
     const formData = new FormData();
-    appendFile(formData, media, 'exercise-video.mp4', 'video/mp4');
+    appendFile(formData, toFormFile(media, 'exercise-video.mp4', 'video/mp4'));
 
-    const result = await apiClient.postMultipart<UploadedMedia>('/exercises/media/video', formData);
+    const result = await apiClient.postMultipart<UploadedMedia>(
+      '/exercises/media/video',
+      formData,
+    );
 
     return { url: result.url, duration: media.duration ?? result.duration };
   },
@@ -98,58 +53,57 @@ export const exerciseService = {
     }
 
     const formData = new FormData();
-    appendFile(formData, media, 'exercise-cover.jpg', 'image/jpeg');
+    appendFile(formData, toFormFile(media, 'exercise-cover.jpg', 'image/jpeg'));
 
-    const result = await apiClient.postMultipart<UploadedMedia>('/exercises/media/image', formData);
+    const result = await apiClient.postMultipart<UploadedMedia>(
+      '/exercises/media/image',
+      formData,
+    );
 
     return result;
   },
 
-  createExercise: (payload: SaveExercisePayload) =>
-    apiClient.post('/exercises', payload),
+  /**
+   * POST /exercises
+   * Crea un ejercicio y devuelve el DTO que responde el backend.
+   */
+  createExercise: async (
+    payload: SaveExercisePayload,
+  ): Promise<ExerciseResponseDto> => {
+    const response = await apiClient.post<unknown>('/exercises', payload);
 
-  updateExercise: (id: string, payload: SaveExercisePayload) =>
-    apiClient.put(`/exercises/${id}`, payload),
+    return assertExerciseDto(response);
+  },
 
   /**
-   * GET /exercises
-   * Lista el catálogo de ejercicios. Ambos query params son opcionales.
-   * Lanza `ApiClientError` (status 401 si no hay token válido).
-   *
-   * Ejemplo de uso desde un componente:
-   * ```ts
-   * import { exerciseService, type ExerciseResponse } from '@/services/exerciseService';
-   *
-   * const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
-   * const [error, setError] = useState<string | null>(null);
-   *
-   * useEffect(() => {
-   *   exerciseService
-   *     .getExercises({ search: 'mano' })
-   *     .then(setExercises)
-   *     .catch((err) => {
-   *       if (err instanceof ApiClientError && err.status === 401) {
-   *         // redirigir a login / solicitar autenticación
-   *       } else {
-   *         setError(err.message);
-   *       }
-   *     });
-   * }, []);
-   * ```
+   * PUT /exercises/{ref}
+   * Actualiza un ejercicio. `ref` acepta el código estable ("exercise_01")
+   * o el id numérico.
    */
-  getExercises: async (query?: ExerciseListQuery): Promise<ExerciseResponse[]> => {
-    const params = new URLSearchParams();
+  updateExercise: async (
+    ref: string,
+    payload: SaveExercisePayload,
+  ): Promise<ExerciseResponseDto> => {
+    const response = await apiClient.put<unknown>(
+      `/exercises/${ref}`,
+      payload,
+    );
 
-    if (query?.category) {
-      params.append('category', query.category);
-    }
-    if (query?.search) {
-      params.append('search', query.search);
-    }
+    return assertExerciseDto(response);
+  },
 
-    const queryString = params.toString();
-    const path = queryString ? `/exercises?${queryString}` : '/exercises';
+  /**
+   * PATCH /exercises/{ref}/deactivate
+   *
+   * Baja lógica: el ejercicio queda con `is_active = false` y desaparece del
+   * catálogo en el próximo `GET /exercises`. No lo borra físicamente, así que
+   * las sesiones que ya lo usaron conservan su historial.
+   */
+  deactivateExercise: async (ref: string): Promise<ExerciseResponseDto> => {
+    const response = await apiClient.patch<unknown>(
+      `/exercises/${ref}/deactivate`,
+    );
 
-    return apiClient.get<ExerciseResponse[]>(path);
+    return assertExerciseDto(response);
   },
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
@@ -46,7 +46,6 @@ import type { Patient } from '@/types/patient';
 import type { Session } from '@/types/session';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 import { sessionService } from '@/services/sessionService';
-import { exerciseService, toExerciseItem } from '@/services/exerciseService';
 import { ApiClientError } from '@/services/api/client';
 import { useAppAlert } from '@/hooks/useAppAlert';
 
@@ -299,28 +298,11 @@ const TherapistNavigatorContent: React.FC = () => {
     | 'privacy'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
-  // Antes (data quemada/mock): const [exercises, setExercises] = useState<ExerciseItem[]>(THERAPIST_EXERCISES);
-  // Ahora los ejercicios provienen de GET /exercises (backend) y se mapean
-  // con toExerciseItem a ExerciseItem.
-  const [exercises, setExercises] = useState<ExerciseItem[]>([]);
-
-  useEffect(() => {
-    // 1. Consumo del API
-    exerciseService
-      .getExercises()
-      .then((items) => {
-        // 2. Mapeo de la respuesta a ExerciseItem
-        setExercises(items.map(toExerciseItem));
-      })
-      .catch((err) => {
-        showAlert({
-          title: 'No se pudieron cargar los ejercicios',
-          message:
-            err instanceof ApiClientError ? err.message : 'Error inesperado.',
-          variant: 'error',
-        });
-      });
-  }, [showAlert]);
+  // Se incrementa al volver del formulario para que la lista de ejercicios
+  // relea GET /exercises y muestre lo que se acaba de crear o editar.
+  const [exercisesVersion, setExercisesVersion] = useState(0);
+  // Los ejercicios se cargan directamente en ExercisesScreen mediante
+  // listExercises() (GET /exercises). No se necesita estado aquí.
 
   const handleDrawerSelect = (key: string) => {
     if (key === 'inicio' || key === 'pacientes' || key === 'sesiones' || key === 'ejercicios') {
@@ -447,16 +429,16 @@ const TherapistNavigatorContent: React.FC = () => {
   const handleBackFromExerciseForm = () => {
     setExerciseRoute('list');
     setEditingExercise(null);
+    setExercisesVersion(version => version + 1);
   };
 
-  const handleExerciseSaved = useCallback((exercise: ExerciseItem) => {
-    setExercises((prev) => {
-      const exists = prev.some((item) => item.id === exercise.id);
-      return exists
-        ? prev.map((item) => (item.id === exercise.id ? exercise : item))
-        : [exercise, ...prev];
-    });
-  }, []);
+  /**
+   * El ejercicio se guardó en el backend: se fuerza el re-GET de la lista para
+   * que aparezca con los datos que devolvió la API (no con los del formulario).
+   */
+  const handleExerciseSaved = (_exercise: ExerciseItem) => {
+    setExercisesVersion(version => version + 1);
+  };
 
   const renderActiveScreen = () => {
     if (showHelp) {
@@ -496,7 +478,7 @@ const TherapistNavigatorContent: React.FC = () => {
           <AssignSessionScreen
             onBack={handleBackFromAssignSession}
             onCreateSession={handleOpenCreateSession}
-            initialPatient={selectedPatient?.name}
+            initialPatient={selectedPatient}
           />
         );
       }
@@ -547,15 +529,14 @@ const TherapistNavigatorContent: React.FC = () => {
         return (
           <CreateExerciseScreen
             onBack={handleBackFromExerciseForm}
-            initialExercise={editingExercise}
             onSaved={handleExerciseSaved}
+            initialExercise={editingExercise}
           />
         );
       }
       return (
         <ExercisesScreen
-          exercises={exercises}
-          onExercisesChange={setExercises}
+          refreshToken={exercisesVersion}
           onCreate={handleOpenCreateExercise}
           onEditExercise={handleOpenEditExercise}
         />
