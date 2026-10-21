@@ -1,9 +1,25 @@
 import { apiClient } from '@/services/api/client';
 import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
-import type { ExerciseResponseDto } from '@/types/exercise.dto';
-import type { ExerciseListQueryDto } from '@/types/exercise.dto';
+import type {
+  ExerciseListQueryDto,
+  ExerciseResponseDto,
+} from '@/types/exercise.dto';
 
 const EXERCISES_PATH = '/exercises';
+
+/**
+ * Mapea el DTO del backend al `ExerciseItem` que consume la UI.
+ */
+export const toExerciseItem = (dto: ExerciseResponseDto): ExerciseItem => ({
+  id: dto.id,
+  title: dto.title,
+  description: dto.description ?? '',
+  series: `${dto.series} series`,
+  reps: `${dto.reps} rep.`,
+  duration: dto.duration ?? '—',
+  imageUrl: dto.cover_image_url ?? dto.imageUri ?? undefined,
+  coverImageUrl: dto.cover_image_url ?? undefined,
+});
 
 /**
  * GET /exercises
@@ -28,14 +44,5 @@ export const listExercises = async (
 
   const dtos = await apiClient.get<ExerciseResponseDto[]>(path);
 
-  return dtos.map((dto) => ({
-    id: dto.id,
-    title: dto.title,
-    description: dto.description ?? '',
-    series: `${dto.series} series`,
-    reps: `${dto.reps} rep.`,
-    duration: dto.duration ? `${dto.duration}` : '—',
-    imageUrl: dto.cover_image_url ?? dto.imageUri,
-    coverImageUrl: dto.cover_image_url,
-  }));
+  return dtos.map(toExerciseItem);
 };

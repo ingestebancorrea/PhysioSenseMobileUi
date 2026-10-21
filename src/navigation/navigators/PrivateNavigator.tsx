@@ -298,6 +298,9 @@ const TherapistNavigatorContent: React.FC = () => {
     | 'privacy'
   >('main');
   const [editingExercise, setEditingExercise] = useState<ExerciseItem | null>(null);
+  // Se incrementa al volver del formulario para que la lista de ejercicios
+  // relea GET /exercises y muestre lo que se acaba de crear o editar.
+  const [exercisesVersion, setExercisesVersion] = useState(0);
   // Los ejercicios se cargan directamente en ExercisesScreen mediante
   // listExercises() (GET /exercises). No se necesita estado aquí.
 
@@ -426,6 +429,15 @@ const TherapistNavigatorContent: React.FC = () => {
   const handleBackFromExerciseForm = () => {
     setExerciseRoute('list');
     setEditingExercise(null);
+    setExercisesVersion(version => version + 1);
+  };
+
+  /**
+   * El ejercicio se guardó en el backend: se fuerza el re-GET de la lista para
+   * que aparezca con los datos que devolvió la API (no con los del formulario).
+   */
+  const handleExerciseSaved = (_exercise: ExerciseItem) => {
+    setExercisesVersion(version => version + 1);
   };
 
   const renderActiveScreen = () => {
@@ -517,14 +529,14 @@ const TherapistNavigatorContent: React.FC = () => {
         return (
           <CreateExerciseScreen
             onBack={handleBackFromExerciseForm}
+            onSaved={handleExerciseSaved}
             initialExercise={editingExercise}
           />
         );
       }
       return (
         <ExercisesScreen
-          exercises={[]}
-          onExercisesChange={() => {}}
+          refreshToken={exercisesVersion}
           onCreate={handleOpenCreateExercise}
           onEditExercise={handleOpenEditExercise}
         />

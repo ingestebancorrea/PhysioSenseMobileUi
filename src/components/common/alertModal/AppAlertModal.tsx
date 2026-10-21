@@ -7,13 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  CheckCircle2,
-  Info,
-  TriangleAlert,
-  X,
-  XCircle,
-} from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 
 import { COLORS } from '@/constants/theme';
 
@@ -30,11 +24,15 @@ export interface AppAlertModalProps {
   onCancel?: () => void;
 }
 
+/**
+ * El modal no lleva ícono: el título y el mensaje ya dicen todo y el ícono
+ * repetido en cada alerta sólo suma ruido visual.
+ */
 const VARIANT_META = {
-  info: { Icon: Info, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
-  success: { Icon: CheckCircle2, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
-  warning: { Icon: TriangleAlert, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
-  error: { Icon: XCircle, accent: COLORS.primaryViolet, soft: COLORS.primaryVioletSoft },
+  info: { accent: COLORS.primaryViolet },
+  success: { accent: COLORS.primaryViolet },
+  warning: { accent: COLORS.primaryViolet },
+  error: { accent: COLORS.primaryViolet },
 } as const;
 
 export const AppAlertModal: React.FC<AppAlertModalProps> = ({
@@ -47,7 +45,7 @@ export const AppAlertModal: React.FC<AppAlertModalProps> = ({
   cancelText,
   onCancel,
 }) => {
-  const { Icon, accent, soft } = VARIANT_META[variant];
+  const { accent } = VARIANT_META[variant];
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.86)).current;
 
@@ -99,9 +97,6 @@ export const AppAlertModal: React.FC<AppAlertModalProps> = ({
           </View>
 
           <View style={styles.body}>
-            <View style={[styles.iconBadge, { backgroundColor: soft }]}>
-              <Icon size={28} color={accent} />
-            </View>
             <Text style={styles.title}>{title}</Text>
             {message ? <Text style={styles.message}>{message}</Text> : null}
           </View>
@@ -170,15 +165,7 @@ const styles = StyleSheet.create({
   body: {
     alignItems: 'center',
     paddingHorizontal: 8,
-    marginTop: 8,
-  },
-  iconBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    marginTop: 12,
   },
   title: {
     fontSize: 19,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -18,11 +18,19 @@ import type { ExerciseItem } from '@/components/exercises/ExerciseCard';
 import { StepIndicator } from '@/components/exercises/StepIndicator';
 import { mediaService } from '@/services/media/mediaService';
 import type { PickedMedia } from '@/services/media/mediaService';
-import type { SaveExercisePayload } from '@/services/exerciseService';
+import { exerciseService } from '@/services/exerciseService';
+import { getExercise } from '@/services/exercise/exerciseDetail.service';
+import type { SaveExercisePayload } from '@/types/exercise.dto';
+import type { ExerciseResponseDto } from '@/types/exercise.dto';
+import { toExerciseItem } from '@/services/exercise/exerciseList.service';
+import { describeError } from '@/utils/describeError';
 import { ExerciseVideoPreview } from '@/components/exercise-detail/ExerciseVideoPreview';
 import { ExerciseSpecsCard } from '@/components/exercise-detail/ExerciseSpecsCard';
 import { TargetMusclesCard } from '@/components/exercise-detail/TargetMusclesCard';
 import { useAppAlert } from '@/hooks/useAppAlert';
+import { useAppToast } from '@/context/ToastContext';
+import { AppLoader } from '@/components/common/appLoader/AppLoader';
+import { Button } from '@/components/common/button/Button';
 import {
   buildExercisePreview,
   buildPreviewThumbnail,
@@ -51,6 +59,11 @@ const DEFAULT_REQUIREMENTS = [
   { id: 'req_3', text: 'Realiza cada repetición de forma lenta y controlada' },
 ];
 
+/** Músculos que la pantalla ofrece como chip. */
+const KNOWN_MUSCLE_LABELS = new Set(
+  MUSCLE_OPTIONS.map(option => option.label),
+);
+
 interface RequirementItem {
   id: string;
   text: string;
@@ -65,51 +78,38 @@ export interface CreateExerciseScreenProps {
 type FieldName = 'title' | 'description' | 'video' | 'cover';
 type FieldErrors = Partial<Record<FieldName, string>>;
 
-const parseNumber = (raw: string, fallback: number): number => {
-  const parsed = parseInt(raw, 10);
-  return Number.isNaN(parsed) ? fallback : parsed;
-};
-
 export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
   onBack,
   initialExercise,
   onSaved,
 }) => {
   const isEditing = Boolean(initialExercise);
+  /** Código estable del ejercicio que se está editando. */
+  const exerciseRef = initialExercise?.id;
 
   const { alertModal, showAlert } = useAppAlert();
+  const { showToast } = useAppToast();
 
   // Control del Stepper (1: Información, 2: Configuración, 3: Revisión)
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
 
-  // Estados del Formulario
-  const [title, setTitle] = useState(isEditing ? initialExercise?.title ?? '' : '');
-  const [description, setDescription] = useState(
-    isEditing ? initialExercise?.description ?? '' : '',
-  );
-  const [series, setSeries] = useState<number>(
-    isEditing ? parseNumber(initialExercise?.series ?? '', 3) : 3,
-  );
-  const [reps, setReps] = useState<number>(
-    isEditing ? parseNumber(initialExercise?.reps ?? '', 15) : 15,
-  );
-  const [rest, setRest] = useState<number>(
-    isEditing ? parseNumber(initialExercise?.duration ?? '', 30) : 30,
-  );
+  // Carga del ejercicio que se está editando.
+  const [loadingExercise, setLoadingExercise] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const editVideoUrl = isEditing ? initialExercise?.imageUrl : undefined;
-  const editCoverUrl = isEditing
-    ? (initialExercise?.coverImageUrl ?? initialExercise?.imageUrl)
-    : undefined;
+  // Estados del Formulario. En el alta arrancan con los valores por defecto;
+  // en la edición los completa la API (ver `loadExercise`).
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [series, setSeries] = useState<number>(3);
+  const [reps, setReps] = useState<number>(15);
+  const [rest, setRest] = useState<number>(30);
 
-  const [video, setVideo] = useState<PickedMedia | null>(
-    editVideoUrl ? { url: editVideoUrl } : null,
-  );
-  const [coverImage, setCoverImage] = useState<PickedMedia | null>(
-    editCoverUrl ? { url: editCoverUrl } : null,
-  );
+  const [video, setVideo] = useState<PickedMedia | null>(null);
+  const [coverImage, setCoverImage] = useState<PickedMedia | null>(null);
 
   const [requirements, setRequirements] = useState<RequirementItem[]>(DEFAULT_REQUIREMENTS);
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
@@ -217,6 +217,86 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
     return true;
   };
 
+  /**
+   * Sube el video y la portada si son archivos locales y devuelve las URLs
+   * remotas que espera el backend. Si ya vienen de una edición anterior
+   * (`media.url`), se reusan tal cual.
+   */
+  const resolveMediaUrls = async (): Promise<{
+    videoUrl: string;
+    coverImageUrl: string;
+  }> => {
+    const videoUrl = video?.uri
+      ? (await exerciseService.uploadVideo(video)).url
+      : (video?.url ?? '');
+
+    const coverImageUrl = coverImage?.uri
+      ? (await exerciseService.uploadCoverImage(coverImage)).url
+      : (coverImage?.url ?? '');
+
+    return { videoUrl, coverImageUrl };
+  };
+
+  /**
+   * Llena el formulario con el ejercicio que se está editando.
+   *
+   * El listado sólo trae un resumen (id, título, series, reps, duración), así
+   * que para editar hay que pedir el ejercicio completo: los requisitos, los
+   * músculos, las instrucciones y el media vienen de la API, no de datos
+   * quemados.
+   */
+  const loadExercise = useCallback(async () => {
+    if (!exerciseRef) {
+      return;
+    }
+
+    setLoadingExercise(true);
+    setLoadError(null);
+
+    try {
+      const dto: ExerciseResponseDto = await getExercise(exerciseRef);
+
+      setTitle(dto.title);
+      setDescription(dto.description ?? '');
+      setInstructions(dto.instructions ?? '');
+      setSeries(dto.series);
+      setReps(dto.reps);
+      setRest(dto.restSeconds);
+      setRequirements(
+        (dto.requirements ?? []).map((text, index) => ({
+          id: `req_${index + 1}`,
+          text,
+        })),
+      );
+      setSelectedMuscles(dto.targetMuscles ?? []);
+      // Los músculos que no están en la lista fija también tienen que verse:
+      // si no, quedarían seleccionados pero sin chip que los muestre.
+      setExtraMuscles(
+        (dto.targetMuscles ?? []).filter(
+          label => !KNOWN_MUSCLE_LABELS.has(label),
+        ),
+      );
+      // El media remoto se reusa: `resolveMediaUrls` no lo vuelve a subir.
+      setVideo(dto.video_url ? { url: dto.video_url } : null);
+      setCoverImage(dto.cover_image_url ? { url: dto.cover_image_url } : null);
+    } catch (err) {
+      const message = describeError(err);
+
+      setLoadError(message);
+      showAlert({
+        title: 'No se pudo cargar el ejercicio',
+        message,
+        variant: 'error',
+      });
+    } finally {
+      setLoadingExercise(false);
+    }
+  }, [exerciseRef, showAlert]);
+
+  useEffect(() => {
+    loadExercise();
+  }, [loadExercise]);
+
   const handleSave = async () => {
     if (!validateStepOne()) {
       setCurrentStep(1);
@@ -225,35 +305,48 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
 
     setSaving(true);
     try {
-      const videoUrl = video?.uri ?? video?.url ?? '';
-      const coverUrl = coverImage?.uri ?? coverImage?.url ?? '';
+      const { videoUrl, coverImageUrl } = await resolveMediaUrls();
 
       const payload: SaveExercisePayload = {
         title: title.trim(),
         description: description.trim(),
-        instructions: '',
+        instructions: instructions.trim(),
         series,
         reps,
         restSeconds: rest,
         requirements: requirements.map((req) => req.text.trim()).filter(Boolean),
         targetMuscles: selectedMuscles,
         videoUrl,
-        coverImageUrl: coverUrl,
+        coverImageUrl,
       };
 
-      const savedExercise: ExerciseItem = {
-        id: isEditing && initialExercise ? initialExercise.id : `ex_${Date.now()}`,
-        title: payload.title,
-        description: payload.description,
-        series: `${payload.series} series`,
-        reps: `${payload.reps} rep.`,
-        duration: `${payload.restSeconds} seg`,
-        imageUrl: payload.coverImageUrl || payload.videoUrl || undefined,
-        coverImageUrl: payload.coverImageUrl || undefined,
-      };
+      // El backend responde el DTO del ejercicio guardado; se mapea a
+      // `ExerciseItem` para que la lista lo muestre tal como vino.
+      const saved = isEditing && exerciseRef
+        ? await exerciseService.updateExercise(exerciseRef, payload)
+        : await exerciseService.createExercise(payload);
 
-      onSaved?.(savedExercise);
+      const item = toExerciseItem(saved);
+
+      // El éxito es un aviso flotante, no un modal: no frena la pantalla. El
+      // aviso vive en el provider, así que sobrevive al salto al listado y se
+      // sigue viendo mientras el GET vuelve a cargar el catálogo.
+      showToast({
+        title: isEditing ? 'Ejercicio actualizado' : 'Ejercicio creado',
+        message: `"${item.title}" se guardó correctamente.`,
+        variant: 'success',
+      });
+
+      onSaved?.(item);
       onBack?.();
+    } catch (err) {
+      // Si falla, el modal explica por qué y el usuario se queda en el
+      // formulario para poder volver a intentarlo.
+      showAlert({
+        title: 'No se pudo guardar el ejercicio',
+        message: describeError(err),
+        variant: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -304,6 +397,33 @@ export const CreateExerciseScreen: React.FC<CreateExerciseScreenProps> = ({
     acc[m.label] = m.icon;
     return acc;
   }, {});
+
+  // Mientras se carga el ejercicio no se pinta el formulario: se verían los
+  // valores por defecto y no los del ejercicio que se está editando.
+  if (isEditing && loadingExercise) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centered}>
+          <AppLoader />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Si el ejercicio no se pudo cargar no se puede editar: sin los datos
+  // completos el PUT mandaría un cuerpo incompleto.
+  if (isEditing && loadError) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centered}>
+          <Text style={styles.loadErrorText}>{loadError}</Text>
+          <Button title="Reintentar" onPress={loadExercise} variant="primary" />
+          <Button title="Volver" onPress={() => onBack?.()} variant="secondary" />
+        </View>
+        {alertModal}
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -825,6 +945,18 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#FAFAFC',
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 24,
+  },
+  loadErrorText: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
