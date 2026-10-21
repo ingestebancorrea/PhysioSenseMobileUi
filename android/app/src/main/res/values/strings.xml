@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">PhysioSenseMobileUi</string>
+    <string name="app_name">PhysioSense</string>
+    <string name="facebook_app_id">1804034234240254</string>
 </resources>

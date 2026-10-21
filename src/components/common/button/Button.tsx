@@ -13,6 +13,12 @@ export interface ButtonProps {
   testID?: string;
 }
 
+const capitalize = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+const textStyle = (value: string) =>
+  styles[`text${capitalize(value)}` as keyof typeof styles];
+
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
@@ -36,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? '#fff' : '#007AFF'} size="small" />
       ) : (
-        <Text style={[styles.text, styles[`text${variant.charAt(0).toUpperCase() + variant.slice(1)}`], styles[`text${size.charAt(0).toUpperCase() + size.slice(1)}`]}>
+        <Text style={[styles.text, textStyle(variant), textStyle(size)]}>
           {title}
         </Text>
       )}
