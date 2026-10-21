@@ -478,7 +478,7 @@ const TherapistNavigatorContent: React.FC = () => {
           <AssignSessionScreen
             onBack={handleBackFromAssignSession}
             onCreateSession={handleOpenCreateSession}
-            initialPatient={selectedPatient?.name}
+            initialPatient={selectedPatient}
           />
         );
       }

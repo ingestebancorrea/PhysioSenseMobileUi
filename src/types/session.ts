@@ -116,3 +116,45 @@ export interface SessionsPageResult {
   limit: number;
   totalPages: number;
 }
+
+/*──────────────────────────────────────────────────────────────
+  Plan de tratamiento (pantalla "Asignar sesión")
+  Coincide con TreatmentPlanResponseDto / CreateTreatmentPlanDto
+  del microservicio core (endpoints /sessions/plans).
+──────────────────────────────────────────────────────────────*/
+
+/** `GET /api/v1/sessions/plans/{patientId}` / `POST /api/v1/sessions/plans`. */
+export interface TreatmentPlan {
+  id: string;
+  patientId: string;
+  sessionId?: string;
+  /** `YYYY-MM-DD`. */
+  startDate: string;
+  frequencyPerWeek: number;
+  planDurationWeeks: number;
+  notes?: string;
+  isActive: boolean;
+}
+
+/** Body que espera `POST /api/v1/sessions/plans`. */
+export interface CreateTreatmentPlanPayload {
+  patientId: string;
+  sessionId?: string;
+  /** `YYYY-MM-DD` (el backend lo valida con `@IsDateString()`). */
+  startDate: string;
+  frequencyPerWeek: number;
+  planDurationWeeks: number;
+  notes?: string;
+}
+
+/** Respuesta cruda del backend para un plan de tratamiento. */
+export interface TreatmentPlanDto {
+  id: number;
+  patient_id: number;
+  session_id?: number | null;
+  startDate: string;
+  frequencyPerWeek: number;
+  planDurationWeeks: number;
+  notes?: string | null;
+  is_active: boolean;
+}

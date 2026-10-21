@@ -3,11 +3,14 @@ import { createApiClient } from '@/services/api/client';
 import type {
   BackendSessionExercise,
   BackendSessionResponse,
+  CreateTreatmentPlanPayload,
   PaginatedBackendSessions,
   QuerySessionsParams,
   SessionsPageResult,
   Session,
   SessionExercise,
+  TreatmentPlan,
+  TreatmentPlanDto,
 } from '@/types/session';
 
 const coreApi = createApiClient(CORE_SERVICE_BASE_URL);
@@ -110,6 +113,18 @@ export const mapSessionFromBackend = (
   exercises: dto.exercises?.map(mapExercise),
 });
 
+/** Mapea la respuesta cruda del backend a un plan de tratamiento. */
+export const mapTreatmentPlan = (dto: TreatmentPlanDto): TreatmentPlan => ({
+  id: String(dto.id),
+  patientId: String(dto.patient_id),
+  sessionId: dto.session_id ? String(dto.session_id) : undefined,
+  startDate: dto.startDate,
+  frequencyPerWeek: dto.frequencyPerWeek,
+  planDurationWeeks: dto.planDurationWeeks,
+  notes: dto.notes ?? undefined,
+  isActive: dto.is_active,
+});
+
 /**
  * Servicio de sesiones para el fisioterapeuta.
  * Consume: GET /sessions  (el fisioterapeuta ve todas las sesiones)
@@ -120,6 +135,10 @@ export const sessionService = {
    * @param params Filtros opcionales (página, límite, estado, búsqueda, etc.)
    * @returns Sesiones ya mapeadas al tipo `Session` de la app, con paginación.
    * Lanza `ApiClientError` en 401, 403, 400 o 500.
+   *
+   * Nota sobre `search`: el backend filtra por título de la sesión (el nombre
+   * del paciente vive en el microservicio de autenticación y no se filtra por
+   * SQL).
    */
   getSessions: async (
     params?: QuerySessionsParams,
@@ -133,7 +152,7 @@ export const sessionService = {
     if (params?.status !== undefined) query.append('status', params.status);
     if (params?.duration_range !== undefined)
       query.append('duration_range', params.duration_range);
-    if (params?.search !== undefined) query.append('search', params.search);
+    if (params?.search) query.append('search', params.search);
     if (params?.page !== undefined) query.append('page', String(params.page));
     if (params?.limit !== undefined) query.append('limit', String(params.limit));
 
@@ -149,11 +168,49 @@ export const sessionService = {
     };
   },
 
+  /**
+   * GET /sessions?patient_id={id}
+   * Sesiones que pertenecen a un paciente concreto (las que se pueden asignar).
+   */
+  getSessionsForPatient: async (
+    patientId: string | number,
+    params?: QuerySessionsParams,
+  ): Promise<SessionsPageResult> => {
+    const numericId = Number(patientId);
+
+    return sessionService.getSessions({
+      page: 1,
+      limit: 50,
+      ...params,
+      patient_id: Number.isFinite(numericId) ? numericId : params?.patient_id,
+    });
+  },
+
   getSessionById: async (id: number | string): Promise<Session> => {
     const response = await coreApi.get<BackendSessionResponse>(
       `/sessions/${id}`,
     );
 
     return mapSessionFromBackend(response);
+  },
+
+  /**
+   * POST /sessions/plans
+   * Crea el plan de tratamiento de la pantalla "Asignar sesión".
+   */
+  createTreatmentPlan: async (
+    payload: CreateTreatmentPlanPayload,
+  ): Promise<TreatmentPlan> => {
+    const response = await coreApi.post<TreatmentPlanDto>('/sessions/plans', {
+      patient_id: Number(payload.patientId),
+      session_id:
+        payload.sessionId !== undefined ? Number(payload.sessionId) : undefined,
+      start_date: payload.startDate,
+      frequency_per_week: payload.frequencyPerWeek,
+      plan_duration_weeks: payload.planDurationWeeks,
+      notes: payload.notes,
+    });
+
+    return mapTreatmentPlan(response);
   },
 };
