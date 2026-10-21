@@ -20,7 +20,20 @@ type EjercicioListScreenProps = NativeStackScreenProps<
   'ExerciseList'
 >;
 
-const EXERCISE_ROUTES: Record<string, keyof ExerciseFlowParamList> = {
+/**
+ * A qué pantalla de detalle corresponde cada ejercicio del catálogo.
+ *
+ * El código estable del ejercicio no vive acá: viaja por la navegación
+ * (`exerciseId`) y sale del `item.id` del listado, que es la única fuente de
+ * verdad.
+ */
+type ExerciseDetailRoute =
+  | 'CerrarMano'
+  | 'AbrirMano'
+  | 'Pinza'
+  | 'OposicionPulgar';
+
+const EXERCISE_ROUTES: Record<string, ExerciseDetailRoute> = {
   exercise_01: 'CerrarMano',
   exercise_02: 'AbrirMano',
   exercise_03: 'Pinza',
@@ -39,14 +52,12 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
     'Todos',
   );
   const [exercises, setExercises] = useState<ExerciseItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
   const { open } = useDrawer();
   const navigate = useNavigate();
   const { showAlert } = useAppAlert();
 
   const loadExercises = useCallback(async () => {
-    setLoading(true);
     setShowLoader(true);
     try {
       // category === 'Todos' => no se envía filtro (catálogo completo)
@@ -77,7 +88,6 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
         });
       }
     } finally {
-      setLoading(false);
       setShowLoader(false);
     }
   }, [selectedCategory, showAlert]);
@@ -93,7 +103,7 @@ export const EjercicioListScreen: React.FC<EjercicioListScreenProps> = ({
         onPlay={() => {
           const route = EXERCISE_ROUTES[item.id];
           if (route) {
-            navigation.navigate(route as never);
+            navigation.navigate(route, { exerciseId: item.id });
           }
         }}
       />

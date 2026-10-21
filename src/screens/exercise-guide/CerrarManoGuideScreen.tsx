@@ -1,19 +1,21 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExerciseGuideScreen } from './ExerciseGuideScreen';
-import { CERRAR_MANO_GUIDE } from './data/guideCerrarMano';
 import type { ExerciseFlowParamList } from '@/navigation/types/exerciseFlowParams';
 
 export const CerrarManoGuideScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<ExerciseFlowParamList>>();
+  const route = useRoute<RouteProp<ExerciseFlowParamList, 'CerrarManoGuide'>>();
 
   return (
     <ExerciseGuideScreen
-      guide={CERRAR_MANO_GUIDE}
+      exerciseId={route.params.exerciseId}
       onStart={() =>
-        navigation.navigate('Preparation', { exerciseId: CERRAR_MANO_GUIDE.id })
+        navigation.navigate('Preparation', {
+          exerciseId: route.params.exerciseId,
+        })
       }
     />
   );

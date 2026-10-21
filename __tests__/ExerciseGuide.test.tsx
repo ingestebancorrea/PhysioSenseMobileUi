@@ -13,7 +13,18 @@ import { ABRIR_MANO_GUIDE } from '../src/screens/exercise-guide/data/guideAbrirM
 import { CERRAR_MANO_GUIDE } from '../src/screens/exercise-guide/data/guideCerrarMano';
 import { OPOSICION_PULGAR_GUIDE } from '../src/screens/exercise-guide/data/guideOposicionPulgar';
 import { PINZA_GUIDE } from '../src/screens/exercise-guide/data/guidePinza';
+import { getExerciseGuide } from '../src/services/exercise/exerciseDetail.service';
+import { ApiClientError } from '../src/services/api/client';
 import type { ExerciseGuide } from '../src/types/exerciseGuide';
+
+jest.mock('../src/services/exercise/exerciseDetail.service', () => ({
+  getExerciseDetail: jest.fn(),
+  getExerciseGuide: jest.fn(),
+}));
+
+const getExerciseGuideMock = getExerciseGuide as jest.MockedFunction<
+  typeof getExerciseGuide
+>;
 
 const findText = (
   root: ReactTestRenderer.ReactTestInstance,
@@ -106,3 +117,51 @@ test('calls onStart when the footer button is pressed', async () => {
 
   expect(onStart).toHaveBeenCalledTimes(1);
 });
+
+beforeEach(() => {
+  getExerciseGuideMock.mockReset();
+});
+
+test('muestra el loader mientras carga y después los pasos que devuelve la API', async () => {
+  let resolve: (guide: ExerciseGuide) => void = () => {};
+  getExerciseGuideMock.mockReturnValue(
+    new Promise<ExerciseGuide>(r => {
+      resolve = r;
+    }),
+  );
+
+  const tree = await renderWithProviders(
+    <ExerciseGuideScreen exerciseId="exercise_01" />,
+  );
+
+  // Mientras carga no se pinta la guía en memoria.
+  expect(findText(tree.root, CERRAR_MANO_GUIDE.steps[0].title)).toBe(false);
+
+  await ReactTestRenderer.act(async () => {
+    resolve({
+      ...CERRAR_MANO_GUIDE,
+      steps: [
+        { id: 'step_api', title: 'Paso de la API', description: 'Detalle' },
+      ],
+    });
+  });
+
+  expect(getExerciseGuideMock).toHaveBeenCalledWith('exercise_01');
+  expect(findText(tree.root, 'Paso de la API')).toBe(true);
+}, 30000);
+
+test('muestra el modal de error cuando la API no encuentra el ejercicio', async () => {
+  getExerciseGuideMock.mockRejectedValue(
+    new ApiClientError('El ejercicio no existe', 404),
+  );
+
+  const tree = await renderWithProviders(
+    <ExerciseGuideScreen exerciseId="exercise_99" />,
+  );
+
+  expect(findText(tree.root, 'No se pudo cargar la guía del ejercicio')).toBe(
+    true,
+  );
+  expect(findText(tree.root, 'El ejercicio no existe (HTTP 404)')).toBe(true);
+  expect(findText(tree.root, 'Reintentar')).toBe(true);
+}, 30000);

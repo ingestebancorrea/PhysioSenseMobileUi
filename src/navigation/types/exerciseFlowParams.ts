@@ -1,13 +1,18 @@
 export type ExerciseFlowParamList = {
   ExerciseList: undefined;
-  CerrarMano: undefined;
-  AbrirMano: undefined;
-  Pinza: undefined;
-  OposicionPulgar: undefined;
-  CerrarManoGuide: undefined;
-  AbrirManoGuide: undefined;
-  PinzaGuide: undefined;
-  OposicionPulgarGuide: undefined;
+  /**
+   * Detalle y guía: se identifican por el código estable del ejercicio
+   * ("exercise_01"), que es lo que viaja desde el listado y lo que la API
+   * espera en `GET /exercises/{ref}`.
+   */
+  CerrarMano: { exerciseId: string };
+  AbrirMano: { exerciseId: string };
+  Pinza: { exerciseId: string };
+  OposicionPulgar: { exerciseId: string };
+  CerrarManoGuide: { exerciseId: string };
+  AbrirManoGuide: { exerciseId: string };
+  PinzaGuide: { exerciseId: string };
+  OposicionPulgarGuide: { exerciseId: string };
   Preparation: { exerciseId: string };
   Countdown: {
     exerciseId: string;
