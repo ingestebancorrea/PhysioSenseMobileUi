@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
+  RefreshControl,
   SectionList,
   StyleSheet,
   Text,
@@ -9,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Bell,
+  BellOff,
   Bluetooth,
   CheckCheck,
   ChevronLeft,
@@ -23,31 +26,22 @@ import {
 } from 'lucide-react-native';
 
 import { COLORS, CARD } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { useAppToast } from '@/context/ToastContext';
+import { useAppAlert } from '@/hooks/useAppAlert';
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '@/services/notifications/notificationsApi';
+import type {
+  NotificationCategory,
+  NotificationItem,
+} from '@/types/notification';
+import { describeError } from '@/utils/describeError';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export type NotificationCategory =
-  | 'Progreso'
-  | 'Logro'
-  | 'Ejercicio'
-  | 'Recordatorio'
-  | 'Dispositivo'
-  | 'Meta'
-  | 'Mensaje'
-  | 'General';
-
-export interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  isRead: boolean;
-  category: NotificationCategory;
-  section: 'Hoy' | 'Ayer' | 'Esta semana';
-  isImportant?: boolean;
-}
+// Se reexportan para quien ya importaba los tipos desde esta pantalla.
+export type { NotificationCategory, NotificationItem } from '@/types/notification';
 
 type FilterKey = 'all' | 'unread' | 'important';
 
@@ -79,103 +73,64 @@ const CATEGORY_STYLES: Record<NotificationCategory, CategoryStyle> = {
 };
 
 // ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
-
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: '1',
-    title: '¡Sesión completada!',
-    description: 'Terminaste tu sesión de ejercicios de mano. Excelente progreso hoy.',
-    timestamp: '10:30 a. m.',
-    isRead: false,
-    category: 'Progreso',
-    section: 'Hoy',
-  },
-  {
-    id: '2',
-    title: 'Nuevo récord personal',
-    description: 'Superaste tu mejor marca en apertura de mano: 42 repeticiones.',
-    timestamp: '9:15 a. m.',
-    isRead: false,
-    category: 'Logro',
-    section: 'Hoy',
-  },
-  {
-    id: '3',
-    title: 'Ejercicio programado',
-    description: 'Es hora de tu sesión de pinza. No olvides realizar el calentamiento.',
-    timestamp: '8:00 a. m.',
-    isRead: false,
-    category: 'Ejercicio',
-    section: 'Hoy',
-    isImportant: true,
-  },
-  {
-    id: '4',
-    title: 'Smart Glove conectado',
-    description: 'Tu guante inteligente se ha conectado exitosamente vía Bluetooth.',
-    timestamp: '7:45 a. m.',
-    isRead: true,
-    category: 'Dispositivo',
-    section: 'Hoy',
-  },
-  {
-    id: '5',
-    title: 'Meta semanal alcanzada',
-    description: 'Completaste 5 de 5 sesiones esta semana. ¡Sigue así!',
-    timestamp: 'Ayer, 6:00 p. m.',
-    isRead: false,
-    category: 'Meta',
-    section: 'Ayer',
-    isImportant: true,
-  },
-  {
-    id: '6',
-    title: 'Mensaje de tu terapeuta',
-    description: 'Dra. García: "Buen trabajo esta semana. Aumenta las repeticiones a 15."',
-    timestamp: 'Ayer, 2:30 p. m.',
-    isRead: false,
-    category: 'Mensaje',
-    section: 'Ayer',
-  },
-  {
-    id: '7',
-    title: 'Recordatorio de sesión',
-    description: 'Tienes una sesión pendiente de oposición del pulgar.',
-    timestamp: 'Ayer, 9:00 a. m.',
-    isRead: true,
-    category: 'Recordatorio',
-    section: 'Ayer',
-  },
-  {
-    id: '8',
-    title: 'Actualización disponible',
-    description: 'Hay una nueva versión del firmware para tu Smart Glove (v2.3.1).',
-    timestamp: 'Mié, 14 Mayo',
-    isRead: true,
-    category: 'Dispositivo',
-    section: 'Esta semana',
-  },
-];
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 interface NotificationsScreenProps {
   onBack?: () => void;
   onOpenSettings?: () => void;
-  notifications?: NotificationItem[];
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   onBack,
   onOpenSettings,
-  notifications: notificationsProp = MOCK_NOTIFICATIONS,
 }) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const { showToast } = useAppToast();
+  const { alertModal, showAlert } = useAppAlert();
+
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
-  const [notifications, setNotifications] = useState(notificationsProp);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadNotifications = useCallback(async () => {
+    if (userId === null) {
+      setNotifications([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const result = await fetchNotifications(userId);
+      setNotifications(result.items);
+      setError(null);
+    } catch (err) {
+      setNotifications([]);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudieron cargar las notificaciones.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    loadNotifications();
+  }, [loadNotifications]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadNotifications();
+    setIsRefreshing(false);
+  }, [loadNotifications]);
 
   const filters = useMemo<FilterPill[]>(() => {
     const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -203,6 +158,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
       'Hoy',
       'Ayer',
       'Esta semana',
+      'Anterior',
     ];
 
     return sectionOrder
@@ -213,10 +169,67 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
       .filter(s => s.data.length > 0);
   }, [filteredNotifications]);
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
+    if (isMarkingAll || !notifications.some(n => !n.isRead)) {
+      return;
+    }
+
+    if (userId === null) {
+      showAlert({
+        title: 'Sesión no disponible',
+        message: 'Vuelve a iniciar sesión para marcar las notificaciones.',
+        variant: 'error',
+      });
+      return;
+    }
+
+    const previous = notifications;
+    setIsMarkingAll(true);
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+
+    try {
+      await markAllNotificationsAsRead(userId);
+      showToast({
+        title: 'Listo',
+        message: 'Marcaste todas las notificaciones como leídas.',
+        variant: 'success',
+      });
+    } catch (err) {
+      setNotifications(previous);
+      showAlert({
+        title: 'No se pudieron marcar como leídas',
+        message: describeError(err),
+        variant: 'error',
+      });
+    } finally {
+      setIsMarkingAll(false);
+    }
+  };
+
+  const handlePressNotification = async (item: NotificationItem) => {
+    if (item.isRead) {
+      return;
+    }
+
+    const previous = notifications;
     setNotifications(prev =>
-      prev.map(n => ({ ...n, isRead: true })),
+      prev.map(n => (n.id === item.id ? { ...n, isRead: true } : n)),
     );
+
+    if (userId === null) {
+      return;
+    }
+
+    try {
+      await markNotificationAsRead(item.id, userId);
+    } catch (err) {
+      setNotifications(previous);
+      showAlert({
+        title: 'No se pudo marcar como leída',
+        message: describeError(err),
+        variant: 'error',
+      });
+    }
   };
 
   // ---- render helpers ----
@@ -252,6 +265,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel={`${item.title}. ${item.description}`}
+        onPress={() => handlePressNotification(item)}
       >
         {/* Unread dot */}
         <View style={styles.cardLeft}>
@@ -306,11 +320,63 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     <Text style={styles.sectionTitle}>{section.title}</Text>
   );
 
-  const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>No hay notificaciones</Text>
-    </View>
-  );
+  const renderEmpty = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.feedbackTitle}>Cargando notificaciones…</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.feedbackContainer}>
+          <View style={styles.emptyIconCircle}>
+            <BellOff size={32} color={COLORS.primary} />
+          </View>
+          <Text style={styles.feedbackTitle}>
+            No pudimos cargar tus notificaciones
+          </Text>
+          <Text style={styles.feedbackMessage}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            activeOpacity={0.8}
+            onPress={loadNotifications}
+          >
+            <Text style={styles.retryText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    const emptyCopy: Record<FilterKey, { title: string; message: string }> = {
+      all: {
+        title: 'No tienes notificaciones',
+        message: 'Cuando recibas novedades aparecerán aquí.',
+      },
+      unread: {
+        title: 'No tienes notificaciones sin leer',
+        message: 'Estás al día con todas tus notificaciones.',
+      },
+      important: {
+        title: 'No tienes notificaciones importantes',
+        message: 'Aquí aparecerán las notificaciones que requieran tu atención.',
+      },
+    };
+    const copy = emptyCopy[activeFilter];
+
+    return (
+      <View style={styles.feedbackContainer}>
+        <View style={styles.emptyIconCircle}>
+          <BellOff size={32} color={COLORS.primary} />
+        </View>
+        <Text style={styles.feedbackTitle}>{copy.title}</Text>
+        <Text style={styles.feedbackMessage}>{copy.message}</Text>
+      </View>
+    );
+  };
 
   // ---- main render ----
 
@@ -354,19 +420,43 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
       />
 
       {/* Mark all as read */}
-      <View style={styles.markAllContainer}>
-        <TouchableOpacity
-          style={styles.markAllButton}
-          activeOpacity={0.7}
-          onPress={handleMarkAllRead}
-        >
-          <CheckCheck size={18} color={COLORS.primary} />
-          <Text style={styles.markAllText}>Marcar todas como leídas</Text>
-        </TouchableOpacity>
-      </View>
+      {notifications.some(n => !n.isRead) && (
+        <View style={styles.markAllContainer}>
+          <TouchableOpacity
+            style={[
+              styles.markAllButton,
+              isMarkingAll && styles.markAllButtonDisabled,
+            ]}
+            activeOpacity={0.7}
+            disabled={isMarkingAll}
+            onPress={handleMarkAllRead}
+          >
+            {isMarkingAll ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <CheckCheck size={18} color={COLORS.primary} />
+            )}
+            <Text style={styles.markAllText}>
+              {isMarkingAll
+                ? 'Marcando como leídas…'
+                : 'Marcar todas como leídas'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {alertModal}
     </SafeAreaView>
   );
 };
@@ -463,6 +553,7 @@ const styles = StyleSheet.create({
 
   // List
   listContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingBottom: 8,
   },
@@ -546,14 +637,49 @@ const styles = StyleSheet.create({
     color: COLORS.danger,
   },
 
-  // Empty state
-  emptyContainer: {
+  // Empty / loading / error
+  feedbackContainer: {
+    flex: 1,
     alignItems: 'center',
-    paddingTop: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 48,
   },
-  emptyText: {
-    fontSize: 15,
+  emptyIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primarySoft,
+    marginBottom: 18,
+  },
+  feedbackTitle: {
+    marginTop: 16,
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  feedbackMessage: {
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
     color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    backgroundColor: COLORS.primarySoft,
+  },
+  retryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 
   // Mark all as read
@@ -570,6 +696,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: COLORS.primarySoft,
+  },
+  markAllButtonDisabled: {
+    opacity: 0.7,
   },
   markAllText: {
     fontSize: 14,

@@ -11,15 +11,18 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PrivateTabBarProvider } from '../src/context/PrivateTabBarContext';
 import { CountdownScreen } from '../src/screens/countdown/CountdownScreen';
 
+const flattenText = (children: React.ReactNode): string =>
+  React.Children.toArray(children)
+    .map(child => (typeof child === 'string' || typeof child === 'number' ? String(child) : ''))
+    .join('');
+
 const findText = (
   root: ReactTestRenderer.ReactTestInstance,
   text: string,
 ): boolean =>
   root.findAll(
     node =>
-      String(node.type) === 'Text' &&
-      Array.isArray(node.props.children) === false &&
-      String(node.props.children) === text,
+      String(node.type) === 'Text' && flattenText(node.props.children) === text,
   ).length > 0;
 
 const renderWithProviders = async (

@@ -137,7 +137,10 @@ export const AppToast: React.FC<AppToastProps> = ({
 
   return (
     <Animated.View
-      pointerEvents="box-none"
+      // Cuando el aviso está oculto queda montado para poder animar la salida.
+      // Sin esto, su tarjeta transparente sigue recibiendo toques y bloquea
+      // cualquier botón que quede en esa franja de la pantalla.
+      pointerEvents={visible ? 'box-none' : 'none'}
       style={[
         styles.wrapper,
         { bottom: insets.bottom + 88 },

@@ -20,6 +20,12 @@ import {
   onSessionEstablished,
   onSessionExpired,
 } from '@/services/auth/sessionEvents';
+import {
+  listenForForegroundMessages,
+  listenForTokenRefresh,
+  registerPushToken,
+  unregisterPushToken,
+} from '@/services/notifications/pushNotifications';
 import type {
   LoginPasswordRequest,
   SocialLoginRequest,
@@ -52,6 +58,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [user, setUser] = useState<UserToReturnDto | null>(null);
   const [role, setRole] = useState<UserAccountRole | null>(null);
+
+  const userId = user?.id ?? null;
+
+  /**
+   * Con la sesion activa se registra el token FCM en el microservicio de
+   * notificaciones y se mantiene sincronizado (rotacion de token + mensajes
+   * en primer plano). Nunca bloquea el login: si falla, solo se registra un
+   * warning.
+   */
+  useEffect(() => {
+    if (!isAuthenticated || userId === null) {
+      return;
+    }
+
+    registerPushToken(userId).catch(() => undefined);
+
+    const unsubscribeTokenRefresh = listenForTokenRefresh(userId);
+    const unsubscribeMessages = listenForForegroundMessages();
+
+    return () => {
+      unsubscribeTokenRefresh();
+      unsubscribeMessages();
+    };
+  }, [isAuthenticated, userId]);
 
   /**
    * Token, profile and role are restored together, so the app never keeps a
@@ -123,12 +153,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const logout = useCallback(async () => {
+    if (user !== null) {
+      await unregisterPushToken(user.id);
+    }
+
     await clearSession();
     setIsAuthenticated(false);
     setUser(null);
     setRole(null);
     setIsSessionExpired(false);
-  }, []);
+  }, [user]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

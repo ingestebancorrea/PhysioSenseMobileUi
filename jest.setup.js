@@ -33,6 +33,39 @@ jest.mock('react-native-safe-area-context', () =>
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => MockIcon);
 jest.mock('react-native-vector-icons/Ionicons', () => MockIcon);
 
+jest.mock('@react-native-firebase/messaging', () => {
+  const messagingInstance = {
+    registerDeviceForRemoteMessages: jest.fn(async () => undefined),
+    getToken: jest.fn(async () => 'test-fcm-token'),
+    requestPermission: jest.fn(async () => 1),
+    onTokenRefresh: jest.fn(() => jest.fn()),
+    onMessage: jest.fn(() => jest.fn()),
+    setBackgroundMessageHandler: jest.fn(),
+    onNotificationOpenedApp: jest.fn(() => jest.fn()),
+    getInitialNotification: jest.fn(async () => null),
+    deleteToken: jest.fn(async () => undefined),
+  };
+
+  return {
+    __esModule: true,
+    AuthorizationStatus: {
+      NOT_DETERMINED: -1,
+      DENIED: 0,
+      AUTHORIZED: 1,
+      PROVISIONAL: 2,
+    },
+    getMessaging: jest.fn(() => messagingInstance),
+    getToken: jest.fn(async () => 'test-fcm-token'),
+    requestPermission: jest.fn(async () => 1),
+    registerDeviceForRemoteMessages: jest.fn(async () => undefined),
+    onTokenRefresh: jest.fn(() => jest.fn()),
+    onMessage: jest.fn(() => jest.fn()),
+    setBackgroundMessageHandler: jest.fn(),
+    onNotificationOpenedApp: jest.fn(() => jest.fn()),
+    getInitialNotification: jest.fn(async () => null),
+  };
+});
+
 jest.mock('@react-native-google-signin/google-signin', () => ({
   GoogleSignin: {
     configure: jest.fn(),

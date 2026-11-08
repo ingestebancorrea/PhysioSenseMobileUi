@@ -95,7 +95,7 @@ android {
         applicationId "com.physiosensemobileui"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 4
         versionName "1.0"
         manifestPlaceholders = [fbClientToken: fbClientToken]
     }
@@ -139,7 +139,10 @@ dependencies {
 
     // Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    // Nota: no se incluye firebase-analytics. No se usa en la app y su
+    // play-services-measurement 24.0.0 esta compilado con Kotlin 2.4, lo que
+    // rompe el build con Kotlin 2.1.20 (el que soporta React Native 0.86).
+    // FCM funciona sin Analytics.
 }
 
 // Bundles react-native-vector-icons font files into the Android assets
