@@ -103,6 +103,12 @@ const expireSession = async (): Promise<void> => {
  * (y los mocks de los tests) sólo exponen `json()`.
  */
 const readRawBody = async (response: Response): Promise<string> => {
+  // 204 no trae cuerpo por contrato; algunos entornos no exponen `text()`
+  // para una respuesta sin cuerpo y eso hacía fallar operaciones correctas.
+  if (response.status === 204) {
+    return '';
+  }
+
   if (typeof response.text === 'function') {
     return response.text();
   }

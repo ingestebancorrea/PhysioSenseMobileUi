@@ -39,7 +39,6 @@ import { PatientSettingsScreen } from '@/screens/patient/PatientSettingsScreen';
 import { TherapistHomeScreen } from '@/screens/private/TherapistHomeScreen';
 import { CreateSessionScreen } from '@/screens/physiotherapist/CreateSessionScreen';
 import { CreateExerciseScreen } from '@/screens/physiotherapist/CreateExerciseScreen';
-import { THERAPIST_NOTIFICATIONS } from '@/mock/therapistNotificationsData';
 // (ejercicios ahora se cargan desde el backend)
 import { AssignSessionScreen } from '@/screens/physiotherapist/AssignSessionScreen';
 import type { Patient } from '@/types/patient';
@@ -448,7 +447,6 @@ const TherapistNavigatorContent: React.FC = () => {
     if (showNotifications) {
       return (
         <NotificationsScreen
-          notifications={THERAPIST_NOTIFICATIONS}
           onBack={() => setShowNotifications(false)}
           onOpenSettings={() => {
             setShowNotifications(false);
